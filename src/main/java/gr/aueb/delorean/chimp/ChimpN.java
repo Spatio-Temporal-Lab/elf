@@ -14,6 +14,7 @@ public class ChimpN {
     private int size;
     private int previousValuesLog2;
     private int threshold;
+    private int trailingZero;
 
     public final static short[] leadingRepresentation = {0, 0, 0, 0, 0, 0, 0, 0,
 			1, 1, 1, 1, 2, 2, 2, 2,
@@ -134,9 +135,10 @@ public class ChimpN {
             out.writeInt(previousIndex, this.flagZeroSize);
             size += this.flagZeroSize;
             storedLeadingZeros = 65;
+            trailingZero = 64;
         } else {
             int leadingZeros = leadingRound[Long.numberOfLeadingZeros(xor)];
-
+            trailingZero = trailingZeros;
             if (trailingZeros > threshold) {
                 int significantBits = 64 - leadingZeros - trailingZeros;
                 out.writeInt(512 * (previousValues + previousIndex) + 64 * leadingRepresentation[leadingZeros] + significantBits, this.flagOneSize);
@@ -161,6 +163,9 @@ public class ChimpN {
 		index++;
 		indices[key] = index;
 
+    }
+    public int getTrailingZero(){
+        return trailingZero;
     }
 
     public int getSize() {

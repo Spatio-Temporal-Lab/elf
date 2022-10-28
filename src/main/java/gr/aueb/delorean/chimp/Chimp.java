@@ -13,6 +13,7 @@ public class Chimp {
     private boolean first = true;
     private int size;
 
+    private int trailingZero;
     public final static int THRESHOLD = 6;
 
     public final static short[] leadingRepresentation = {0, 0, 0, 0, 0, 0, 0, 0,
@@ -66,6 +67,7 @@ public class Chimp {
         if(first) {
             writeFirst(Double.doubleToRawLongBits(value));
         } else {
+            System.out.println(value);
             compressValue(Double.doubleToRawLongBits(value));
         }
     }
@@ -94,10 +96,11 @@ public class Chimp {
         	out.writeBit(false);
             size += 2;
             storedLeadingZeros = 65;
+            trailingZero=64;
         } else {
             int leadingZeros = leadingRound[Long.numberOfLeadingZeros(xor)];
             int trailingZeros = Long.numberOfTrailingZeros(xor);
-
+            trailingZero = trailingZeros;
             if (trailingZeros > THRESHOLD) {
                 int significantBits = 64 - leadingZeros - trailingZeros;
                 out.writeBit(false);
@@ -129,6 +132,8 @@ public class Chimp {
     public int getSize() {
     	return size;
     }
+
+    public int getTrailingZero(){return trailingZero;}
 
 	public byte[] getOut() {
 		return out.buffer;
