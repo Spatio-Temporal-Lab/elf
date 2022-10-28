@@ -119,6 +119,7 @@ public class ChimpN {
     	if ((index - currIndex) < previousValues) {
     		long tempXor = value ^ storedValues[currIndex % previousValues];
     		trailingZeros = Long.numberOfTrailingZeros(tempXor);
+            trailingZero=trailingZeros;
     		if (trailingZeros > threshold) {
     			previousIndex = currIndex % previousValues;
     			xor = tempXor;

@@ -67,7 +67,6 @@ public class Chimp {
         if(first) {
             writeFirst(Double.doubleToRawLongBits(value));
         } else {
-            System.out.println(value);
             compressValue(Double.doubleToRawLongBits(value));
         }
     }
