@@ -30,7 +30,7 @@ public class TestPrecision {
     public void testChimp() throws IOException {
         for (String filename : FILENAMES) {
             FileReader fileReader = new FileReader();
-            List<Double> values= fileReader.readFile(filename,filename,1);
+            List<Double> values= fileReader.readFile(filename,filename,4);
             long totalSize = 0;
             float totalBlocks = 0;
             long encodingDuration = 0;
@@ -40,7 +40,7 @@ public class TestPrecision {
                 long start = System.nanoTime();
                 for (double value : values) {
                     compressor.addValue(value);
-                    trailingZeros[compressor.getTrailingZero()]+=1;
+                    trailingZeros[compressor.getLeadingZero()]+=1;
                 }
                 compressor.close();
                 encodingDuration += System.nanoTime() - start;
@@ -54,7 +54,7 @@ public class TestPrecision {
 //                    assertEquals(java.util.Optional.ofNullable(values.get(i)), uncompressedValues.get(i).doubleValue(), "Value did not match");
 //                }
 //            System.out.println(String.format("Chimp: %s - Bits/value: %.2f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (values.size() * 64), encodingDuration / totalBlocks, decodingDuration / totalBlocks));
-            File file=new File("D:\\result\\"+"taxi_data_sub.csv");
+            File file=new File("D:\\result\\"+"migration_original_sub_leading.csv");
             try {
                 FileWriter fw = new FileWriter(file);
                 BufferedWriter bw=new BufferedWriter(fw);
@@ -85,7 +85,7 @@ public class TestPrecision {
             long start = System.nanoTime();
             for (double value : values) {
                 compressor.addValue(value);
-                trailingZeros[compressor.getTrailingZero()]+=1;
+                trailingZeros[compressor.getLeadingZero()]+=1;
             }
             compressor.close();
             encodingDuration += System.nanoTime() - start;
@@ -99,7 +99,7 @@ public class TestPrecision {
 //                    assertEquals(java.util.Optional.ofNullable(values.get(i)), uncompressedValues.get(i).doubleValue(), "Value did not match");
 //                }
 //            System.out.println(String.format("Chimp: %s - Bits/value: %.2f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (values.size() * 64), encodingDuration / totalBlocks, decodingDuration / totalBlocks));
-            File file=new File("D:\\result\\"+"migration_original_sub128.csv");
+            File file=new File("D:\\result\\"+"migration_original_sub_leading_128.csv");
             try {
                 FileWriter fw = new FileWriter(file);
                 BufferedWriter bw=new BufferedWriter(fw);

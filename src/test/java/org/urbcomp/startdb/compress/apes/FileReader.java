@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileReader {
-    private static final String DELIMITER = ",";
+    private static final String DELIMITER = "\",\"";
     public List<Double> readFile(String filePath, String fileName, int raw) {
         java.io.FileReader fr = null;
         BufferedReader br = null;

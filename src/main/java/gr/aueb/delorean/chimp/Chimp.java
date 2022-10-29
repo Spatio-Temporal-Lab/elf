@@ -15,6 +15,7 @@ public class Chimp {
 
     private int trailingZero;
     public final static int THRESHOLD = 6;
+    private int leadingZero;
 
     public final static short[] leadingRepresentation = {0, 0, 0, 0, 0, 0, 0, 0,
 			1, 1, 1, 1, 2, 2, 2, 2,
@@ -95,8 +96,10 @@ public class Chimp {
         	out.writeBit(false);
             size += 2;
             storedLeadingZeros = 65;
+            leadingZero = 64;
             trailingZero=64;
         } else {
+            leadingZero = Long.numberOfLeadingZeros(xor);
             int leadingZeros = leadingRound[Long.numberOfLeadingZeros(xor)];
             int trailingZeros = Long.numberOfTrailingZeros(xor);
             trailingZero = trailingZeros;
@@ -134,7 +137,11 @@ public class Chimp {
 
     public int getTrailingZero(){return trailingZero;}
 
-	public byte[] getOut() {
+    public int getLeadingZero() {
+        return leadingZero;
+    }
+
+    public byte[] getOut() {
 		return out.buffer;
 	}
 }
