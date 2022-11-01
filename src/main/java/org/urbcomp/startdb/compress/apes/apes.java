@@ -5,8 +5,7 @@ import sun.misc.DoubleConsts;
 
 import java.util.BitSet;
 
-import static org.urbcomp.startdb.compress.apes.utils.CompressorHelper.doubleToBitSet;
-import static org.urbcomp.startdb.compress.apes.utils.CompressorHelper.getLong;
+import static org.urbcomp.startdb.compress.apes.utils.CompressorHelper.*;
 
 public class apes {
     private final int EXPONENTIAL_DIGIT = 52;
@@ -46,7 +45,7 @@ public class apes {
             result = Double.doubleToLongBits(value);
         }
         if ((Double.doubleToLongBits(value)& DoubleConsts.EXP_BIT_MASK)==0){
-
+            flag = 1;
         }
 
     }
@@ -55,24 +54,7 @@ public class apes {
 
     }
 
-    public static int getNumberDecimalDigits(double number) {
-        if (number == (long) number) {
-            return 0;
-        }
-        int i = 0;
-        int j = 0;
-        while (true) {
-            i++;
-            if (number * Math.pow(10, i) >= 1) {
-                j++;
-                if (number * Math.pow(10, i) % 1 == 0) {
-                    return j;
-                }
 
-            }
-
-        }
-    }
 
     public static void main(String[] args) {
         System.out.println(getNumberDecimalDigits(0.23123));

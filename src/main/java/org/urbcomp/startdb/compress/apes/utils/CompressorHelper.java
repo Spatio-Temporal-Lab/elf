@@ -1,5 +1,7 @@
 package org.urbcomp.startdb.compress.apes.utils;
 
+import sun.misc.DoubleConsts;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.temporal.ChronoField;
@@ -90,9 +92,8 @@ public class CompressorHelper {
      */
     public static String bitSetToBinaryString(BitSet bitset) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < bitset.length(); i++) {
+        for (int i = bitset.length()-1; i >= 0; i--) {
             sb.append(bitset.get(i) ? "1" : "0");
-
         }
         return sb.toString();
     }
@@ -138,6 +139,52 @@ public class CompressorHelper {
         } else {
             return 0;
         }
+    }
+
+    public static long getExpBits(double value){
+        return Double.doubleToRawLongBits(value) & DoubleConsts.EXP_BIT_MASK;
+    }
+
+    public static int getExpValue(double value){
+        return (int) (getExpBits(value)>>>DoubleConsts.SIGNIFICAND_WIDTH-1);
+    }
+
+    public static long getSignIfBits(double value){
+        return Double.doubleToRawLongBits(value)&DoubleConsts.SIGNIF_BIT_MASK;
+    }
+
+    public static void printLongOfBinary(long value){
+        System.out.println(Long.toBinaryString(value));
+    }
+
+    public static int computeFn(int precision){
+         return (int) Math.ceil(precision * Math.log(10)/Math.log(2));
+    }
+
+    public static int getNumberDecimalDigits(double number) {
+        if (number == (long) number) {
+            return 0;
+        }
+        int i = 0;
+        int j = 0;
+        while (true) {
+            i++;
+            if (number * Math.pow(10, i) >= 1) {
+                j++;
+                if (number * Math.pow(10, i) % 1 == 0) {
+                    return j;
+                }
+
+            }
+        }
+    }
+
+
+    public static void main(String[] args) {
+        System.out.println(getSignIfBits(0.02));
+        printLongOfBinary(Double.doubleToLongBits(0.02));
+        printLongOfBinary(getSignIfBits(0.02));
+        System.out.println(computeFn(2));
     }
 
 }
