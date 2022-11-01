@@ -2,6 +2,7 @@ package org.urbcomp.startdb.compress.apes.utils;
 
 import sun.misc.DoubleConsts;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.temporal.ChronoField;
@@ -45,7 +46,7 @@ public class CompressorHelper {
         for (int i = 0; i < bitSetIn.length(); i++) {
             bitSetOut.set(start + i, bitSetIn.get(i));
         }
-        return start+bitSetIn.length();
+        return start + bitSetIn.length();
     }
 
     /**
@@ -92,7 +93,7 @@ public class CompressorHelper {
      */
     public static String bitSetToBinaryString(BitSet bitset) {
         StringBuilder sb = new StringBuilder();
-        for (int i = bitset.length()-1; i >= 0; i--) {
+        for (int i = bitset.length() - 1; i >= 0; i--) {
             sb.append(bitset.get(i) ? "1" : "0");
         }
         return sb.toString();
@@ -141,27 +142,54 @@ public class CompressorHelper {
         }
     }
 
-    public static long getExpBits(double value){
+    public static int getPrecision1(double d) {
+        BigDecimal bd = new BigDecimal(String.valueOf(d));
+        String[] ss = bd.toString().split("\\.");
+        if (ss.length <= 1){
+            return 0;
+        }
+        return ss[1].length();
+    }
+
+    public static long getExpBits(double value) {
         return Double.doubleToRawLongBits(value) & DoubleConsts.EXP_BIT_MASK;
     }
 
-    public static int getExpValue(double value){
-        return (int) (getExpBits(value)>>>DoubleConsts.SIGNIFICAND_WIDTH-1);
+    public static int getExpValue(double value) {
+        return (int) (getExpBits(value) >>> DoubleConsts.SIGNIFICAND_WIDTH - 1);
     }
 
-    public static long getSignIfBits(double value){
-        return Double.doubleToRawLongBits(value)&DoubleConsts.SIGNIF_BIT_MASK;
+    public static long getSignIfBits(double value) {
+        return Double.doubleToRawLongBits(value) & DoubleConsts.SIGNIF_BIT_MASK;
     }
 
-    public static void printLongOfBinary(long value){
+    public static void printLongOfBinary(long value) {
         System.out.println(Long.toBinaryString(value));
     }
 
-    public static int computeFn(int precision){
-         return (int) Math.ceil(precision * Math.log(10)/Math.log(2));
+    public static int computeFn(double value){
+        return computeFn(getNumberDecimalDigits(value));
+    }
+
+    public static int computeFn(int precision) {
+        return (int) Math.ceil(precision * Math.log(10) / Math.log(2));
     }
 
     public static int getNumberDecimalDigits(double number) {
+        if (number == (long) number) {
+            return 0;
+        }
+        int i = 0;
+        while (true) {
+            i++;
+            if (number * Math.pow(10, i) % 1 == 0) {
+                return i;
+            }
+
+        }
+    }
+
+    public static int getNumberMeaningDigits(double number) {
         if (number == (long) number) {
             return 0;
         }
@@ -174,11 +202,9 @@ public class CompressorHelper {
                 if (number * Math.pow(10, i) % 1 == 0) {
                     return j;
                 }
-
             }
         }
     }
-
 
     public static void main(String[] args) {
         System.out.println(getSignIfBits(0.02));

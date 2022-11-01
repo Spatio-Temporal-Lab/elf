@@ -7,14 +7,17 @@ import java.util.BitSet;
 
 import static org.urbcomp.startdb.compress.apes.utils.CompressorHelper.*;
 
-public class apes {
+public class Elf {
     private final int EXPONENTIAL_DIGIT = 52;
     private final int SIGN_DIGIT = 63;
     private BitSet rawBitSet;
     private int flag;
     private int sign;
-    private int offset;
+    private int exp;
+    private int fn;
+    private int eraser_bits;
     private int meaning;
+    private int precision;
     private long result;
 
     public void addValue(double value) {
@@ -30,30 +33,48 @@ public class apes {
         return true;
     }
 
-    public void compressValue(double value) {
+    public void compressParameter(double value) {
         rawBitSet = doubleToBitSet(value);
         if (Double.isNaN(value)) {
             flag = 0;
             result = Double.doubleToLongBits(value);
-        }
-        if (Double.isInfinite(value)) {
+        } else if (Double.isInfinite(value)) {
             flag = 0;
             result = Double.doubleToLongBits(value);
-        }
-        if (value == 0) {
+        } else if (value == 0) {
             flag = 0;
             result = Double.doubleToLongBits(value);
+        } else if ((Double.doubleToLongBits(value) & DoubleConsts.EXP_BIT_MASK) == 0) {
+            getSubNormalParameter(value);
+            eraser_bits = EXPONENTIAL_DIGIT - (exp - 1023 + fn);
+            if (eraser_bits < 4) {
+                flag = 0;
+                result = Double.doubleToLongBits(value);
+            }else {
+                flag = 1;
+            }
+        } else {
+            getNormalParameter(value);
+            eraser_bits = EXPONENTIAL_DIGIT - (exp - 1023 + fn);
+            if (eraser_bits < 4) {
+                flag = 0;
+                result = Double.doubleToLongBits(value);
+            } else {
+                flag = 1;
+                result = Double.doubleToLongBits(value)>>>eraser_bits;
+            }
         }
-        if ((Double.doubleToLongBits(value)& DoubleConsts.EXP_BIT_MASK)==0){
-            flag = 1;
-        }
-
     }
 
-    public void getParameter(double value) {
-
+    public void getNormalParameter(double value) {
+        exp = getExpValue(value);
+        fn = computeFn(value);
     }
 
+    public void getSubNormalParameter(double value) {
+        exp = 1;
+        fn = computeFn(value);
+    }
 
 
     public static void main(String[] args) {
@@ -69,11 +90,17 @@ public class apes {
         a.set(52, 63, false);
         System.out.println(CompressorHelper.bitSetToBinaryString(a));
         boolean b;
-        double d= 1.012832363282407e-308;
+        double d = 0.15;
         System.out.println(CompressorHelper.bitSetToBinaryString(doubleToBitSet(d)));
-        System.out.println(Double.doubleToLongBits(d)& DoubleConsts.EXP_BIT_MASK);
+        System.out.println(Double.doubleToLongBits(d) & DoubleConsts.EXP_BIT_MASK);
         System.out.println(1);
         System.out.println(Double.isInfinite(d));
+        System.out.println(getPrecision(d));
+        System.out.println(getPrecision1(d));
+        System.out.println(getNumberDecimalDigits(d));
+        System.out.println(getNumberMeaningDigits(d));
+        Elf elf = new Elf();
+        elf.compressParameter(d);
     }
 
 }
