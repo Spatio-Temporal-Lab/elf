@@ -76,6 +76,9 @@ public class Elf {
         fn = computeFn(value);
     }
 
+    public long getResult() {
+        return result;
+    }
 
     public static void main(String[] args) {
         System.out.println(getNumberDecimalDigits(0.23123));
@@ -101,6 +104,7 @@ public class Elf {
         System.out.println(getNumberMeaningDigits(d));
         Elf elf = new Elf();
         elf.compressParameter(d);
+        System.out.println(Long.toBinaryString(elf.getResult()));
     }
 
 }
