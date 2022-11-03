@@ -10,8 +10,9 @@ import java.io.IOException;
 import java.util.BitSet;
 
 import static org.urbcomp.startdb.compress.apes.utils.CompressorHelper.*;
+import static org.urbcomp.startdb.compress.apes.utils.CompressorHelper.printByteArray;
 
-public class Elf {
+public class ElfOnChimp {
     private final int EXPONENTIAL_DIGIT = 52;
     private final int SIGN_DIGIT = 63;
     private BitSet rawBitSet;
@@ -25,41 +26,29 @@ public class Elf {
     private long result_eraser;
     private int size;
     private OutputBitStream out;
+    private Chimp chimp;
 
+    public ElfOnChimp() {
+        out = new OutputBitStream(new byte[1000 * 8]);
+        size = 0;
+        chimp = new Chimp(out, size);
+    }
     public void addValue(double value) throws IOException {
-        //TODO
-
-        compress(value);
+        compressWithChimp(value);
         System.out.println("size");
         System.out.println(size);
     }
 
-
-    public boolean isValid(double value) {
-        //TODO
-        return true;
-    }
-
-    public Elf() {
-        out = new OutputBitStream(new byte[1000 * 8]);
-        size = 0;
-    }
-
-    public void compress(double value) throws IOException {// simpleElf
+    public void compressWithChimp(double value) throws IOException {
         compressParameter(value);
         out.writeBit(flag);
         size += 1;
-        if (flag == 0) {
-            out.writeLong(result, 64);
-            size += 64;
-        } else {
+        if (flag != 0) {
             out.writeInt(precision, 4);
-            out.writeLong(result_eraser, 64 - eraser_bits);
-            System.out.println("zzzzzzzzzzzzzzzzzzzzzz");
-            System.out.println(64-eraser_bits);
-            System.out.println(Long.toBinaryString(result_eraser));
-            size += 64 - eraser_bits + 4;
+            size += 4;
         }
+        chimp.addValue(result);
+        size += chimp.getPerSize();
     }
 
     public void compressParameter(double value) {
@@ -133,7 +122,7 @@ public class Elf {
         System.out.println(CompressorHelper.bitSetToBinaryString(doubleToBitSet(d)));
         System.out.println(Double.doubleToLongBits(d) & DoubleConsts.EXP_BIT_MASK);
         System.out.println(getNumberMeaningDigits(d));
-        Elf elf = new Elf();
+        ElfOnChimp elf = new ElfOnChimp();
         elf.compressParameter(d);
         System.out.println(Long.toBinaryString(elf.getResult()));
         System.out.println(Double.longBitsToDouble(elf.getResult() << elf.getEraser_bits()));
@@ -154,3 +143,4 @@ public class Elf {
 
     }
 }
+

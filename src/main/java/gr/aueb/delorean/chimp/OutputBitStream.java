@@ -1292,4 +1292,8 @@ public class OutputBitStream implements Flushable, Closeable {
 			length -= toRead;
 		}
 	}
+
+	public byte[] getBuffer() {
+		return buffer;
+	}
 }

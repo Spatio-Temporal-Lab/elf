@@ -1,7 +1,7 @@
 package org.urbcomp.startdb.compress.apes;
 
-import fi.iki.yak.ts.compression.gorilla.Compressor;
 import gr.aueb.delorean.chimp.Chimp;
+import gr.aueb.delorean.chimp.ChimpN;
 import gr.aueb.delorean.chimp.OutputBitStream;
 import org.urbcomp.startdb.compress.apes.utils.CompressorHelper;
 import sun.misc.DoubleConsts;
@@ -10,8 +10,9 @@ import java.io.IOException;
 import java.util.BitSet;
 
 import static org.urbcomp.startdb.compress.apes.utils.CompressorHelper.*;
+import static org.urbcomp.startdb.compress.apes.utils.CompressorHelper.printByteArray;
 
-public class Elf {
+public class ElfOnChimpN {
     private final int EXPONENTIAL_DIGIT = 52;
     private final int SIGN_DIGIT = 63;
     private BitSet rawBitSet;
@@ -25,41 +26,29 @@ public class Elf {
     private long result_eraser;
     private int size;
     private OutputBitStream out;
+    private ChimpN chimpN;
 
+    public ElfOnChimpN(int previousValues) {
+        out = new OutputBitStream(new byte[1000 * 8]);
+        size = 0;
+        chimpN = new ChimpN(previousValues,out, size);
+    }
     public void addValue(double value) throws IOException {
-        //TODO
-
-        compress(value);
+        compressWithChimpN(value);
         System.out.println("size");
         System.out.println(size);
     }
 
-
-    public boolean isValid(double value) {
-        //TODO
-        return true;
-    }
-
-    public Elf() {
-        out = new OutputBitStream(new byte[1000 * 8]);
-        size = 0;
-    }
-
-    public void compress(double value) throws IOException {// simpleElf
+    public void compressWithChimpN(double value) throws IOException {
         compressParameter(value);
         out.writeBit(flag);
         size += 1;
-        if (flag == 0) {
-            out.writeLong(result, 64);
-            size += 64;
-        } else {
+        if (flag != 0) {
             out.writeInt(precision, 4);
-            out.writeLong(result_eraser, 64 - eraser_bits);
-            System.out.println("zzzzzzzzzzzzzzzzzzzzzz");
-            System.out.println(64-eraser_bits);
-            System.out.println(Long.toBinaryString(result_eraser));
-            size += 64 - eraser_bits + 4;
+            size += 4;
         }
+        chimpN.addValue(result);
+        size += chimpN.getPerSize();
     }
 
     public void compressParameter(double value) {
@@ -133,7 +122,7 @@ public class Elf {
         System.out.println(CompressorHelper.bitSetToBinaryString(doubleToBitSet(d)));
         System.out.println(Double.doubleToLongBits(d) & DoubleConsts.EXP_BIT_MASK);
         System.out.println(getNumberMeaningDigits(d));
-        Elf elf = new Elf();
+        ElfOnChimpN elf = new ElfOnChimpN(128);
         elf.compressParameter(d);
         System.out.println(Long.toBinaryString(elf.getResult()));
         System.out.println(Double.longBitsToDouble(elf.getResult() << elf.getEraser_bits()));
