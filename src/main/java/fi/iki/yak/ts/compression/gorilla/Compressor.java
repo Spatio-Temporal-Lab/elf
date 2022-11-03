@@ -13,6 +13,7 @@ public class  Compressor {
     private long storedVal = 0;
     private boolean first = true;
     private int size;
+    private int perSize;
 
 //    public final static short FIRST_DELTA_BITS = 27;
 
@@ -24,17 +25,24 @@ public class  Compressor {
         size = 0;
     }
 
+    public Compressor(BitOutput output,int size){
+        out = output;
+        this.size = size;
+    }
+
     /**
      * Adds a new long value to the series. Note, values must be inserted in order.
      *
      * @param value next floating point value in the series
      */
     public void addValue(long value) {
+        perSize=0;
         if(first) {
             writeFirst(value);
         } else {
             compressValue(value);
         }
+        size+=perSize;
     }
 
     /**
@@ -54,7 +62,7 @@ public class  Compressor {
     	first = false;
         storedVal = value;
         out.writeBits(storedVal, 64);
-        size += 64;
+        perSize += 64;
     }
 
     /**
@@ -73,7 +81,7 @@ public class  Compressor {
         if(xor == 0) {
             // Write 0
             out.skipBit();
-            size += 1;
+            perSize += 1;
         } else {
             int leadingZeros = Long.numberOfLeadingZeros(xor);
             int trailingZeros = Long.numberOfTrailingZeros(xor);
@@ -85,7 +93,7 @@ public class  Compressor {
 
             // Store bit '1'
             out.writeBit();
-            size += 1;
+            perSize += 1;
 
             if(leadingZeros >= storedLeadingZeros && trailingZeros >= storedTrailingZeros) {
                 writeExistingLeading(xor);
@@ -107,7 +115,7 @@ public class  Compressor {
         out.skipBit();
         int significantBits = 64 - storedLeadingZeros - storedTrailingZeros;
         out.writeBits(xor >>> storedTrailingZeros, significantBits);
-        size += 1 + significantBits;
+        perSize += 1 + significantBits;
     }
 
     /**
@@ -136,10 +144,14 @@ public class  Compressor {
         storedLeadingZeros = leadingZeros;
         storedTrailingZeros = trailingZeros;
 
-        size += 1 + 5 + 6 + significantBits;
+        perSize += 1 + 5 + 6 + significantBits;
     }
 
     public int getSize() {
     	return size;
+    }
+
+    public int getPerSize() {
+        return perSize;
     }
 }
