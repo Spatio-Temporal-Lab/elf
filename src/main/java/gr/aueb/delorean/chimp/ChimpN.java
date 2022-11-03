@@ -42,12 +42,14 @@ public class ChimpN {
     private OutputBitStream out;
     private int previousValues;
 
-    private int setLsb;
-    private int[] indices;
-    private int index = 0;
-    private int current = 0;
-    private int flagOneSize;
-    private int flagZeroSize;
+	private int setLsb;
+	private int[] indices;
+	private int index = 0;
+	private int current = 0;
+	private int flagOneSize;
+	private int flagZeroSize;
+    private int leadingZero;
+
 
     // We should have access to the series?
     public ChimpN(int previousValues) {
@@ -130,6 +132,7 @@ public class ChimpN {
     }
 
     private void compressValue(long value) {
+
         int key = (int) value & setLsb;
         long xor;
         int previousIndex;
@@ -151,12 +154,15 @@ public class ChimpN {
         }
 
         if (xor == 0) {
+
             out.writeInt(previousIndex, this.flagZeroSize);
             perSize += this.flagZeroSize;
             storedLeadingZeros = 65;
+            leadingZero = 64;
             trailingZero = 64;
         } else {
             int leadingZeros = leadingRound[Long.numberOfLeadingZeros(xor)];
+            leadingZero = Long.numberOfLeadingZeros(xor);
             trailingZero = trailingZeros;
             if (trailingZeros > threshold) {
                 int significantBits = 64 - leadingZeros - trailingZeros;
@@ -190,6 +196,8 @@ public class ChimpN {
 
     public int getPerSize() {
         return perSize;
+    public int getLeadingZero() {
+        return leadingZero;
     }
 
     public int getSize() {
