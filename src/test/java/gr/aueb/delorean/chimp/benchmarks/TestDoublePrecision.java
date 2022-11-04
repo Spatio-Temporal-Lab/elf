@@ -39,12 +39,12 @@ import gr.aueb.delorean.chimp.ChimpNNoIndex;
  */
 public class TestDoublePrecision {
 
-	private static final int MINIMUM_TOTAL_BLOCKS = 50_000;
+	private static final int MINIMUM_TOTAL_BLOCKS = 50;
 	private static String[] FILENAMES = {
 //	        "/city_temperature.csv.gz",
 //	        "/Stocks-Germany-sample.txt.gz",
 //	        "/SSD_HDD_benchmarks.csv.gz",
-            "/taxi_data.csv.gz"
+            "/taxi_data_sub2.csv"
 			};
 
 	@Test
@@ -56,15 +56,15 @@ public class TestDoublePrecision {
 			double[] values;
 			long encodingDuration = 0;
 			long decodingDuration = 0;
-			while ((values = timeseriesFileReader.nextBlock()) != null || totalBlocks < MINIMUM_TOTAL_BLOCKS) {
-				if (values == null) {
-					timeseriesFileReader = new TimeseriesFileReader(getClass().getResourceAsStream(filename));
-					values = timeseriesFileReader.nextBlock();
-				}
+            values = timeseriesFileReader.nextBlock();
+            System.out.println(timeseriesFileReader.getCounter());
+			while (timeseriesFileReader.getCounter()!=0 && totalBlocks < MINIMUM_TOTAL_BLOCKS) {
+                int counter = timeseriesFileReader.getCounter();
+                System.out.println(timeseriesFileReader.getCounter());
 				ChimpN compressor = new ChimpN(128);
 				long start = System.nanoTime();
-				for (double value : values) {
-					compressor.addValue(value);
+				for (int i=0;i<counter;i++) {
+					compressor.addValue(values[i]);
 				}
 		        compressor.close();
 		        encodingDuration += System.nanoTime() - start;
@@ -75,10 +75,13 @@ public class TestDoublePrecision {
 				start = System.nanoTime();
 				List<Double> uncompressedValues = d.getValues();
 				decodingDuration += System.nanoTime() - start;
-				for(int i=0; i<values.length; i++) {
+				for(int i=0; i<counter; i++) {
 		            assertEquals(values[i], uncompressedValues.get(i).doubleValue(), "Value did not match");
 		        }
+                values = timeseriesFileReader.nextBlock();
 			}
+            System.out.println(totalSize);
+            System.out.println((totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE));
 			System.out.println(String.format("Chimp128: %s - Bits/value: %.2f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE), encodingDuration / totalBlocks, decodingDuration / totalBlocks));
 		}
 	}

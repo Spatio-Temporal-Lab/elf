@@ -14,6 +14,7 @@ public class  Compressor {
     private boolean first = true;
     private int size;
     private int perSize;
+    private int[] flag;
 
 //    public final static short FIRST_DELTA_BITS = 27;
 
@@ -23,11 +24,13 @@ public class  Compressor {
     public Compressor(BitOutput output) {
         out = output;
         size = 0;
+        flag = new int[4];
     }
 
     public Compressor(BitOutput output,int size){
         out = output;
         this.size = size;
+        flag = new int[4];
     }
 
     /**
@@ -51,11 +54,13 @@ public class  Compressor {
      * @param value next floating point value in the series
      */
     public void addValue(double value) {
+        perSize=0;
         if(first) {
             writeFirst(Double.doubleToRawLongBits(value));
         } else {
             compressValue(Double.doubleToRawLongBits(value));
         }
+        size+=perSize;
     }
 
     private void writeFirst(long value) {
@@ -82,6 +87,7 @@ public class  Compressor {
             // Write 0
             out.skipBit();
             perSize += 1;
+            flag[0]++;
         } else {
             int leadingZeros = Long.numberOfLeadingZeros(xor);
             int trailingZeros = Long.numberOfTrailingZeros(xor);
@@ -97,8 +103,10 @@ public class  Compressor {
 
             if(leadingZeros >= storedLeadingZeros && trailingZeros >= storedTrailingZeros) {
                 writeExistingLeading(xor);
+                flag[2]++;
             } else {
                 writeNewLeading(xor, leadingZeros, trailingZeros);
+                flag[3]++;
             }
         }
 
@@ -116,6 +124,10 @@ public class  Compressor {
         int significantBits = 64 - storedLeadingZeros - storedTrailingZeros;
         out.writeBits(xor >>> storedTrailingZeros, significantBits);
         perSize += 1 + significantBits;
+    }
+
+    public int[] getFlag() {
+        return flag;
     }
 
     /**

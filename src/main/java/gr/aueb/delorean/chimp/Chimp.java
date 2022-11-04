@@ -17,6 +17,8 @@ public class Chimp {
     public final static int THRESHOLD = 6;
     private int leadingZero;
 
+    private int[] flag;
+
     public final static short[] leadingRepresentation = {0, 0, 0, 0, 0, 0, 0, 0,
             1, 1, 1, 1, 2, 2, 2, 2,
             3, 3, 4, 4, 5, 5, 6, 6,
@@ -44,11 +46,13 @@ public class Chimp {
     public Chimp() {
         out = new OutputBitStream(new byte[1000 * 8]);
         size = 0;
+        flag = new int[4];
     }
 
-    public Chimp(OutputBitStream out, int size) {
+    public Chimp(OutputBitStream out) {
         this.out = out;
-        this.size = size;
+        this.size = 0;
+        flag = new int[4];
     }
 
     /**
@@ -60,9 +64,7 @@ public class Chimp {
         perSize = 0;
         if (first) {
             writeFirst(value);
-            System.out.println("iiii");
         } else {
-            System.out.println("2222");
             compressValue(value);
         }
         size += perSize;
@@ -102,6 +104,7 @@ public class Chimp {
     private void compressValue(long value) {
         long xor = storedVal ^ value;
         if (xor == 0) {
+            flag[0]++;
             // Write 0
             out.writeBit(false);
             out.writeBit(false);
@@ -109,7 +112,7 @@ public class Chimp {
             storedLeadingZeros = 65;
 
             leadingZero = 64;
-            trailingZero=64;
+            trailingZero = 64;
         } else {
             leadingZero = Long.numberOfLeadingZeros(xor);
             int leadingZeros = leadingRound[Long.numberOfLeadingZeros(xor)];
@@ -117,6 +120,7 @@ public class Chimp {
             trailingZero = trailingZeros;
             if (trailingZeros > THRESHOLD) {
                 int significantBits = 64 - leadingZeros - trailingZeros;
+                flag[1]++;
                 out.writeBit(false);
                 out.writeBit(true);
                 out.writeInt(leadingRepresentation[leadingZeros], 3);
@@ -125,12 +129,14 @@ public class Chimp {
                 perSize += 11 + significantBits;
                 storedLeadingZeros = 65;
             } else if (leadingZeros == storedLeadingZeros) {
+                flag[2]++;
                 out.writeBit(true);
                 out.writeBit(false);
                 int significantBits = 64 - leadingZeros;
                 out.writeLong(xor, significantBits);
                 perSize += 2 + significantBits;
             } else {
+                flag[3]++;
                 storedLeadingZeros = leadingZeros;
                 int significantBits = 64 - leadingZeros;
                 out.writeBit(true);
@@ -161,6 +167,10 @@ public class Chimp {
 
     public int getLeadingZero() {
         return leadingZero;
+    }
+
+    public int[] getFlag() {
+        return flag;
     }
 
 

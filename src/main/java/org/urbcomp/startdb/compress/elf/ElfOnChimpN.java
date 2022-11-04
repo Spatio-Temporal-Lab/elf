@@ -1,19 +1,16 @@
-package org.urbcomp.startdb.compress.apes;
+package org.urbcomp.startdb.compress.elf;
 
-import fi.iki.yak.ts.compression.gorilla.ByteBufferBitOutput;
-import fi.iki.yak.ts.compression.gorilla.Compressor;
-import gr.aueb.delorean.chimp.Chimp;
+import gr.aueb.delorean.chimp.ChimpN;
 import gr.aueb.delorean.chimp.OutputBitStream;
-import org.urbcomp.startdb.compress.apes.utils.CompressorHelper;
+import org.urbcomp.startdb.compress.elf.utils.CompressorHelper;
 import sun.misc.DoubleConsts;
 
 import java.io.IOException;
 import java.util.BitSet;
 
-import static org.urbcomp.startdb.compress.apes.utils.CompressorHelper.*;
-import static org.urbcomp.startdb.compress.apes.utils.CompressorHelper.printByteArray;
+import static org.urbcomp.startdb.compress.elf.utils.CompressorHelper.*;
 
-public class ElfOnGorilla {
+public class ElfOnChimpN {
     private final int EXPONENTIAL_DIGIT = 52;
     private final int SIGN_DIGIT = 63;
     private BitSet rawBitSet;
@@ -26,30 +23,34 @@ public class ElfOnGorilla {
     private long result;
     private long result_eraser;
     private int size;
-    private ByteBufferBitOutput out;
-    private Compressor gorilla;
+    private OutputBitStream out;
+    private ChimpN chimpN;
 
-    public ElfOnGorilla() {
-        out = new ByteBufferBitOutput();
+    public ElfOnChimpN(int previousValues) {
+        out = new OutputBitStream(new byte[1000 * 8]);
         size = 0;
-        gorilla = new Compressor(out, size);
+        chimpN = new ChimpN(previousValues,out, size);
     }
     public void addValue(double value) throws IOException {
-        compressWithChimp(value);
-        System.out.println("size");
-        System.out.println(size);
+        compressWithChimpN(value);
     }
 
-    public void compressWithChimp(double value) throws IOException {
+    public void compressWithChimpN(double value) throws IOException {
         compressParameter(value);
-        out.writeBits(flag,1);
+        out.writeBit(flag);
         size += 1;
         if (flag != 0) {
-            out.writeBits(precision, 4);
+            out.writeInt(precision, 4);
             size += 4;
         }
-        gorilla.addValue(result);
-        size += gorilla.getPerSize();
+        chimpN.addValue(result);
+        size += chimpN.getPerSize();
+    }
+    /**
+     * Closes the block and writes the remaining stuff to the BitOutput.
+     */
+    public void close() {
+        chimpN.close();
     }
 
     public void compressParameter(double value) {
@@ -109,6 +110,13 @@ public class ElfOnGorilla {
         return eraser_bits;
     }
 
+    public byte[] getOut() {
+        return out.getBuffer();
+    }
+
+    public int getSize() {
+        return size;
+    }
 
     public static void main(String[] args) throws IOException {
         BitSet a = doubleToBitSet(Double.NaN);
@@ -120,7 +128,7 @@ public class ElfOnGorilla {
         System.out.println(CompressorHelper.bitSetToBinaryString(doubleToBitSet(d)));
         System.out.println(Double.doubleToLongBits(d) & DoubleConsts.EXP_BIT_MASK);
         System.out.println(getNumberMeaningDigits(d));
-        ElfOnGorilla elf = new ElfOnGorilla();
+        ElfOnChimpN elf = new ElfOnChimpN(128);
         elf.compressParameter(d);
         System.out.println(Long.toBinaryString(elf.getResult()));
         System.out.println(Double.longBitsToDouble(elf.getResult() << elf.getEraser_bits()));
@@ -128,6 +136,7 @@ public class ElfOnGorilla {
         double x = 0.15;
         double y = 0.154;
         elf.addValue(x);
+        printByteArray(elf.getOut());
         System.out.println(elf.flag);
         System.out.println(elf.precision);
         System.out.println(Long.toBinaryString(elf.getResult()));
@@ -135,6 +144,8 @@ public class ElfOnGorilla {
         System.out.println(elf.flag);
         System.out.println(elf.precision);
         System.out.println(Long.toBinaryString(elf.getResult()));
+        printByteArray(elf.getOut());
+
+
     }
 }
-

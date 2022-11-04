@@ -16,6 +16,7 @@ public class ChimpN {
     private int previousValuesLog2;
     private int threshold;
     private int trailingZero;
+    private int[] flag;
 
     public final static short[] leadingRepresentation = {0, 0, 0, 0, 0, 0, 0, 0,
             1, 1, 1, 1, 2, 2, 2, 2,
@@ -56,6 +57,7 @@ public class ChimpN {
 //        out = output;
         out = new OutputBitStream(new byte[1000 * 8]);
         size = 0;
+        flag = new int[4];
         this.previousValues = previousValues;
         this.previousValuesLog2 = (int) (Math.log(previousValues) / Math.log(2));
         this.threshold = 6 + previousValuesLog2;
@@ -70,6 +72,7 @@ public class ChimpN {
 //        out = output;
         this.out = out;
         this.size = size;
+        flag = new int[4];
         this.previousValues = previousValues;
         this.previousValuesLog2 = (int) (Math.log(previousValues) / Math.log(2));
         this.threshold = 6 + previousValuesLog2;
@@ -196,6 +199,7 @@ public class ChimpN {
 
     public int getPerSize() {
         return perSize;
+    }
     public int getLeadingZero() {
         return leadingZero;
     }
