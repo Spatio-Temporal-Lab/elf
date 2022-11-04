@@ -11,25 +11,26 @@ import java.util.zip.GZIPOutputStream;
 public class TimeseriesFileReader {
 		public static final int DEFAULT_BLOCK_SIZE = 1_000;
 		private static final String DELIMITER = ",";
-		private static final int VALUE_POSITION = 2;
+		private static final int VALUE_POSITION = 0;
 		BufferedReader bufferedReader;
 		private int blocksize;
+		private int counter;
 
 		public TimeseriesFileReader(InputStream inputStream) throws IOException {
 			this(inputStream, DEFAULT_BLOCK_SIZE);
 		}
 
 		public TimeseriesFileReader(InputStream inputStream, int blocksize) throws IOException {
-			InputStream gzipStream = new GZIPInputStream(inputStream);
-			Reader decoder = new InputStreamReader(gzipStream, "UTF-8");
+			Reader decoder = new InputStreamReader(inputStream, "UTF-8");
 			this.bufferedReader = new BufferedReader(decoder);
 			this.blocksize = blocksize;
+			counter = 0;
 		}
 
 		public double[] nextBlock() {
 			double[] values = new double[DEFAULT_BLOCK_SIZE];
 			String line;
-			int counter = 0;
+			counter = 0;
 			try {
 				while ((line = bufferedReader.readLine()) != null) {
 					try {
@@ -41,8 +42,8 @@ public class TimeseriesFileReader {
 					} catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
 						continue;
 					}
-
 				}
+				return values;
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -76,7 +77,7 @@ public class TimeseriesFileReader {
 		public BigDecimal[] nextBlockBigDecimal() {
 		    BigDecimal[] values = new BigDecimal[DEFAULT_BLOCK_SIZE];
             String line;
-            int counter = 0;
+            counter = 0;
             try {
                 while ((line = bufferedReader.readLine()) != null) {
                     try {
@@ -167,7 +168,10 @@ public class TimeseriesFileReader {
 		return true;
 	}
 
-//	public static void main(String[] args) throws IOException {
+	public int getCounter() {
+		return counter;
+	}
+	//	public static void main(String[] args) throws IOException {
 //		gzipCompression("D:\\workplace\\github\\Java\\start-compress\\src\\test\\resources\\taxi_data.csv","D:\\workplace\\github\\Java\\start-compress\\src\\test\\resources\\taxi_data.csv.gz");
 //	}
 }

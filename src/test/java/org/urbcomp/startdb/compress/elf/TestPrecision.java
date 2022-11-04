@@ -1,9 +1,8 @@
-package org.urbcomp.startdb.compress.apes;
+package org.urbcomp.startdb.compress.elf;
 
 import gr.aueb.delorean.chimp.Chimp;
 import gr.aueb.delorean.chimp.ChimpDecompressor;
 import gr.aueb.delorean.chimp.ChimpN;
-import gr.aueb.delorean.chimp.benchmarks.TimeseriesFileReader;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedWriter;

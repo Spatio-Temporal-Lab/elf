@@ -1,4 +1,4 @@
-package org.urbcomp.startdb.compress.apes;
+package org.urbcomp.startdb.compress.elf;
 
 import java.io.BufferedReader;
 import java.io.IOException;
