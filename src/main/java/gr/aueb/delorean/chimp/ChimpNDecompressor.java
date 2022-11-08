@@ -1,5 +1,7 @@
 package gr.aueb.delorean.chimp;
 
+import sun.misc.DoubleConsts;
+
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,15 +27,23 @@ public class ChimpNDecompressor {
 
 	public final static short[] leadingRepresentation = {0, 8, 12, 16, 18, 20, 22, 24};
 
-    private final static long NAN_LONG = 0x7ff8000000000000L;
+	private final static long NAN_LONG = Double.doubleToRawLongBits(DoubleConsts.MIN_VALUE);
 
-    public ChimpNDecompressor(byte[] bs, int previousValues) {
+	public ChimpNDecompressor(byte[] bs, int previousValues) {
     	in = new InputBitStream(bs);
         this.previousValues = previousValues;
         this.previousValuesLog2 =  (int)(Math.log(previousValues) / Math.log(2));
         this.initialFill = previousValuesLog2 + 9;
         this.storedValues = new long[previousValues];
     }
+
+	public ChimpNDecompressor(InputBitStream in, int previousValues) {
+		this.in = in;
+		this.previousValues = previousValues;
+		this.previousValuesLog2 =  (int)(Math.log(previousValues) / Math.log(2));
+		this.initialFill = previousValuesLog2 + 9;
+		this.storedValues = new long[previousValues];
+	}
 
     /**
      * Returns the next pair in the time series, if available.
@@ -51,6 +61,18 @@ public class ChimpNDecompressor {
         }
         return Double.longBitsToDouble(storedVal);
     }
+
+	public Long readLongValue() {
+		try {
+			next();
+		} catch (IOException e) {
+			throw new RuntimeException(e.getMessage());
+		}
+		if(endOfStream) {
+			return null;
+		}
+		return storedVal;
+	}
 
     public List<Double> getValues() {
     	List<Double> list = new LinkedList<>();
@@ -140,5 +162,7 @@ public class ChimpNDecompressor {
 			break;
 		}
     }
-
+	public boolean getEndOfStream() {
+		return endOfStream;
+	}
 }

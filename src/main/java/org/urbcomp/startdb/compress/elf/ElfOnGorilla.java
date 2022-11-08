@@ -51,6 +51,7 @@ public class ElfOnGorilla {
      * Closes the block and writes the remaining stuff to the BitOutput.
      */
     public void close() {
+        out.skipBit();
         gorilla.close();
     }
 
@@ -117,6 +118,10 @@ public class ElfOnGorilla {
 
     public int[] getFlag(){
         return gorilla.getFlag();
+    }
+
+    public ByteBufferBitOutput getOut() {
+        return out;
     }
 
     public static void main(String[] args) throws IOException {

@@ -74,7 +74,7 @@ public class TestDoublePrecision {
 //                System.out.println(totalSize);
 //                System.out.println((totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE));
 //                System.out.println(String.format("Chimp128: %s - Bits/value: %.2f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE), encodingDuration / totalBlocks, decodingDuration / totalBlocks));
-            System.out.println(String.format("Elf: %s - Bits/value: %.6f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (totalValues * 64), encodingDuration / totalBlocks, decodingDuration / totalBlocks));
+            System.out.println(String.format("Elf: %s - Bits/value: %.6f, Compression time per block: %.6f, Decompression time per block: %.6f", filename, totalSize / (totalValues * 64), encodingDuration/1000000.0, decodingDuration/1000000.0));
         }
     }
 
@@ -107,20 +107,20 @@ public class TestDoublePrecision {
                 totalBlocks += 1;
                 totalValues += counter;
 
-//                    ChimpNDecompressor d = new ChimpNDecompressor(compressor.getOut(), 128);
-//                    start = System.nanoTime();
-//                    List<Double> uncompressedValues = d.getValues();
-//                    decodingDuration += System.nanoTime() - start;
-//                    for(int i=0; i<counter; i++) {
-//                        assertEquals(values[i], uncompressedValues.get(i).doubleValue(), "Value did not match");
-//                    }
+                ElfOnChimpDecompressor d = new ElfOnChimpDecompressor(compressor.getOut());
+                start = System.nanoTime();
+                List<Double> uncompressedValues = d.getValues();
+                decodingDuration += System.nanoTime() - start;
+                for (int i = 0; i < counter; i++) {
+                    assertEquals(values[i], uncompressedValues.get(i).doubleValue(), "Value did not match");
+                }
                 values = timeseriesFileReader.nextBlock();  //
             }
-            System.out.println("0:" + flag[0]+"   01:"+flag[1]+"   10:"+flag[2]+"   11:"+flag[3]);
+            System.out.println("0:" + flag[0] + "   01:" + flag[1] + "   10:" + flag[2] + "   11:" + flag[3]);
 //                System.out.println(totalSize);
 //                System.out.println((totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE));
 //                System.out.println(String.format("Chimp128: %s - Bits/value: %.2f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE), encodingDuration / totalBlocks, decodingDuration / totalBlocks));
-            System.out.println(String.format("ElfOnChimp: %s - Bits/value: %.6f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (totalValues * 64), encodingDuration / totalBlocks, decodingDuration / totalBlocks));
+            System.out.println(String.format("ElfOnChimp: %s - Bits/value: %.6f, Compression time per block: %.6f, Decompression time per block: %.6f", filename, totalSize / (totalValues * 64), encodingDuration/1000000.0, decodingDuration/1000000.0));
         }
     }
 
@@ -149,19 +149,19 @@ public class TestDoublePrecision {
                 totalBlocks += 1;
                 totalValues += counter;
 
-//                    ChimpNDecompressor d = new ChimpNDecompressor(compressor.getOut(), 128);
-//                    start = System.nanoTime();
-//                    List<Double> uncompressedValues = d.getValues();
-//                    decodingDuration += System.nanoTime() - start;
-//                    for(int i=0; i<counter; i++) {
-//                        assertEquals(values[i], uncompressedValues.get(i).doubleValue(), "Value did not match");
-//                    }
+                ElfOnChimpNDecompressor d = new ElfOnChimpNDecompressor(compressor.getOut(), 128);
+                start = System.nanoTime();
+                List<Double> uncompressedValues = d.getValues();
+                decodingDuration += System.nanoTime() - start;
+                for (int i = 0; i < counter; i++) {
+                    assertEquals(values[i], uncompressedValues.get(i).doubleValue(), "Value did not match");
+                }
                 values = timeseriesFileReader.nextBlock();  //
             }
 //            System.out.println(totalSize);
 //            System.out.println((totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE));
 //                System.out.println(String.format("Chimp128: %s - Bits/value: %.2f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE), encodingDuration / totalBlocks, decodingDuration / totalBlocks));
-            System.out.println(String.format("ElfOnChimp128: %s - Bits/value: %.6f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (totalValues * 64), encodingDuration / totalBlocks, decodingDuration / totalBlocks));
+            System.out.println(String.format("ElfOnChimp128: %s - Bits/value: %.6f, Compression time per block: %.6f, Decompression time per block: %.6f", filename, totalSize / (totalValues * 64), encodingDuration/1000000.0, decodingDuration/1000000.0));
         }
     }
 
@@ -193,20 +193,21 @@ public class TestDoublePrecision {
                 totalBlocks += 1;
                 totalValues += counter;
 
-//                    ChimpNDecompressor d = new ChimpNDecompressor(compressor.getOut(), 128);
-//                    start = System.nanoTime();
-//                    List<Double> uncompressedValues = d.getValues();
-//                    decodingDuration += System.nanoTime() - start;
-//                    for(int i=0; i<counter; i++) {
-//                        assertEquals(values[i], uncompressedValues.get(i).doubleValue(), "Value did not match");
-//                    }
+                ByteBufferBitInput input = new ByteBufferBitInput((ByteBuffer) compressor.getOut().getByteBuffer().flip());
+                ElfOnGorillaDecompressor d = new ElfOnGorillaDecompressor(input);
+                start = System.nanoTime();
+                List<Double> uncompressedValues = d.getValues();
+                decodingDuration += System.nanoTime() - start;
+                for (int i = 0; i < counter; i++) {
+                    assertEquals(values[i], uncompressedValues.get(i).doubleValue(), "Value did not match");
+                }
                 values = timeseriesFileReader.nextBlock();  //
             }
-            System.out.println("0:" + flag[0]+"   01:"+flag[1]+"   10:"+flag[2]+"   11:"+flag[3]);
+            System.out.println("0:" + flag[0] + "   01:" + flag[1] + "   10:" + flag[2] + "   11:" + flag[3]);
 //            System.out.println(totalSize);
 //            System.out.println((totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE));
 //                System.out.println(String.format("Chimp128: %s - Bits/value: %.2f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE), encodingDuration / totalBlocks, decodingDuration / totalBlocks));
-            System.out.println(String.format("ElfOnGorilla: %s - Bits/value: %.6f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (totalValues * 64), encodingDuration / totalBlocks, decodingDuration / totalBlocks));
+            System.out.println(String.format("ElfOnGorilla: %s - Bits/value: %.6f, Compression time per block: %.6f, Decompression time per block: %.6f", filename, totalSize / (totalValues * 64), encodingDuration/1000000.0, decodingDuration/1000000.0));
         }
     }
 
@@ -249,7 +250,7 @@ public class TestDoublePrecision {
             }
 //            System.out.println(totalSize);
 //            System.out.println((totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE));
-            System.out.println(String.format("Chimp128: %s - Bits/value: %.6f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (totalValues * 64), encodingDuration / totalBlocks, decodingDuration / totalBlocks));
+            System.out.println(String.format("Chimp128: %s - Bits/value: %.6f, Compression time per block: %.6f, Decompression time per block: %.6f", filename, totalSize / (totalValues * 64),encodingDuration/1000000.0, decodingDuration/1000000.0));
         }
     }
 
@@ -294,10 +295,10 @@ public class TestDoublePrecision {
                 }
                 values = timeseriesFileReader.nextBlock();
             }
-            System.out.println("0:" + flag[0]+"   01:"+flag[1]+"   10:"+flag[2]+"   11:"+flag[3]);
+            System.out.println("0:" + flag[0] + "   01:" + flag[1] + "   10:" + flag[2] + "   11:" + flag[3]);
 //            System.out.println(totalSize);
 //            System.out.println((totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE));
-            System.out.println(String.format("Chimp: %s - Bits/value: %.6f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (totalValues * 64), encodingDuration / totalBlocks, decodingDuration / totalBlocks));
+            System.out.println(String.format("Chimp: %s - Bits/value: %.6f, Compression time per block: %.6f, Decompression time per block: %.6f", filename, totalSize / (totalValues * 64), encodingDuration/1000000.0, decodingDuration/1000000.0));
         }
     }
 
@@ -347,10 +348,10 @@ public class TestDoublePrecision {
                 }
                 values = timeseriesFileReader.nextBlock();
             }
-            System.out.println("0:" + flag[0]+"   01:"+flag[1]+"   10:"+flag[2]+"   11:"+flag[3]);
+            System.out.println("0:" + flag[0] + "   01:" + flag[1] + "   10:" + flag[2] + "   11:" + flag[3]);
 //            System.out.println(totalSize);
 //            System.out.println((totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE));
-            System.out.println(String.format("Gorilla: %s - Bits/value: %.6f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (totalValues * 64), encodingDuration / totalBlocks, decodingDuration / totalBlocks));
+            System.out.println(String.format("Gorilla: %s - Bits/value: %.6f, Compression time per block: %.6f, Decompression time per block: %.6f", filename, totalSize / (totalValues * 64), encodingDuration/1000000.0, decodingDuration/1000000.0));
         }
     }
 //
