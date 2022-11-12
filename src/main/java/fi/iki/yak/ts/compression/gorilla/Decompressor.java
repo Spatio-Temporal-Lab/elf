@@ -1,5 +1,7 @@
 package fi.iki.yak.ts.compression.gorilla;
 
+import sun.misc.DoubleConsts;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,7 +20,7 @@ public class Decompressor {
 
     private BitInput in;
 
-    private final static long NAN_LONG = 0x7ff8000000000000L;
+    private final static long NAN_LONG = Double.doubleToRawLongBits(DoubleConsts.MIN_VALUE);
 
     public Decompressor(BitInput input) {
         in = input;
@@ -87,5 +89,7 @@ public class Decompressor {
 
         }
     }
-
+    public boolean getEndOfStream() {
+        return endOfStream;
+    }
 }

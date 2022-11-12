@@ -1,5 +1,7 @@
 package gr.aueb.delorean.chimp;
 
+import sun.misc.DoubleConsts;
+
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,12 +20,17 @@ public class ChimpDecompressor {
 
     private InputBitStream in;
 
-    private final static long NAN_LONG = 0x7ff8000000000000L;
+    private final static long NAN_LONG = Double.doubleToRawLongBits(DoubleConsts.MIN_VALUE);
+    private final static long END_FLAG = 0xffff000000000000L;
 
 	public final static short[] leadingRepresentation = {0, 8, 12, 16, 18, 20, 22, 24};
 
     public ChimpDecompressor(byte[] bs) {
         in = new InputBitStream(bs);
+    }
+
+    public ChimpDecompressor(InputBitStream in){
+        this.in = in;
     }
 
     public List<Double> getValues() {
@@ -53,6 +60,18 @@ public class ChimpDecompressor {
         return Double.longBitsToDouble(storedVal);
     }
 
+    public Long readLongValue() {
+        try {
+            next();
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        if(endOfStream) {
+            return null;
+        }
+        return storedVal;
+    }
+
     private void next() throws IOException {
         if (first) {
         	first = false;
@@ -61,14 +80,12 @@ public class ChimpDecompressor {
             	endOfStream = true;
             	return;
             }
-
         } else {
         	nextValue();
         }
     }
 
     private void nextValue() throws IOException {
-
     	int significantBits;
     	long value;
         // Read value
@@ -124,5 +141,7 @@ public class ChimpDecompressor {
 		default:
     	}
     }
-
+    public boolean getEndOfStream() {
+        return endOfStream;
+    }
 }

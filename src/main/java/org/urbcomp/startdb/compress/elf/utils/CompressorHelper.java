@@ -204,6 +204,18 @@ public class CompressorHelper {
             }
         }
     }
+    public static int getLeadingZeroDigits(double number) {
+        if (number == (long) number) {
+            return 0;
+        }
+        int i = 0;
+        while (true) {
+            i++;
+            if (number * Math.pow(10, i) >= 1) {
+                return i-1;
+            }
+        }
+    }
 
     public static void printByteArray(byte[] bytes){
         StringBuilder sb = new StringBuilder();

@@ -92,13 +92,13 @@ public class Elf {
     public void getNormalParameter(double value) {
         precision = getNumberMeaningDigits(value);
         exp = getExpValue(value);
-        fn = computeFn(value);
+        fn = computeFn(precision);
         eraser_bits = EXPONENTIAL_DIGIT - (exp - 1023 + fn);
     }
 
     public void getSubNormalParameter(double value) {
         exp = 1;
-        fn = computeFn(value);
+        fn = computeFn(precision);
         eraser_bits = EXPONENTIAL_DIGIT - (exp - 1023 + fn);
     }
 
@@ -149,5 +149,8 @@ public class Elf {
         System.out.println(elf.precision);
         System.out.println(Long.toBinaryString(elf.getResult()));
         printByteArray(elf.getOut());
+        System.out.println(Long.toBinaryString(Double.doubleToRawLongBits(-3.0)));
+        System.out.println(Long.toBinaryString(0x7ff8000000000000L));
+        System.out.println(Double.doubleToRawLongBits(Double.NaN-0.1));
     }
 }

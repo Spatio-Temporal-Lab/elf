@@ -1,5 +1,7 @@
 package gr.aueb.delorean.chimp;
 
+import sun.misc.DoubleConsts;
+
 /**
  * Implements the Chimp128 time series compression. Value compression
  * is for floating points only.
@@ -50,6 +52,7 @@ public class ChimpN {
 	private int flagOneSize;
 	private int flagZeroSize;
     private int leadingZero;
+    private final long END_FLAG = Double.doubleToRawLongBits(DoubleConsts.MIN_VALUE);
 
 
     // We should have access to the series?
@@ -129,7 +132,7 @@ public class ChimpN {
      * Closes the block and writes the remaining stuff to the BitOutput.
      */
     public void close() {
-        addValue(Double.NaN);
+        addValue(END_FLAG);
         out.writeBit(false);
         out.flush();
     }

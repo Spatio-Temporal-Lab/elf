@@ -1,5 +1,7 @@
 package fi.iki.yak.ts.compression.gorilla;
 
+import sun.misc.DoubleConsts;
+
 /**
  * Implements the time series compression as described in the Facebook's Gorilla Paper. Value compression
  * is for floating points only.
@@ -15,6 +17,7 @@ public class  Compressor {
     private int size;
     private int perSize;
     private int[] flag;
+    private final long END_FLAG = Double.doubleToRawLongBits(DoubleConsts.MIN_VALUE);
 
 //    public final static short FIRST_DELTA_BITS = 27;
 
@@ -74,7 +77,7 @@ public class  Compressor {
      * Closes the block and writes the remaining stuff to the BitOutput.
      */
     public void close() {
-    	addValue(Double.NaN);
+    	addValue(END_FLAG);
         out.skipBit();
         out.flush();
     }

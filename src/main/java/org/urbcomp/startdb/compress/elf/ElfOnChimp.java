@@ -41,6 +41,7 @@ public class ElfOnChimp {
      * Closes the block and writes the remaining stuff to the BitOutput.
      */
     public void close() {
+        out.writeBit(false);
         chimp.close();
     }
 
