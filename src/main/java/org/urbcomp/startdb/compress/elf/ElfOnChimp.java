@@ -36,7 +36,6 @@ public class ElfOnChimp {
     }
 
 
-
     /**
      * Closes the block and writes the remaining stuff to the BitOutput.
      */

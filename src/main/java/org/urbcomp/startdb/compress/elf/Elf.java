@@ -25,13 +25,7 @@ public class Elf {
     private OutputBitStream out;
 
     public void addValue(double value) throws IOException {
-        //TODO
         compress(value);
-    }
-
-    public boolean isValid(double value) {
-        //TODO
-        return true;
     }
 
     public Elf() {
