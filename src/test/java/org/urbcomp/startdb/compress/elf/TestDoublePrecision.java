@@ -78,6 +78,52 @@ public class TestDoublePrecision {
         }
     }
 
+    @Test
+    public void testElfTest() throws IOException {
+        for (String filename : FILENAMES) {
+            TimeseriesFileReader timeseriesFileReader = new TimeseriesFileReader(getClass().getResourceAsStream(filename));
+            long totalSize = 0;
+            float totalBlocks = 0;
+            double totalValues = 0;     //
+            double[] values;
+            long encodingDuration = 0;
+            long decodingDuration = 0;
+            values = timeseriesFileReader.nextBlock();
+            int[] flag = new int[4];
+            while (timeseriesFileReader.getCounter() != 0 && totalBlocks < MINIMUM_TOTAL_BLOCKS) {
+                int counter = timeseriesFileReader.getCounter();     //
+                ElfTest compressor = new ElfTest();
+                long start = System.nanoTime();
+                for (int i = 0; i < counter; i++) {
+                    compressor.addValue(values[i]);
+                }
+                encodingDuration += System.nanoTime() - start;
+                for (int i = 0; i < 4; i++) {
+                    flag[i] += compressor.getFlag()[i];
+                }
+                compressor.close();
+
+                totalSize += compressor.getSize();
+                totalBlocks += 1;
+                totalValues += counter;
+
+//                ElfOnChimpDecompressor d = new ElfOnChimpDecompressor(compressor.getOut());
+//                start = System.nanoTime();
+//                List<Double> uncompressedValues = d.getValues();
+//                decodingDuration += System.nanoTime() - start;
+//                for (int i = 0; i < counter; i++) {
+//                    assertEquals(values[i], uncompressedValues.get(i).doubleValue(), "Value did not match");
+//                }
+                values = timeseriesFileReader.nextBlock();  //
+            }
+            System.out.println("0:" + flag[0] + "   01:" + flag[1] + "   10:" + flag[2] + "   11:" + flag[3]);
+//                System.out.println(totalSize);
+//                System.out.println((totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE));
+//                System.out.println(String.format("Chimp128: %s - Bits/value: %.2f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE), encodingDuration / totalBlocks, decodingDuration / totalBlocks));
+            System.out.println(String.format("ElfTest: %s - Bits/value: %.6f, Compression time per block: %.6f, Decompression time per block: %.6f", filename, totalSize / (totalValues * 64), encodingDuration/1000000.0, decodingDuration/1000000.0));
+        }
+    }
+
 
     @Test
     public void testElfOnChimp() throws IOException {
@@ -98,11 +144,12 @@ public class TestDoublePrecision {
                 for (int i = 0; i < counter; i++) {
                     compressor.addValue(values[i]);
                 }
+                encodingDuration += System.nanoTime() - start;
                 for (int i = 0; i < 4; i++) {
                     flag[i] += compressor.getFlag()[i];
                 }
                 compressor.close();
-                encodingDuration += System.nanoTime() - start;
+
                 totalSize += compressor.getSize();
                 totalBlocks += 1;
                 totalValues += counter;

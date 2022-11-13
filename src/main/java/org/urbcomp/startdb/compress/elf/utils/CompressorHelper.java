@@ -145,7 +145,7 @@ public class CompressorHelper {
     public static int getPrecision1(double d) {
         BigDecimal bd = new BigDecimal(String.valueOf(d));
         String[] ss = bd.toString().split("\\.");
-        if (ss.length <= 1){
+        if (ss.length <= 1) {
             return 0;
         }
         return ss[1].length();
@@ -167,13 +167,45 @@ public class CompressorHelper {
         System.out.println(Long.toBinaryString(value));
     }
 
-    public static int computeFn(double value){
+    public static int computeFn(double value) {
         return computeFn(getNumberDecimalDigits(value));
     }
 
     public static int computeFn(int precision) {
         return (int) Math.ceil(precision * Math.log(10) / Math.log(2));
     }
+
+    public static int getNumberDecimalDigitsTest(String number) {
+        BigDecimal bd = new BigDecimal((number));
+        return bd.precision();
+    }
+
+    public static int getPrecisionByString(String str) {
+        int firstSign = 0;
+        int endSign = 0;
+        boolean start = false;
+        boolean havePoint = false;
+        for (int i = 0; i < str.length(); i++) {
+            if (str.charAt(i) != '0') {
+                if (!start) {
+                    if (str.charAt(i) == '.') {
+                    } else {
+                        start = true;
+                        firstSign=i;
+                    }
+                } else {
+                    if (str.charAt(i) == '.') {
+                        havePoint = true;
+                    }
+                    endSign=i;
+                }
+            }
+        }
+        if(havePoint){
+            return endSign-firstSign;
+        }else return endSign-firstSign+1;
+    }
+
 
     public static int getNumberDecimalDigits(double number) {
         if (number == (long) number) {
@@ -204,6 +236,7 @@ public class CompressorHelper {
             }
         }
     }
+
     public static int getLeadingZeroDigits(double number) {
         if (number == (long) number) {
             return 0;
@@ -212,24 +245,20 @@ public class CompressorHelper {
         while (true) {
             i++;
             if (number * Math.pow(10, i) >= 1) {
-                return i-1;
+                return i - 1;
             }
         }
     }
 
-    public static void printByteArray(byte[] bytes){
+    public static void printByteArray(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
-        for(int i=0;i<bytes.length;i++){
-            sb.append(Long.toBinaryString(Byte.toUnsignedLong(bytes[i])));
+        for (byte aByte : bytes) {
+            sb.append(Long.toBinaryString(Byte.toUnsignedLong(aByte)));
         }
         System.out.println(sb.toString());
     }
 
     public static void main(String[] args) {
-        System.out.println(getSignIfBits(0.02));
-        printLongOfBinary(Double.doubleToLongBits(0.02));
-        printLongOfBinary(getSignIfBits(0.02));
-        System.out.println(computeFn(2));
     }
 
 }
