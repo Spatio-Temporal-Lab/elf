@@ -2,15 +2,15 @@ package org.urbcomp.startdb.compress.elf;
 
 import gr.aueb.delorean.chimp.Chimp;
 import gr.aueb.delorean.chimp.OutputBitStream;
-import org.urbcomp.startdb.compress.elf.utils.CompressorHelper;
 import sun.misc.DoubleConsts;
 
 import java.io.IOException;
 import java.util.BitSet;
 
 import static org.urbcomp.startdb.compress.elf.utils.CompressorHelper.*;
+import static org.urbcomp.startdb.compress.elf.utils.CompressorHelper.computeFn;
 
-public class ElfOnChimp {
+public class ElfTest {
     private final int EXPONENTIAL_DIGIT = 52;
     private final int SIGN_DIGIT = 63;
     private BitSet rawBitSet;
@@ -26,7 +26,7 @@ public class ElfOnChimp {
     private OutputBitStream out;
     private Chimp chimp;
 
-    public ElfOnChimp() {
+    public ElfTest() {
         out = new OutputBitStream(new byte[1000 * 8]);
         size = 0;
         chimp = new Chimp(out);
@@ -34,6 +34,7 @@ public class ElfOnChimp {
     public void addValue(double value) throws IOException {
         compressWithChimp(value);
     }
+
 
 
     /**
@@ -124,36 +125,4 @@ public class ElfOnChimp {
     public int[] getFlag(){
         return chimp.getFlag();
     }
-
-    public static void main(String[] args) throws IOException {
-        BitSet a = doubleToBitSet(Double.NaN);
-        System.out.println(CompressorHelper.bitSetToBinaryString(a));
-        a.set(52, 63, false);
-        System.out.println(CompressorHelper.bitSetToBinaryString(a));
-        boolean b;
-        double d = 13424.15241;
-        System.out.println(CompressorHelper.bitSetToBinaryString(doubleToBitSet(d)));
-        System.out.println(Double.doubleToLongBits(d) & DoubleConsts.EXP_BIT_MASK);
-        System.out.println(getNumberMeaningDigits(d));
-        ElfOnChimp elf = new ElfOnChimp();
-        elf.compressParameter(d);
-        System.out.println(Long.toBinaryString(elf.getResult()));
-        System.out.println(Double.longBitsToDouble(elf.getResult() << elf.getEraser_bits()));
-        System.out.println(elf.getDecompressedValue());
-        double x = 0.15;
-        double y = 0.154;
-        elf.addValue(x);
-        printByteArray(elf.getOut());
-        System.out.println(elf.flag);
-        System.out.println(elf.precision);
-        System.out.println(Long.toBinaryString(elf.getResult()));
-        elf.addValue(y);
-        System.out.println(elf.flag);
-        System.out.println(elf.precision);
-        System.out.println(Long.toBinaryString(elf.getResult()));
-        printByteArray(elf.getOut());
-
-
-    }
 }
-
