@@ -3,7 +3,9 @@ package gr.aueb.delorean.chimp.benchmarks;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -39,54 +41,52 @@ import gr.aueb.delorean.chimp.ChimpNNoIndex;
  */
 public class TestDoublePrecision {
 
-	private static final int MINIMUM_TOTAL_BLOCKS = 50;
-	private static String[] FILENAMES = {
-//	        "/city_temperature.csv.gz",
-//	        "/Stocks-Germany-sample.txt.gz",
-//	        "/SSD_HDD_benchmarks.csv.gz",
-            "/taxi_data_sub2.csv"
-			};
+    private static final int MINIMUM_TOTAL_BLOCKS = 50_000;
+    private static String[] FILENAMES = {
+            "/city_temperature.csv.gz",
+            "/Stocks-Germany-sample.txt.gz",
+            "/SSD_HDD_benchmarks.csv.gz"
+    };
 
-	@Test
-	public void testChimp128() throws IOException {
-		for (String filename : FILENAMES) {
-			TimeseriesFileReader timeseriesFileReader = new TimeseriesFileReader(getClass().getResourceAsStream(filename));
-			long totalSize = 0;
-			float totalBlocks = 0;
-			double[] values;
-			long encodingDuration = 0;
-			long decodingDuration = 0;
-            values = timeseriesFileReader.nextBlock();
-            System.out.println(timeseriesFileReader.getCounter());
-			while (timeseriesFileReader.getCounter()!=0 && totalBlocks < MINIMUM_TOTAL_BLOCKS) {
-                int counter = timeseriesFileReader.getCounter();
-                System.out.println(timeseriesFileReader.getCounter());
-				ChimpN compressor = new ChimpN(128);
-				long start = System.nanoTime();
-				for (int i=0;i<counter;i++) {
-					compressor.addValue(values[i]);
-				}
-		        compressor.close();
-		        encodingDuration += System.nanoTime() - start;
-		        totalSize += compressor.getSize();
-		        totalBlocks += 1;
+    @Test
+    public void testChimp128() throws IOException {
+        for (String filename : FILENAMES) {
+            TimeseriesFileReader timeseriesFileReader = new TimeseriesFileReader(getClass().getResourceAsStream(filename));
+            long totalSize = 0;
+            float totalBlocks = 0;
+            double[] values;
+            long encodingDuration = 0;
+            long decodingDuration = 0;
+            while ((values = timeseriesFileReader.nextBlock()) != null || totalBlocks < MINIMUM_TOTAL_BLOCKS) {
+                if (values == null) {
+                    timeseriesFileReader = new TimeseriesFileReader(getClass().getResourceAsStream(filename));
+                    values = timeseriesFileReader.nextBlock();
+                }
+                ChimpN compressor = new ChimpN(128);
+                long start = System.nanoTime();
+                for (double value : values) {
+                    compressor.addValue(value);
+                }
+                compressor.close();
+                encodingDuration += System.nanoTime() - start;
+                totalSize += compressor.getSize();
+                totalBlocks += 1;
 
-				ChimpNDecompressor d = new ChimpNDecompressor(compressor.getOut(), 128);
-				start = System.nanoTime();
-				List<Double> uncompressedValues = d.getValues();
-				decodingDuration += System.nanoTime() - start;
-				for(int i=0; i<counter; i++) {
-		            assertEquals(values[i], uncompressedValues.get(i).doubleValue(), "Value did not match");
-		        }
-                values = timeseriesFileReader.nextBlock();
-			}
-            System.out.println(totalSize);
-            System.out.println((totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE));
-			System.out.println(String.format("Chimp128: %s - Bits/value: %.2f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE), encodingDuration / totalBlocks, decodingDuration / totalBlocks));
-		}
-	}
+                ChimpNDecompressor d = new ChimpNDecompressor(compressor.getOut(), 128);
+                start = System.nanoTime();
+                List<Double> uncompressedValues = d.getValues();
+                decodingDuration += System.nanoTime() - start;
+                for(int i=0; i<values.length; i++) {
+                    assertEquals(values[i], uncompressedValues.get(i).doubleValue(), "Value did not match");
+                }
 
-	@Test
+
+            }
+            System.out.println(String.format("Chimp128: %s - Bits/value: %.2f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE), encodingDuration / totalBlocks, decodingDuration / totalBlocks));
+        }
+    }
+
+    @Test
     public void testChimp() throws IOException {
         for (String filename : FILENAMES) {
             TimeseriesFileReader timeseriesFileReader = new TimeseriesFileReader(getClass().getResourceAsStream(filename));
@@ -95,7 +95,6 @@ public class TestDoublePrecision {
             double[] values;
             long encodingDuration = 0;
             long decodingDuration = 0;
-            int[] trailingZeros = new int[65];
             while ((values = timeseriesFileReader.nextBlock()) != null || totalBlocks < MINIMUM_TOTAL_BLOCKS) {
                 if (values == null) {
                     timeseriesFileReader = new TimeseriesFileReader(getClass().getResourceAsStream(filename));
@@ -105,7 +104,6 @@ public class TestDoublePrecision {
                 long start = System.nanoTime();
                 for (double value : values) {
                     compressor.addValue(value);
-                    trailingZeros[compressor.getTrailingZero()]+=1;
                 }
                 compressor.close();
                 encodingDuration += System.nanoTime() - start;
@@ -122,25 +120,10 @@ public class TestDoublePrecision {
 
             }
             System.out.println(String.format("Chimp: %s - Bits/value: %.2f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE), encodingDuration / totalBlocks, decodingDuration / totalBlocks));
-            System.out.println(trailingZeros);
-            File file=new File("D:\\result\\"+filename);
-            try {
-                FileWriter fw = new FileWriter(file);
-                BufferedWriter bw=new BufferedWriter(fw);
-                for(int i=0;i<65;i++){
-                    bw.write(String.valueOf(trailingZeros[i]));
-                    bw.write(",");
-                }
-                bw.newLine();
-                bw.close();
-                fw.close();
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
         }
     }
 
-	@Test
+    @Test
     public void testCorilla() throws IOException {
         for (String filename : FILENAMES) {
             TimeseriesFileReader timeseriesFileReader = new TimeseriesFileReader(getClass().getResourceAsStream(filename));
@@ -182,7 +165,7 @@ public class TestDoublePrecision {
         }
     }
 
-	@Test
+    @Test
     public void testFPC() throws IOException, InterruptedException {
         for (String filename : FILENAMES) {
             TimeseriesFileReader timeseriesFileReader = new TimeseriesFileReader(getClass().getResourceAsStream(filename));
@@ -222,43 +205,43 @@ public class TestDoublePrecision {
         }
     }
 
-	   @Test
-	    public void testChimp128NoIndex() throws IOException {
-	        for (String filename : FILENAMES) {
-	            TimeseriesFileReader timeseriesFileReader = new TimeseriesFileReader(getClass().getResourceAsStream(filename));
-	            long totalSize = 0;
-	            float totalBlocks = 0;
-	            double[] values;
-	            long encodingDuration = 0;
-	            long decodingDuration = 0;
-	            while ((values = timeseriesFileReader.nextBlock()) != null || totalBlocks < MINIMUM_TOTAL_BLOCKS) {
-	                if (values == null) {
-	                    timeseriesFileReader = new TimeseriesFileReader(getClass().getResourceAsStream(filename));
-	                    values = timeseriesFileReader.nextBlock();
-	                }
-	                ChimpNNoIndex compressor = new ChimpNNoIndex(128);
-	                long start = System.nanoTime();
-	                for (double value : values) {
-	                    compressor.addValue(value);
-	                }
-	                compressor.close();
-	                encodingDuration += System.nanoTime() - start;
-	                totalSize += compressor.getSize();
-	                totalBlocks += 1;
+    @Test
+    public void testChimp128NoIndex() throws IOException {
+        for (String filename : FILENAMES) {
+            TimeseriesFileReader timeseriesFileReader = new TimeseriesFileReader(getClass().getResourceAsStream(filename));
+            long totalSize = 0;
+            float totalBlocks = 0;
+            double[] values;
+            long encodingDuration = 0;
+            long decodingDuration = 0;
+            while ((values = timeseriesFileReader.nextBlock()) != null || totalBlocks < MINIMUM_TOTAL_BLOCKS) {
+                if (values == null) {
+                    timeseriesFileReader = new TimeseriesFileReader(getClass().getResourceAsStream(filename));
+                    values = timeseriesFileReader.nextBlock();
+                }
+                ChimpNNoIndex compressor = new ChimpNNoIndex(128);
+                long start = System.nanoTime();
+                for (double value : values) {
+                    compressor.addValue(value);
+                }
+                compressor.close();
+                encodingDuration += System.nanoTime() - start;
+                totalSize += compressor.getSize();
+                totalBlocks += 1;
 
-	                ChimpNDecompressor d = new ChimpNDecompressor(compressor.getOut(), 128);
-	                start = System.nanoTime();
-	                List<Double> uncompressedValues = d.getValues();
-	                decodingDuration += System.nanoTime() - start;
-	                for(int i=0; i<values.length; i++) {
-	                    assertEquals(values[i], uncompressedValues.get(i).doubleValue(), "Value did not match");
-	                }
+                ChimpNDecompressor d = new ChimpNDecompressor(compressor.getOut(), 128);
+                start = System.nanoTime();
+                List<Double> uncompressedValues = d.getValues();
+                decodingDuration += System.nanoTime() - start;
+                for(int i=0; i<values.length; i++) {
+                    assertEquals(values[i], uncompressedValues.get(i).doubleValue(), "Value did not match");
+                }
 
 
-	            }
-	            System.out.println(String.format("Chimp128-no-index: %s - Bits/value: %.2f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE), encodingDuration / totalBlocks, decodingDuration / totalBlocks));
-	        }
-	    }
+            }
+            System.out.println(String.format("Chimp128-no-index: %s - Bits/value: %.2f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE), encodingDuration / totalBlocks, decodingDuration / totalBlocks));
+        }
+    }
 
 
     @Test
@@ -277,7 +260,7 @@ public class TestDoublePrecision {
                 }
                 ByteBuffer bb = ByteBuffer.allocate(values.length * 8);
                 for(double d : values) {
-                   bb.putDouble(d);
+                    bb.putDouble(d);
                 }
                 byte[] input = bb.array();
 
@@ -334,7 +317,7 @@ public class TestDoublePrecision {
                 }
                 ByteBuffer bb = ByteBuffer.allocate(values.length * 8);
                 for(double d : values) {
-                   bb.putDouble(d);
+                    bb.putDouble(d);
                 }
                 byte[] input = bb.array();
 
@@ -390,7 +373,7 @@ public class TestDoublePrecision {
                 }
                 ByteBuffer bb = ByteBuffer.allocate(values.length * 8);
                 for(double d : values) {
-                   bb.putDouble(d);
+                    bb.putDouble(d);
                 }
                 byte[] input = bb.array();
 
@@ -441,7 +424,7 @@ public class TestDoublePrecision {
                 }
                 ByteBuffer bb = ByteBuffer.allocate(values.length * 8);
                 for(double d : values) {
-                   bb.putDouble(d);
+                    bb.putDouble(d);
                 }
                 byte[] input = bb.array();
 
@@ -492,7 +475,7 @@ public class TestDoublePrecision {
                 }
                 ByteBuffer bb = ByteBuffer.allocate(values.length * 8);
                 for(double d : values) {
-                   bb.putDouble(d);
+                    bb.putDouble(d);
                 }
                 byte[] input = bb.array();
 

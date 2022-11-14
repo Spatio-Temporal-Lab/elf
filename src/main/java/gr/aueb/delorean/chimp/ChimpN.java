@@ -1,7 +1,5 @@
 package gr.aueb.delorean.chimp;
 
-import sun.misc.DoubleConsts;
-
 /**
  * Implements the Chimp128 time series compression. Value compression
  * is for floating points only.
@@ -14,11 +12,8 @@ public class ChimpN {
     private long storedValues[];
     private boolean first = true;
     private int size;
-    private int perSize;
     private int previousValuesLog2;
     private int threshold;
-    private int trailingZero;
-    private int[] flag;
 
     public final static short[] leadingRepresentation = {0, 0, 0, 0, 0, 0, 0, 0,
             1, 1, 1, 1, 2, 2, 2, 2,
@@ -45,39 +40,20 @@ public class ChimpN {
     private OutputBitStream out;
     private int previousValues;
 
-	private int setLsb;
-	private int[] indices;
-	private int index = 0;
-	private int current = 0;
-	private int flagOneSize;
-	private int flagZeroSize;
-    private int leadingZero;
-    private final long END_FLAG = Double.doubleToRawLongBits(DoubleConsts.MIN_VALUE);
-
+    private int setLsb;
+    private int[] indices;
+    private int index = 0;
+    private int current = 0;
+    private int flagOneSize;
+    private int flagZeroSize;
 
     // We should have access to the series?
     public ChimpN(int previousValues) {
 //        out = output;
-        out = new OutputBitStream(new byte[1000 * 8]);
+        out = new OutputBitStream(new byte[1000*8]);
         size = 0;
-        flag = new int[4];
         this.previousValues = previousValues;
-        this.previousValuesLog2 = (int) (Math.log(previousValues) / Math.log(2));
-        this.threshold = 6 + previousValuesLog2;
-        this.setLsb = (int) Math.pow(2, threshold + 1) - 1;
-        this.indices = new int[(int) Math.pow(2, threshold + 1)];
-        this.storedValues = new long[previousValues];
-        this.flagZeroSize = previousValuesLog2 + 2;
-        this.flagOneSize = previousValuesLog2 + 11;
-    }
-
-    public ChimpN(int previousValues, OutputBitStream out, int size) {
-//        out = output;
-        this.out = out;
-        this.size = size;
-        flag = new int[4];
-        this.previousValues = previousValues;
-        this.previousValuesLog2 = (int) (Math.log(previousValues) / Math.log(2));
+        this.previousValuesLog2 =  (int)(Math.log(previousValues) / Math.log(2));
         this.threshold = 6 + previousValuesLog2;
         this.setLsb = (int) Math.pow(2, threshold + 1) - 1;
         this.indices = new int[(int) Math.pow(2, threshold + 1)];
@@ -96,13 +72,11 @@ public class ChimpN {
      * @param value next floating point value in the series
      */
     public void addValue(long value) {
-        perSize = 0;
-        if (first) {
+        if(first) {
             writeFirst(value);
         } else {
             compressValue(value);
         }
-        size += perSize;
     }
 
     /**
@@ -111,13 +85,11 @@ public class ChimpN {
      * @param value next floating point value in the series
      */
     public void addValue(double value) {
-        perSize = 0;
-        if (first) {
+        if(first) {
             writeFirst(Double.doubleToRawLongBits(value));
         } else {
             compressValue(Double.doubleToRawLongBits(value));
         }
-        size += perSize;
     }
 
     private void writeFirst(long value) {
@@ -125,20 +97,19 @@ public class ChimpN {
         storedValues[current] = value;
         out.writeLong(storedValues[current], 64);
         indices[(int) value & setLsb] = index;
-        perSize += 64;
+        size += 64;
     }
 
     /**
      * Closes the block and writes the remaining stuff to the BitOutput.
      */
     public void close() {
-        addValue(END_FLAG);
+        addValue(Double.NaN);
         out.writeBit(false);
         out.flush();
     }
 
     private void compressValue(long value) {
-
         int key = (int) value & setLsb;
         long xor;
         int previousIndex;
@@ -151,42 +122,38 @@ public class ChimpN {
                 previousIndex = currIndex % previousValues;
                 xor = tempXor;
             } else {
-                previousIndex = index % previousValues;
+                previousIndex =  index % previousValues;
                 xor = storedValues[previousIndex] ^ value;
             }
         } else {
-            previousIndex = index % previousValues;
+            previousIndex =  index % previousValues;
             xor = storedValues[previousIndex] ^ value;
         }
 
-        if (xor == 0) {
-
+        if(xor == 0) {
             out.writeInt(previousIndex, this.flagZeroSize);
-            perSize += this.flagZeroSize;
+            size += this.flagZeroSize;
             storedLeadingZeros = 65;
-            leadingZero = 64;
-            trailingZero = 64;
         } else {
             int leadingZeros = leadingRound[Long.numberOfLeadingZeros(xor)];
-            leadingZero = Long.numberOfLeadingZeros(xor);
-            trailingZero = trailingZeros;
+
             if (trailingZeros > threshold) {
                 int significantBits = 64 - leadingZeros - trailingZeros;
                 out.writeInt(512 * (previousValues + previousIndex) + 64 * leadingRepresentation[leadingZeros] + significantBits, this.flagOneSize);
                 out.writeLong(xor >>> trailingZeros, significantBits); // Store the meaningful bits of XOR
-                perSize += significantBits + this.flagOneSize;
+                size += significantBits + this.flagOneSize;
                 storedLeadingZeros = 65;
             } else if (leadingZeros == storedLeadingZeros) {
                 out.writeInt(2, 2);
                 int significantBits = 64 - leadingZeros;
                 out.writeLong(xor, significantBits);
-                perSize += 2 + significantBits;
+                size += 2 + significantBits;
             } else {
                 storedLeadingZeros = leadingZeros;
                 int significantBits = 64 - leadingZeros;
                 out.writeInt(24 + leadingRepresentation[leadingZeros], 5);
                 out.writeLong(xor, significantBits);
-                perSize += 5 + significantBits;
+                size += 5 + significantBits;
             }
         }
         current = (current + 1) % previousValues;
@@ -194,17 +161,6 @@ public class ChimpN {
         index++;
         indices[key] = index;
 
-    }
-
-    public int getTrailingZero() {
-        return trailingZero;
-    }
-
-    public int getPerSize() {
-        return perSize;
-    }
-    public int getLeadingZero() {
-        return leadingZero;
     }
 
     public int getSize() {

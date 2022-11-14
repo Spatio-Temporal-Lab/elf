@@ -1,7 +1,5 @@
 package fi.iki.yak.ts.compression.gorilla;
 
-import sun.misc.DoubleConsts;
-
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,22 +18,22 @@ public class Decompressor {
 
     private BitInput in;
 
-    private final static long NAN_LONG = Double.doubleToRawLongBits(DoubleConsts.MIN_VALUE);
+    private final static long NAN_LONG = 0x7ff8000000000000L;
 
     public Decompressor(BitInput input) {
         in = input;
     }
 
     public List<Double> getValues() {
-    	List<Double> list = new LinkedList<>();
-    	Value value = readPair();
-    	while (value != null) {
-    		list.add(value.getDoubleValue());
-    		value = readPair();
-    	}
-    	return list;
+        List<Double> list = new LinkedList<>();
+        Value value = readPair();
+        while (value != null) {
+            list.add(value.getDoubleValue());
+            value = readPair();
+        }
+        return list;
     }
-    
+
     /**
      * Returns the next pair in the time series, if available.
      *
@@ -51,15 +49,15 @@ public class Decompressor {
 
     private void next() {
         if (first) {
-        	first = false;
+            first = false;
             storedVal = in.getLong(64);
             if (storedVal == NAN_LONG) {
-            	endOfStream = true;
-            	return;
+                endOfStream = true;
+                return;
             }
 
         } else {
-        	nextValue();
+            nextValue();
         }
     }
 
@@ -81,15 +79,13 @@ public class Decompressor {
             value <<= storedTrailingZeros;
             value = storedVal ^ value;
             if (value == NAN_LONG) {
-            	endOfStream = true;
-            	return;
+                endOfStream = true;
+                return;
             } else {
-            	storedVal = value;
+                storedVal = value;
             }
 
         }
     }
-    public boolean getEndOfStream() {
-        return endOfStream;
-    }
+
 }
