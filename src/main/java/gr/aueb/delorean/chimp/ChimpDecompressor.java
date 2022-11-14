@@ -1,7 +1,5 @@
 package gr.aueb.delorean.chimp;
 
-import sun.misc.DoubleConsts;
-
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,47 +18,30 @@ public class ChimpDecompressor {
 
     private InputBitStream in;
 
-    private final static long NAN_LONG = Double.doubleToRawLongBits(DoubleConsts.MIN_VALUE);
-    private final static long END_FLAG = 0xffff000000000000L;
+    private final static long NAN_LONG = 0x7ff8000000000000L;
 
-	public final static short[] leadingRepresentation = {0, 8, 12, 16, 18, 20, 22, 24};
+    public final static short[] leadingRepresentation = {0, 8, 12, 16, 18, 20, 22, 24};
 
     public ChimpDecompressor(byte[] bs) {
         in = new InputBitStream(bs);
     }
 
-    public ChimpDecompressor(InputBitStream in){
-        this.in = in;
+    public List<Double> getValues() {
+        List<Double> list = new LinkedList<>();
+        Double value = readValue();
+        while (value != null) {
+            list.add(value);
+            value = readValue();
+        }
+        return list;
     }
 
-    public List<Double> getValues() {
-    	List<Double> list = new LinkedList<>();
-    	Double value = readValue();
-    	while (value != null) {
-    		list.add(value);
-    		value = readValue();
-    	}
-    	return list;
-    }
-    
     /**
      * Returns the next pair in the time series, if available.
      *
      * @return Pair if there's next value, null if series is done.
      */
     public Double readValue() {
-        try {
-			next();
-		} catch (IOException e) {
-			throw new RuntimeException(e.getMessage());
-		}
-        if(endOfStream) {
-            return null;
-        }
-        return Double.longBitsToDouble(storedVal);
-    }
-
-    public Long readLongValue() {
         try {
             next();
         } catch (IOException e) {
@@ -69,79 +50,79 @@ public class ChimpDecompressor {
         if(endOfStream) {
             return null;
         }
-        return storedVal;
+        return Double.longBitsToDouble(storedVal);
     }
 
     private void next() throws IOException {
         if (first) {
-        	first = false;
+            first = false;
             storedVal = in.readLong(64);
             if (storedVal == NAN_LONG) {
-            	endOfStream = true;
-            	return;
+                endOfStream = true;
+                return;
             }
+
         } else {
-        	nextValue();
+            nextValue();
         }
     }
 
     private void nextValue() throws IOException {
-    	int significantBits;
-    	long value;
+
+        int significantBits;
+        long value;
         // Read value
-    	int flag = in.readInt(2);
-    	switch(flag) {
-    	case 3:
-            // New leading zeros
-            storedLeadingZeros = leadingRepresentation[in.readInt(3)];
-            significantBits = 64 - storedLeadingZeros;
-            if(significantBits == 0) {
-                significantBits = 64;
-            }
-            value = in.readLong(64 - storedLeadingZeros);
-            value = storedVal ^ value;
-            if (value == NAN_LONG) {
-            	endOfStream = true;
-            	return;
-            } else {
-            	storedVal = value;
-            }
-            break;
-    	case 2:
-    		significantBits = 64 - storedLeadingZeros;
-            if(significantBits == 0) {
-                significantBits = 64;
-            }
-            value = in.readLong(64 - storedLeadingZeros);
-            value = storedVal ^ value;
-            if (value == NAN_LONG) {
-            	endOfStream = true;
-            	return;
-            } else {
-            	storedVal = value;
-            }
-    		break;
-    	case 1:
-    		storedLeadingZeros = leadingRepresentation[in.readInt(3)];
-        	significantBits = in.readInt(6);
-        	if(significantBits == 0) {
-                significantBits = 64;
-            }
-            storedTrailingZeros = 64 - significantBits - storedLeadingZeros;
-            value = in.readLong(64 - storedLeadingZeros - storedTrailingZeros);
-            value <<= storedTrailingZeros;
-            value = storedVal ^ value;
-            if (value == NAN_LONG) {
-            	endOfStream = true;
-            	return;
-            } else {
-            	storedVal = value;
-            }
-    		break;
-		default:
-    	}
+        int flag = in.readInt(2);
+        switch(flag) {
+            case 3:
+                // New leading zeros
+                storedLeadingZeros = leadingRepresentation[in.readInt(3)];
+                significantBits = 64 - storedLeadingZeros;
+                if(significantBits == 0) {
+                    significantBits = 64;
+                }
+                value = in.readLong(64 - storedLeadingZeros);
+                value = storedVal ^ value;
+                if (value == NAN_LONG) {
+                    endOfStream = true;
+                    return;
+                } else {
+                    storedVal = value;
+                }
+                break;
+            case 2:
+                significantBits = 64 - storedLeadingZeros;
+                if(significantBits == 0) {
+                    significantBits = 64;
+                }
+                value = in.readLong(64 - storedLeadingZeros);
+                value = storedVal ^ value;
+                if (value == NAN_LONG) {
+                    endOfStream = true;
+                    return;
+                } else {
+                    storedVal = value;
+                }
+                break;
+            case 1:
+                storedLeadingZeros = leadingRepresentation[in.readInt(3)];
+                significantBits = in.readInt(6);
+                if(significantBits == 0) {
+                    significantBits = 64;
+                }
+                storedTrailingZeros = 64 - significantBits - storedLeadingZeros;
+                value = in.readLong(64 - storedLeadingZeros - storedTrailingZeros);
+                value <<= storedTrailingZeros;
+                value = storedVal ^ value;
+                if (value == NAN_LONG) {
+                    endOfStream = true;
+                    return;
+                } else {
+                    storedVal = value;
+                }
+                break;
+            default:
+        }
     }
-    public boolean getEndOfStream() {
-        return endOfStream;
-    }
+
 }
