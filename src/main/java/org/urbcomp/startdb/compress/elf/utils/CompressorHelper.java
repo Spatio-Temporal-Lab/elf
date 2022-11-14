@@ -180,30 +180,52 @@ public class CompressorHelper {
         return bd.precision();
     }
 
-    public static int getPrecisionByString(String str) {
+    public static int[] getPrecisionByString(String str) {
         int firstSign = 0;
         int endSign = 0;
+        int point = 0;
+        int EDigits = 0;
+        int exp = 0;
+        int[] result = new int[3];
         boolean start = false;
         boolean havePoint = false;
+        boolean isScientific = false;
         for (int i = 0; i < str.length(); i++) {
-            if (str.charAt(i) != '0') {
-                if (!start) {
+            if (!start) {
+                if (str.charAt(i) != '0' && str.charAt(i) != '-') {
                     if (str.charAt(i) == '.') {
+                        point = i;
                     } else {
                         start = true;
-                        firstSign=i;
+                        firstSign = i;
+                        endSign = i;
                     }
-                } else {
-                    if (str.charAt(i) == '.') {
-                        havePoint = true;
-                    }
-                    endSign=i;
                 }
+            } else if (!isScientific) {
+                if (str.charAt(i) == '.') {
+                    point = i;
+                    havePoint = true;
+                    endSign = i;
+                } else if (str.charAt(i) == 'e' || str.charAt(i) == 'E') {//是科学计数法
+                    isScientific = true;
+                    EDigits = i;
+                }else endSign = i;
+            } else {
+                exp = Integer.parseInt(str.substring(EDigits+1));
             }
         }
-        if(havePoint){
-            return endSign-firstSign;
-        }else return endSign-firstSign+1;
+        if (havePoint) {
+            result[1] = endSign - firstSign;
+        } else result[1] = endSign - firstSign + 1;
+        if (isScientific) {
+            result[0] = endSign - point - exp;
+        } else {
+            result[0] = endSign - point;
+        }
+        if (exp < 0 || point < firstSign) {
+            result[2] = 1;
+        }
+        return result;
     }
 
 
