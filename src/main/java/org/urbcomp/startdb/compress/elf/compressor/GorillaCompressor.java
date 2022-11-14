@@ -17,4 +17,8 @@ public class GorillaCompressor implements ICompressor {
     @Override public int getSize() {
         return gorilla.getSize();
     }
+
+    @Override public void close() {
+        gorilla.close();
+    }
 }
