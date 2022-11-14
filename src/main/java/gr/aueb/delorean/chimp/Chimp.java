@@ -36,7 +36,7 @@ public class Chimp {
     };
 //    public final static short FIRST_DELTA_BITS = 27;
 
-    private OutputBitStream out;
+    private final OutputBitStream out;
 
     // We should have access to the series?
     public Chimp() {
@@ -44,16 +44,20 @@ public class Chimp {
         size = 0;
     }
 
+    public OutputBitStream getOutputStream() {
+        return this.out;
+    }
+
     /**
      * Adds a new long value to the series. Note, values must be inserted in order.
      *
      * @param value next floating point value in the series
      */
-    public void addValue(long value) {
+    public int addValue(long value) {
         if(first) {
-            writeFirst(value);
+            return writeFirst(value);
         } else {
-            compressValue(value);
+            return compressValue(value);
         }
     }
 
@@ -62,19 +66,20 @@ public class Chimp {
      *
      * @param value next floating point value in the series
      */
-    public void addValue(double value) {
+    public int addValue(double value) {
         if(first) {
-            writeFirst(Double.doubleToRawLongBits(value));
+            return writeFirst(Double.doubleToRawLongBits(value));
         } else {
-            compressValue(Double.doubleToRawLongBits(value));
+            return compressValue(Double.doubleToRawLongBits(value));
         }
     }
 
-    private void writeFirst(long value) {
+    private int writeFirst(long value) {
         first = false;
         storedVal = value;
         out.writeLong(storedVal, 64);
         size += 64;
+        return 64;
     }
 
     /**
@@ -86,13 +91,15 @@ public class Chimp {
         out.flush();
     }
 
-    private void compressValue(long value) {
+    private int compressValue(long value) {
+        int thisSize = 0;
         long xor = storedVal ^ value;
         if(xor == 0) {
             // Write 0
             out.writeBit(false);
             out.writeBit(false);
             size += 2;
+            thisSize += 2;
             storedLeadingZeros = 65;
         } else {
             int leadingZeros = leadingRound[Long.numberOfLeadingZeros(xor)];
@@ -106,6 +113,7 @@ public class Chimp {
                 out.writeInt(significantBits, 6);
                 out.writeLong(xor >>> trailingZeros, significantBits); // Store the meaningful bits of XOR
                 size += 11 + significantBits;
+                thisSize += 11 + significantBits;
                 storedLeadingZeros = 65;
             } else if (leadingZeros == storedLeadingZeros) {
                 out.writeBit(true);
@@ -113,6 +121,7 @@ public class Chimp {
                 int significantBits = 64 - leadingZeros;
                 out.writeLong(xor, significantBits);
                 size += 2 + significantBits;
+                thisSize += 2 + significantBits;
             } else {
                 storedLeadingZeros = leadingZeros;
                 int significantBits = 64 - leadingZeros;
@@ -121,9 +130,11 @@ public class Chimp {
                 out.writeInt(leadingRepresentation[leadingZeros], 3);
                 out.writeLong(xor, significantBits);
                 size += 5 + significantBits;
+                thisSize += 5 + significantBits;
             }
         }
         storedVal = value;
+        return thisSize;
     }
 
     public int getSize() {
