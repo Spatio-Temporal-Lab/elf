@@ -15,8 +15,8 @@ public abstract class AbstractElfCompressor {
 
     private int size = 0;
 
-    public void addValue(String decimalFormat) {
-        double v = Double.parseDouble(decimalFormat);
+    public void addValue(String vString) {
+        double v = Double.parseDouble(vString);
         long vLong = Double.doubleToLongBits(v);
         long vPrimeLong;
 
@@ -27,7 +27,7 @@ public abstract class AbstractElfCompressor {
             size += writeBit(false);
             vPrimeLong = 0xfff8000000000000L & vLong;
         } else {
-            int[] alphaAndBetaStar = getAlphaAndBetaStar(decimalFormat);
+            int[] alphaAndBetaStar = getAlphaAndBetaStar(vString);
             int e = getE(vLong);
             int gAlpha = getFAlpha(alphaAndBetaStar[0]) + e - 1023;
             int eraseBits = 52 - gAlpha;
