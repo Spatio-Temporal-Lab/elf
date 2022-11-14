@@ -26,4 +26,8 @@ public class ElfOnGorillaCompressor extends AbstractElfCompressor{
     @Override protected int xorCompress(long vPrimeLong) {
         return gorilla.addValue(vPrimeLong);
     }
+
+    @Override public void close() {
+        gorilla.close();
+    }
 }

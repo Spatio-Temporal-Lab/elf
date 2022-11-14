@@ -10,6 +10,7 @@ public class Main {
         compressor.addValue(3.16);
         compressor.addValue(3.17);
         compressor.addValue(3.18);
+        compressor.close();
         System.out.println(compressor.getSize());
     }
 }
