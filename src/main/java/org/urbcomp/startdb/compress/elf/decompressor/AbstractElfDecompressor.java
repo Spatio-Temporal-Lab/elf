@@ -5,7 +5,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractElfDecompressor {
+public abstract class AbstractElfDecompressor implements IDecompressor {
 
     private final static double[] map10iN = new double[325];
 

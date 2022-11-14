@@ -2,7 +2,7 @@ package org.urbcomp.startdb.compress.elf.compressor;
 
 import java.math.BigDecimal;
 
-public abstract class AbstractElfCompressor {
+public abstract class AbstractElfCompressor implements ICompressor {
     // αlog_2(10) for look-up. We will calculate for the first time.
     private final static int[] f = new int[325];
     private final static double LOG_2_10 = Math.log(10) / Math.log(2);
