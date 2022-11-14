@@ -24,6 +24,10 @@ public class Decompressor {
         in = input;
     }
 
+    public BitInput getInputStream() {
+        return in;
+    }
+
     public List<Double> getValues() {
         List<Double> list = new LinkedList<>();
         Value value = readPair();

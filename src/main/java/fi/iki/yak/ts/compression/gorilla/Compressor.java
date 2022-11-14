@@ -14,9 +14,9 @@ public class Compressor {
     private boolean first = true;
     private int size;
 
-//    public final static short FIRST_DELTA_BITS = 27;
+    //    public final static short FIRST_DELTA_BITS = 27;
 
-    private BitOutput out;
+    private final BitOutput out;
 
     // We should have access to the series?
     public Compressor(BitOutput output) {
@@ -24,16 +24,20 @@ public class Compressor {
         size = 0;
     }
 
+    public BitOutput getOutputStream() {
+        return out;
+    }
+
     /**
      * Adds a new long value to the series. Note, values must be inserted in order.
      *
      * @param value next floating point value in the series
      */
-    public void addValue(long value) {
-        if(first) {
-            writeFirst(value);
+    public int addValue(long value) {
+        if (first) {
+            return writeFirst(value);
         } else {
-            compressValue(value);
+            return compressValue(value);
         }
     }
 
@@ -43,18 +47,19 @@ public class Compressor {
      * @param value next floating point value in the series
      */
     public void addValue(double value) {
-        if(first) {
+        if (first) {
             writeFirst(Double.doubleToRawLongBits(value));
         } else {
             compressValue(Double.doubleToRawLongBits(value));
         }
     }
 
-    private void writeFirst(long value) {
+    private int writeFirst(long value) {
         first = false;
         storedVal = value;
         out.writeBits(storedVal, 64);
         size += 64;
+        return 64;
     }
 
     /**
@@ -66,35 +71,39 @@ public class Compressor {
         out.flush();
     }
 
-    private void compressValue(long value) {
+    private int compressValue(long value) {
         // TODO Fix already compiled into a big method
+        int thisSize = 0;
         long xor = storedVal ^ value;
 
-        if(xor == 0) {
+        if (xor == 0) {
             // Write 0
             out.skipBit();
             size += 1;
+            thisSize += 1;
         } else {
             int leadingZeros = Long.numberOfLeadingZeros(xor);
             int trailingZeros = Long.numberOfTrailingZeros(xor);
 
             // Check overflow of leading? Can't be 32!
-            if(leadingZeros >= 32) {
+            if (leadingZeros >= 32) {
                 leadingZeros = 31;
             }
 
             // Store bit '1'
             out.writeBit();
             size += 1;
+            thisSize += 1;
 
-            if(leadingZeros >= storedLeadingZeros && trailingZeros >= storedTrailingZeros) {
-                writeExistingLeading(xor);
+            if (leadingZeros >= storedLeadingZeros && trailingZeros >= storedTrailingZeros) {
+                thisSize += writeExistingLeading(xor);
             } else {
-                writeNewLeading(xor, leadingZeros, trailingZeros);
+                thisSize += writeNewLeading(xor, leadingZeros, trailingZeros);
             }
         }
 
         storedVal = value;
+        return thisSize;
     }
 
     /**
@@ -103,11 +112,12 @@ public class Compressor {
      *
      * @param xor XOR between previous value and current
      */
-    private void writeExistingLeading(long xor) {
+    private int writeExistingLeading(long xor) {
         out.skipBit();
         int significantBits = 64 - storedLeadingZeros - storedTrailingZeros;
         out.writeBits(xor >>> storedTrailingZeros, significantBits);
         size += 1 + significantBits;
+        return 1 + significantBits;
     }
 
     /**
@@ -116,11 +126,11 @@ public class Compressor {
      * store the meaningful bits of the XORed value
      * (type b)
      *
-     * @param xor XOR between previous value and current
-     * @param leadingZeros New leading zeros
+     * @param xor           XOR between previous value and current
+     * @param leadingZeros  New leading zeros
      * @param trailingZeros New trailing zeros
      */
-    private void writeNewLeading(long xor, int leadingZeros, int trailingZeros) {
+    private int writeNewLeading(long xor, int leadingZeros, int trailingZeros) {
         out.writeBit();
         out.writeBits(leadingZeros, 5); // Number of leading zeros in the next 5 bits
 
@@ -137,6 +147,7 @@ public class Compressor {
         storedTrailingZeros = trailingZeros;
 
         size += 1 + 5 + 6 + significantBits;
+        return 1 + 5 + 6 + significantBits;
     }
 
     public int getSize() {

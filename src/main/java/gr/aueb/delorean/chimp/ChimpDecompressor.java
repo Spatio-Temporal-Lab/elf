@@ -16,7 +16,7 @@ public class ChimpDecompressor {
     private boolean first = true;
     private boolean endOfStream = false;
 
-    private InputBitStream in;
+    private final InputBitStream in;
 
     private final static long NAN_LONG = 0x7ff8000000000000L;
 
@@ -34,6 +34,10 @@ public class ChimpDecompressor {
             value = readValue();
         }
         return list;
+    }
+
+    public InputBitStream getInputStream() {
+        return in;
     }
 
     /**
@@ -59,7 +63,6 @@ public class ChimpDecompressor {
             storedVal = in.readLong(64);
             if (storedVal == NAN_LONG) {
                 endOfStream = true;
-                return;
             }
 
         } else {

@@ -1,4 +1,4 @@
-package org.urbcomp.startdb.compress.elf;
+package org.urbcomp.startdb.compress.elf.compressor;
 
 import java.math.BigDecimal;
 
@@ -15,12 +15,12 @@ public abstract class AbstractElfCompressor {
 
     private int size = 0;
 
-    public void addValue(String vString) {
-        double v = Double.parseDouble(vString);
+    public void addValue(double v) {
+        String vString = Double.toString(v);
         long vLong = Double.doubleToLongBits(v);
         long vPrimeLong;
 
-        if (v == 0 || Double.isInfinite(v)) {
+        if (v == 0.0 || Double.isInfinite(v)) {
             size += writeBit(false);
             vPrimeLong = vLong;
         } else if (Double.isNaN(v)) {

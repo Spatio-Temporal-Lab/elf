@@ -62,6 +62,10 @@ public class ChimpN {
         this.flagOneSize = previousValuesLog2 + 11;
     }
 
+    public OutputBitStream getOutputStream() {
+        return out;
+    }
+
     public byte[] getOut() {
         return out.buffer;
     }
@@ -71,11 +75,11 @@ public class ChimpN {
      *
      * @param value next floating point value in the series
      */
-    public void addValue(long value) {
+    public int addValue(long value) {
         if(first) {
-            writeFirst(value);
+            return writeFirst(value);
         } else {
-            compressValue(value);
+            return compressValue(value);
         }
     }
 
@@ -84,20 +88,21 @@ public class ChimpN {
      *
      * @param value next floating point value in the series
      */
-    public void addValue(double value) {
+    public int addValue(double value) {
         if(first) {
-            writeFirst(Double.doubleToRawLongBits(value));
+            return writeFirst(Double.doubleToRawLongBits(value));
         } else {
-            compressValue(Double.doubleToRawLongBits(value));
+            return compressValue(Double.doubleToRawLongBits(value));
         }
     }
 
-    private void writeFirst(long value) {
+    private int writeFirst(long value) {
         first = false;
         storedValues[current] = value;
         out.writeLong(storedValues[current], 64);
         indices[(int) value & setLsb] = index;
         size += 64;
+        return 64;
     }
 
     /**
@@ -109,7 +114,8 @@ public class ChimpN {
         out.flush();
     }
 
-    private void compressValue(long value) {
+    private int compressValue(long value) {
+        int thisSize = 0;
         int key = (int) value & setLsb;
         long xor;
         int previousIndex;
@@ -133,6 +139,7 @@ public class ChimpN {
         if(xor == 0) {
             out.writeInt(previousIndex, this.flagZeroSize);
             size += this.flagZeroSize;
+            thisSize += this.flagZeroSize;
             storedLeadingZeros = 65;
         } else {
             int leadingZeros = leadingRound[Long.numberOfLeadingZeros(xor)];
@@ -142,25 +149,28 @@ public class ChimpN {
                 out.writeInt(512 * (previousValues + previousIndex) + 64 * leadingRepresentation[leadingZeros] + significantBits, this.flagOneSize);
                 out.writeLong(xor >>> trailingZeros, significantBits); // Store the meaningful bits of XOR
                 size += significantBits + this.flagOneSize;
+                thisSize += significantBits + this.flagOneSize;
                 storedLeadingZeros = 65;
             } else if (leadingZeros == storedLeadingZeros) {
                 out.writeInt(2, 2);
                 int significantBits = 64 - leadingZeros;
                 out.writeLong(xor, significantBits);
                 size += 2 + significantBits;
+                thisSize += 2 + significantBits;
             } else {
                 storedLeadingZeros = leadingZeros;
                 int significantBits = 64 - leadingZeros;
                 out.writeInt(24 + leadingRepresentation[leadingZeros], 5);
                 out.writeLong(xor, significantBits);
                 size += 5 + significantBits;
+                thisSize += 5 + significantBits;
             }
         }
         current = (current + 1) % previousValues;
         storedValues[current] = value;
         index++;
         indices[key] = index;
-
+        return thisSize;
     }
 
     public int getSize() {

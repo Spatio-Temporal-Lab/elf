@@ -1,4 +1,4 @@
-package org.urbcomp.startdb.compress.elf;
+package org.urbcomp.startdb.compress.elf.decompressor;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -17,14 +17,18 @@ public abstract class AbstractElfDecompressor {
 
     public List<Double> decompress() {
         List<Double> values = new ArrayList<>();
-        while(hasNext()) {
-            values.add(nextValue());
+        Double value;
+        while((value = nextValue()) != null) {
+            values.add(value);
         }
         return values;
     }
 
-    private double nextValue() {
-        double vPrime = xorDecompress();
+    private Double nextValue() {
+        Double vPrime = xorDecompress();
+        if(vPrime == null) {
+            return null;
+        }
         int flag = readInt(1);
         double v;
         if (flag == 0) {
@@ -42,11 +46,9 @@ public abstract class AbstractElfDecompressor {
         return v;
     }
 
-    protected abstract boolean hasNext();
+    protected abstract Double xorDecompress();
 
-    protected abstract double xorDecompress();
-
-    protected abstract int readInt(int bitNumber);
+    protected abstract int readInt(int len);
 
     private static int getStartSignificandPosition(double v) {
         return (int) Math.ceil(Math.log10(Math.abs(v)));

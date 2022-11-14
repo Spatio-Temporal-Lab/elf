@@ -1,4 +1,4 @@
-package org.urbcomp.startdb.compress.elf;
+package org.urbcomp.startdb.compress.elf.compressor;
 
 import gr.aueb.delorean.chimp.Chimp;
 import gr.aueb.delorean.chimp.OutputBitStream;

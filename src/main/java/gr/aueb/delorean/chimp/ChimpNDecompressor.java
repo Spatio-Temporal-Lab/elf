@@ -35,6 +35,10 @@ public class ChimpNDecompressor {
 		this.storedValues = new long[previousValues];
 	}
 
+	public InputBitStream getInputStream() {
+		return in;
+	}
+
 	/**
 	 * Returns the next pair in the time series, if available.
 	 *
