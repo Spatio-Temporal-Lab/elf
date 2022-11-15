@@ -7,7 +7,7 @@ import java.util.List;
 
 public class FileReader {
     private static final String DELIMITER = ",";
-    public List<Double> readFile(String filePath, String fileName, int raw) {
+    public List<Double> readFile(String filePath, int raw) {
         java.io.FileReader fr = null;
         BufferedReader br = null;
         List<Double> ld = new ArrayList<>();
@@ -18,9 +18,14 @@ public class FileReader {
             String data = null;
             boolean first = true;
             while ((data = br.readLine()) != null ) {
-                String[] param = data.split(DELIMITER);
-                double meta = Double.parseDouble(param[raw]);
-                ld.add(meta);
+                if(first){
+                    first=false;
+                    continue;
+                }
+                if(!data.isEmpty()){
+                    double meta = Double.parseDouble(data);
+                    ld.add(meta);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
