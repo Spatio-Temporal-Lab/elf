@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        double[] vs = new double[] {3.14, 3.15, 2.0};
+        double[] vs = new double[] {3.14, 3.15, 3.16, 3.17, 3.18, 0.1};
         ICompressor compressor = new ElfOnGorillaCompressor();
         for (double v : vs) {
             compressor.addValue(v);

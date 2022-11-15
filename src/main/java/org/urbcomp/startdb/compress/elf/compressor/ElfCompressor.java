@@ -2,17 +2,15 @@ package org.urbcomp.startdb.compress.elf.compressor;
 
 import fi.iki.yak.ts.compression.gorilla.BitOutput;
 import fi.iki.yak.ts.compression.gorilla.ByteBufferBitOutput;
-import fi.iki.yak.ts.compression.gorilla.Compressor;
+import fi.iki.yak.ts.compression.gorilla.CompressorForElf;
 
 import java.nio.ByteBuffer;
 
-public class ElfOnGorillaCompressor extends AbstractElfCompressor {
-    private final Compressor gorilla;
-
-    public ElfOnGorillaCompressor() {
-        this.gorilla = new Compressor(new ByteBufferBitOutput());
+public class ElfCompressor extends AbstractElfCompressor {
+    private final CompressorForElf gorilla;
+    public ElfCompressor() {
+        this.gorilla = new CompressorForElf(new ByteBufferBitOutput());
     }
-
     @Override protected int writeInt(int n, int len) {
         BitOutput os = gorilla.getOutputStream();
         os.writeBits(n, len);
@@ -26,7 +24,7 @@ public class ElfOnGorillaCompressor extends AbstractElfCompressor {
     }
 
     @Override protected int xorCompress(long vPrimeLong, int eraseBits) {
-        return gorilla.addValue(vPrimeLong);
+        return gorilla.addValue(vPrimeLong, eraseBits);
     }
 
     @Override public byte[] getBytes() {

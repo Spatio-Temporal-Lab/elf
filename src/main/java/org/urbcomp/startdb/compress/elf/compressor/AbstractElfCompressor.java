@@ -19,18 +19,21 @@ public abstract class AbstractElfCompressor implements ICompressor {
         String vString = Double.toString(v);
         long vLong = Double.doubleToRawLongBits(v);
         long vPrimeLong;
+        int eraseBits;
 
         if (v == 0.0 || Double.isInfinite(v)) {
             size += writeBit(false);
+            eraseBits = 52;
             vPrimeLong = vLong;
         } else if (Double.isNaN(v)) {
             size += writeBit(false);
+            eraseBits = 51;
             vPrimeLong = 0xfff8000000000000L & vLong;
         } else {
             int[] alphaAndBetaStar = getAlphaAndBetaStar(vString);
             int e = getE(vLong);
             int gAlpha = getFAlpha(alphaAndBetaStar[0]) + e - 1023;
-            int eraseBits = 52 - gAlpha;
+            eraseBits = 52 - gAlpha;
             long delta = (~(0xffffffffffffffffL << eraseBits)) & vLong;
             if (alphaAndBetaStar[1] < 16 && delta != 0 && eraseBits > 4) {
                 size += writeBit(true);
@@ -38,10 +41,11 @@ public abstract class AbstractElfCompressor implements ICompressor {
                 vPrimeLong = (0xffffffffffffffffL << eraseBits) & vLong;
             } else {
                 size += writeBit(false);
+                eraseBits = 0;
                 vPrimeLong = vLong;
             }
         }
-        size += xorCompress(vPrimeLong);
+        size += xorCompress(vPrimeLong, eraseBits);
     }
 
     public int getSize() {
@@ -52,7 +56,7 @@ public abstract class AbstractElfCompressor implements ICompressor {
 
     protected abstract int writeBit(boolean bit);
 
-    protected abstract int xorCompress(long vPrimeLong);
+    protected abstract int xorCompress(long vPrimeLong, int eraseBits);
 
     private static int getFAlpha(int alpha) {
         if (alpha <= 0 || alpha >= f.length) {

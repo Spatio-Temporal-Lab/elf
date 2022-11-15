@@ -15,8 +15,6 @@ public abstract class AbstractElfDecompressor implements IDecompressor {
         }
     }
 
-    public void AbstractElfDecompressor(byte[] bytes) {}
-
     public List<Double> decompress() {
         List<Double> values = new ArrayList<>();
         Double value;
@@ -31,10 +29,10 @@ public abstract class AbstractElfDecompressor implements IDecompressor {
 
         Double v;
         if (flag == 0) {
-            v = xorDecompress();
+            v = xorDecompress(0);
         } else {
             int betaStar = readInt(4);
-            Double vPrime = xorDecompress();
+            Double vPrime = xorDecompress(0);
             int sp = getStartSignificandPosition(vPrime);
             if (betaStar == 0) {
                 v = get10iN(-sp - 1);
@@ -46,7 +44,7 @@ public abstract class AbstractElfDecompressor implements IDecompressor {
         return v;
     }
 
-    protected abstract Double xorDecompress();
+    protected abstract Double xorDecompress(int eraseBits);
 
     protected abstract int readInt(int len);
 
