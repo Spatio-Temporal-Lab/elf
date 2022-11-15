@@ -17,6 +17,10 @@ public class ChimpNCompressor implements ICompressor {
         return chimpN.getSize();
     }
 
+    @Override public byte[] getBytes() {
+        return chimpN.getOut();
+    }
+
     @Override public void close() {
         chimpN.close();
     }

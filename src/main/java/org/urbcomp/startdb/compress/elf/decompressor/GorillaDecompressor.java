@@ -8,8 +8,8 @@ import java.util.List;
 public class GorillaDecompressor implements IDecompressor {
     private final Decompressor gorillaDecompressor;
 
-    public GorillaDecompressor(ByteBufferBitInput in) {
-        gorillaDecompressor = new Decompressor(in);
+    public GorillaDecompressor(byte[] bytes) {
+        gorillaDecompressor = new Decompressor(new ByteBufferBitInput(bytes));
     }
 
     @Override public List<Double> decompress() {

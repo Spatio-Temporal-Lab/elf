@@ -7,8 +7,8 @@ import fi.iki.yak.ts.compression.gorilla.Value;
 public class ElfOnGorillaDecompressor extends AbstractElfDecompressor {
     private final Decompressor gorillaDecompressor;
 
-    public ElfOnGorillaDecompressor(ByteBufferBitInput in) {
-        gorillaDecompressor = new Decompressor(in);
+    public ElfOnGorillaDecompressor(byte[] bytes) {
+        gorillaDecompressor = new Decompressor(new ByteBufferBitInput(bytes));
     }
 
     @Override protected Double xorDecompress() {

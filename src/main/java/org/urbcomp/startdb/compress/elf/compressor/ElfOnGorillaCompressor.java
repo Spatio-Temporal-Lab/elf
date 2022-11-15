@@ -4,7 +4,9 @@ import fi.iki.yak.ts.compression.gorilla.BitOutput;
 import fi.iki.yak.ts.compression.gorilla.ByteBufferBitOutput;
 import fi.iki.yak.ts.compression.gorilla.Compressor;
 
-public class ElfOnGorillaCompressor extends AbstractElfCompressor{
+import java.nio.ByteBuffer;
+
+public class ElfOnGorillaCompressor extends AbstractElfCompressor {
     private final Compressor gorilla;
 
     public ElfOnGorillaCompressor() {
@@ -25,6 +27,14 @@ public class ElfOnGorillaCompressor extends AbstractElfCompressor{
 
     @Override protected int xorCompress(long vPrimeLong) {
         return gorilla.addValue(vPrimeLong);
+    }
+
+    @Override public byte[] getBytes() {
+        ByteBuffer byteBuffer = ((ByteBufferBitOutput) gorilla.getOutputStream()).getByteBuffer();
+        byteBuffer.flip();
+        byte[] bytes = new byte[byteBuffer.remaining()];
+        byteBuffer.get(bytes);
+        return bytes;
     }
 
     @Override public void close() {

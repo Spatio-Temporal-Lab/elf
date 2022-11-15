@@ -24,6 +24,10 @@ public class ElfOnChimpNCompressor extends AbstractElfCompressor{
         return chimpN.addValue(vPrimeLong);
     }
 
+    @Override public byte[] getBytes() {
+        return chimpN.getOut();
+    }
+
     @Override public void close() {
         chimpN.close();
     }

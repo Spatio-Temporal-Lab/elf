@@ -17,7 +17,7 @@ public abstract class AbstractElfCompressor implements ICompressor {
 
     public void addValue(double v) {
         String vString = Double.toString(v);
-        long vLong = Double.doubleToLongBits(v);
+        long vLong = Double.doubleToRawLongBits(v);
         long vPrimeLong;
 
         if (v == 0.0 || Double.isInfinite(v)) {
