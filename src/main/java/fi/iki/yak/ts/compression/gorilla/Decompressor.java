@@ -18,7 +18,7 @@ public class Decompressor {
 
     private BitInput in;
 
-    private final static long NAN_LONG = 0x7ff8000000000000L;
+    private final static long END_SIGN = 0x0000000000000001L;
 
     public Decompressor(BitInput input) {
         in = input;
@@ -55,7 +55,7 @@ public class Decompressor {
         if (first) {
             first = false;
             storedVal = in.getLong(64);
-            if (storedVal == NAN_LONG) {
+            if (storedVal == END_SIGN) {
                 endOfStream = true;
                 return;
             }
@@ -82,7 +82,7 @@ public class Decompressor {
             long value = in.getLong(64 - storedLeadingZeros - storedTrailingZeros);
             value <<= storedTrailingZeros;
             value = storedVal ^ value;
-            if (value == NAN_LONG) {
+            if (value == END_SIGN) {
                 endOfStream = true;
                 return;
             } else {

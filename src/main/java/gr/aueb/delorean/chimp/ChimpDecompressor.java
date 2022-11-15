@@ -18,7 +18,7 @@ public class ChimpDecompressor {
 
     private final InputBitStream in;
 
-    private final static long NAN_LONG = 0x7ff8000000000000L;
+    private final static long END_SIGN = 0x0000000000000001L;
 
     public final static short[] leadingRepresentation = {0, 8, 12, 16, 18, 20, 22, 24};
 
@@ -61,7 +61,7 @@ public class ChimpDecompressor {
         if (first) {
             first = false;
             storedVal = in.readLong(64);
-            if (storedVal == NAN_LONG) {
+            if (storedVal == END_SIGN) {
                 endOfStream = true;
             }
 
@@ -86,7 +86,7 @@ public class ChimpDecompressor {
                 }
                 value = in.readLong(64 - storedLeadingZeros);
                 value = storedVal ^ value;
-                if (value == NAN_LONG) {
+                if (value == END_SIGN) {
                     endOfStream = true;
                     return;
                 } else {
@@ -100,7 +100,7 @@ public class ChimpDecompressor {
                 }
                 value = in.readLong(64 - storedLeadingZeros);
                 value = storedVal ^ value;
-                if (value == NAN_LONG) {
+                if (value == END_SIGN) {
                     endOfStream = true;
                     return;
                 } else {
@@ -117,7 +117,7 @@ public class ChimpDecompressor {
                 value = in.readLong(64 - storedLeadingZeros - storedTrailingZeros);
                 value <<= storedTrailingZeros;
                 value = storedVal ^ value;
-                if (value == NAN_LONG) {
+                if (value == END_SIGN) {
                     endOfStream = true;
                     return;
                 } else {
