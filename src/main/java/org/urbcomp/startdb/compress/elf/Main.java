@@ -7,8 +7,8 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        double[] vs = new double[] {3.14, 3.15};
-        ICompressor compressor = new ElfOnChimpCompressor();
+        double[] vs = new double[] {3.14, 3.15, 2.0};
+        ICompressor compressor = new ElfOnGorillaCompressor();
         for (double v : vs) {
             compressor.addValue(v);
         }
@@ -17,7 +17,7 @@ public class Main {
         System.out.println(compressor.getSize());
 
         byte[] result = compressor.getBytes();
-        IDecompressor decompressor = new ElfOnChimpDecompressor(result);
+        IDecompressor decompressor = new ElfOnGorillaDecompressor(result);
         List<Double> values = decompressor.decompress();
         for (Double v : values) {
             System.out.println(v);

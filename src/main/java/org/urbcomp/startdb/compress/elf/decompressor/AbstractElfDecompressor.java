@@ -29,7 +29,7 @@ public abstract class AbstractElfDecompressor implements IDecompressor {
     private Double nextValue() {
         int flag = readInt(1);
 
-        double v;
+        Double v;
         if (flag == 0) {
             v = xorDecompress();
         } else {

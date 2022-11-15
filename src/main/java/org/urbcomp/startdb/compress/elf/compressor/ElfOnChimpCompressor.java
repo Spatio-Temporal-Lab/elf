@@ -31,6 +31,8 @@ public class ElfOnChimpCompressor extends AbstractElfCompressor {
     }
 
     @Override public void close() {
+        // we write one more bit here, for marking an end of the stream.
+        writeBit(false);
         chimp.close();
     }
 }
