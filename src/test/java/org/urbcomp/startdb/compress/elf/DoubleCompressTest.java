@@ -1,20 +1,16 @@
 package org.urbcomp.startdb.compress.elf;
 
-
-import gr.aueb.delorean.chimp.benchmarks.TimeseriesFileReader;
 import org.junit.jupiter.api.Test;
 import org.urbcomp.startdb.compress.elf.compressor.*;
 import org.urbcomp.startdb.compress.elf.decompressor.*;
 
-import java.io.IOException;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DoubleCompressTest {
-    private static final int MINIMUM_TOTAL_BLOCKS = 50_000;
-    private static String FILE_PATH = "src/test/resources";
-    private static String[] FILENAMES = {
+    private static final String FILE_PATH = "src/test/resources";
+    private static final String[] FILENAMES = {
             "/Average_cost.csv",
             "/AvgTemperature.csv",
             "/circuits_lat.csv",
@@ -22,11 +18,11 @@ class DoubleCompressTest {
             "/diskCapability.csv",
             "/ECMWF Interim Full Daily Invariant High Vegetation Cover.csv",
             "/ECMWF Interim Full Daily Invariant Low Vegetation Cover.csv",
-//            "/FLUX_1.csv",    //这个有bug
+            "/FLUX_1.csv",
             "/latitude_radian.csv",
             "/location-lat.csv",
             "/location-long.csv",
-//            "/longitude_radian.csv",//这个也有bug
+            "/longitude_radian.csv",
             "/mp_price.csv",
             "/pitStop_duration.csv",
             "/Revenue.csv",
@@ -37,14 +33,12 @@ class DoubleCompressTest {
             "/z-axis.csv"
     };
 
-
-
     @Test
-    public void testCompress() throws IOException {
+    public void testCompress() {
         for (String filename : FILENAMES) {
             FileReader fileReader = new FileReader();
             List<Double> values;
-            values = fileReader.readFile(FILE_PATH+filename, 0);
+            values = fileReader.readFile(FILE_PATH + filename, 0);
             ICompressor[] compressors = new ICompressor[]{
                     new ChimpCompressor(),
                     new ChimpNCompressor(128),
@@ -53,7 +47,7 @@ class DoubleCompressTest {
                     new ElfOnChimpNCompressor(128),
                     new ElfOnGorillaCompressor()
             };
-            for(int i=0;i<compressors.length;i++){
+            for(int i = 0;i < compressors.length; i++){
                 long totalSize = 0;
                 long encodingDuration = 0;
                 long decodingDuration = 0;
@@ -63,7 +57,9 @@ class DoubleCompressTest {
                     compressor.addValue(value);
                 }
                 compressor.close();
+
                 encodingDuration += System.nanoTime() - start;
+
                 totalSize += compressor.getSize();
                 byte[] result = compressor.getBytes();
                 IDecompressor[] decompressors = new IDecompressor[]{
@@ -75,13 +71,15 @@ class DoubleCompressTest {
                         new ElfOnGorillaDecompressor(result)
                 };
                 IDecompressor decompressor = decompressors[i];
+
                 start = System.nanoTime();
                 List<Double> uncompressedValues = decompressor.decompress();
                 decodingDuration += System.nanoTime() - start;
+
                 for (int j = 0; j < values.size(); j++) {
                     assertEquals(values.get(j), uncompressedValues.get(j), "Value did not match");
                 }
-                System.out.printf("%s: %s - Bits/value: %.6f, Compression time per block: %.6f, Decompression time per block: %.6f%n", compressor.getClass().getSimpleName(),filename, totalSize / (values.size()*64.0), encodingDuration / 1000000.0, decodingDuration / 1000000.0);
+                System.out.printf("%s: %s - Compression Ratio: %.6f, Compression time per block: %.6f, Decompression time per block: %.6f%n", compressor.getClass().getSimpleName(),filename, totalSize / (values.size()*64.0), encodingDuration / 1000000.0, decodingDuration / 1000000.0);
             }
         }
     }

@@ -50,7 +50,7 @@ public class ChimpN {
     // We should have access to the series?
     public ChimpN(int previousValues) {
 //        out = output;
-        out = new OutputBitStream(new byte[1000*8]);
+        out = new OutputBitStream(new byte[8125]); // for elf, we need one more bit for each at the worst case
         size = 0;
         this.previousValues = previousValues;
         this.previousValuesLog2 =  (int)(Math.log(previousValues) / Math.log(2));
