@@ -12,7 +12,7 @@ public class Chimp {
     private long storedVal = 0;
     private boolean first = true;
     private int size;
-
+    private final static long END_SIGN = 0x0000000000000001L;
     public final static int THRESHOLD = 6;
 
     public final static short[] leadingRepresentation = {0, 0, 0, 0, 0, 0, 0, 0,
@@ -86,7 +86,7 @@ public class Chimp {
      * Closes the block and writes the remaining stuff to the BitOutput.
      */
     public void close() {
-        addValue(Double.NaN);
+        addValue(END_SIGN);
         out.writeBit(false);
         out.flush();
     }
