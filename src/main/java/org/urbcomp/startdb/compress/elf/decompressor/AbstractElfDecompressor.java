@@ -15,8 +15,6 @@ public abstract class AbstractElfDecompressor implements IDecompressor {
         }
     }
 
-    public void AbstractElfDecompressor(byte[] bytes) {}
-
     public List<Double> decompress() {
         List<Double> values = new ArrayList<>();
         Double value;
