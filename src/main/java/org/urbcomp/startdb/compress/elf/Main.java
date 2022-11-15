@@ -7,8 +7,8 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        double[] vs = new double[] {3.14, 3.15, 2.0};
-        ICompressor compressor = new ElfOnGorillaCompressor();
+        double[] vs = new double[] {3.14, 3.15, 2.0, Double.NaN, Double.NEGATIVE_INFINITY, Double.MIN_NORMAL, Double.MIN_NORMAL - Double.MIN_VALUE};
+        ICompressor compressor = new ChimpCompressor();
         for (double v : vs) {
             compressor.addValue(v);
         }
@@ -17,10 +17,11 @@ public class Main {
         System.out.println(compressor.getSize());
 
         byte[] result = compressor.getBytes();
-        IDecompressor decompressor = new ElfOnGorillaDecompressor(result);
+        IDecompressor decompressor = new ChimpDecompressor(result);
         List<Double> values = decompressor.decompress();
-        for (Double v : values) {
-            System.out.println(v);
+        assert(values.size() == vs.length);
+        for (int i = 0; i < values.size(); i++) {
+            assert(vs[i] == values.get(i));
         }
     }
 }

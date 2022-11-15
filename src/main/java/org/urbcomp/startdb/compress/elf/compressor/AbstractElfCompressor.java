@@ -70,19 +70,23 @@ public abstract class AbstractElfCompressor implements ICompressor {
         return alphaAndBetaStar;
     }
 
+    // Note decimalFormat is got by Double.toString(), and i < 0
     private static boolean is10i(String decimalFormat) {
         int i = 0;
         for (char c : decimalFormat.toCharArray()) {
-            if (c == '0' || c == '.' || c == '-' || c == '+') {
+            if (c == '0' || c == '.' || c == '-') {
                 i++;
             } else {
                 break;
             }
         }
+        // the former is "0.0...01", the later is "1.0E-x"
         return (i == decimalFormat.length() - 1 && decimalFormat.charAt(i) == '1') || (
-                        i < decimalFormat.length() - 1 && decimalFormat.charAt(i) == '1' && (
-                                        decimalFormat.charAt(i + 1) == 'e'
-                                                        || decimalFormat.charAt(i + 1) == 'E'));
+                        i < decimalFormat.length() - 4 && decimalFormat.charAt(i) == '1'
+                                        && decimalFormat.charAt(i + 1) == '.'
+                                        && decimalFormat.charAt(i + 2) == '0'
+                                        && decimalFormat.charAt(i + 3) == 'E'
+                                        && decimalFormat.charAt(i + 4) == '-');
     }
 
     private static int getE(long vLong) {
