@@ -16,7 +16,7 @@ public abstract class AbstractElfDecompressor implements IDecompressor {
     }
 
     public List<Double> decompress() {
-        List<Double> values = new ArrayList<>();
+        List<Double> values = new ArrayList<>(1000);
         Double value;
         while((value = nextValue()) != null) {
             values.add(value);
