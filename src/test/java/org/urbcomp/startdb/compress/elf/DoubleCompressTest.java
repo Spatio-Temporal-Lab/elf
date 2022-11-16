@@ -29,7 +29,7 @@ class DoubleCompressTest {
                     "/Tokyo_temperature.csv",
                     "/l4d2_player_stats.csv",
                     "/percentage_of_alcohol.csv",
-                    "/electric_vehicle_charging.csv",
+                    "/electric_vehicle_charging.csv"
     };
 
     @Test
