@@ -11,25 +11,26 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class DoubleCompressTest {
     private static final String FILE_PATH = "src/test/resources";
     private static final String[] FILENAMES = {
-                    "/AvgTemperature.csv",
-                    "/circuits_lat.csv",
-                    "/circuits_lng.csv",
-                    "/diskCapability.csv",
-                    "/location-lat.csv",
-                    "/location-long.csv",
-                    "/mp_price.csv",
-                    "/pitStop_duration.csv",
-                    "/Revenue.csv",
-                    "/worldcities_latitude.csv",
-                    "/worldcities_longitude.csv",
-                    "/x-axis.csv",
-                    "/y-axis.csv",
-                    "/z-axis.csv",
-                    "/NewYork_temperature.csv",
-                    "/Tokyo_temperature.csv",
-                    "/l4d2_player_stats.csv",
-                    "/percentage_of_alcohol.csv",
-                    "/electric_vehicle_charging.csv",
+        "/AvgTemperature.csv",
+        "/circuits_lat.csv",
+        "/circuits_lng.csv",
+        "/diskCapability.csv",
+        "/location-lat.csv",
+        "/location-long.csv",
+        "/mp_price.csv",
+        "/pitStop_duration.csv",
+        "/worldcities_latitude.csv",
+        "/worldcities_longitude.csv",
+        "/x-axis.csv",
+        "/y-axis.csv",
+        "/z-axis.csv",
+        "/NewYork_temperature.csv",
+        "/Tokyo_temperature.csv",
+        "/l4d2_player_stats.csv",
+        "/percentage_of_alcohol.csv",
+        "/electric_vehicle_charging.csv",
+        "/ECMWF Interim Full Daily Invariant High Vegetation Cover.csv",
+        "/ECMWF Interim Full Daily Invariant Low Vegetation Cover.csv"
     };
 
     @Test
@@ -38,15 +39,15 @@ class DoubleCompressTest {
             FileReader fileReader = new FileReader();
             List<Double> values = fileReader.readFile(FILE_PATH + filename, 0);
             ICompressor[] compressors = new ICompressor[]{
-                            new ChimpCompressor(),
-                            new GorillaCompressor(),
-                            new GorillaCompressorOS(),
-//                            new ChimpNCompressor(128),
-//                            new GorillaCompressor(),
-//                            new ElfOnChimpCompressor(),
-//                            new ElfOnChimpNCompressor(128),
-                            new ElfOnGorillaCompressor(),
-                            new ElfOnGorillaCompressorOS()
+//                new ChimpCompressor(),
+//                new GorillaCompressor(),
+//                new GorillaCompressorOS(),
+                new ChimpNCompressor(128),
+//                new GorillaCompressor(),
+//                new ElfOnChimpCompressor(),
+//                new ElfOnChimpNCompressor(128),
+                new ElfOnGorillaCompressor(),
+                new ElfOnGorillaCompressorOS()
             };
             for(int i = 0;i < compressors.length; i++){
                 long totalSize = 0;
@@ -64,15 +65,15 @@ class DoubleCompressTest {
                 totalSize += compressor.getSize();
                 byte[] result = compressor.getBytes();
                 IDecompressor[] decompressors = new IDecompressor[]{
-                                new ChimpDecompressor(result),
-                                new GorillaDecompressor(result),
-                                new GorillaDecompressorOS(result),
-//                                new ChimpNDecompressor(result,128),
-//                                new GorillaDecompressor(result),
-//                                new ElfOnChimpDecompressor(result),
-//                                new ElfOnChimpNDecompressor(result,128),
-                                new ElfOnGorillaDecompressor(result),
-                                new ElfOnGorillaDecompressorOS(result)
+//                    new ChimpDecompressor(result),
+//                    new GorillaDecompressor(result),
+//                    new GorillaDecompressorOS(result),
+                    new ChimpNDecompressor(result,128),
+//                    new GorillaDecompressor(result),
+//                    new ElfOnChimpDecompressor(result),
+//                    new ElfOnChimpNDecompressor(result,128),
+                    new ElfOnGorillaDecompressor(result),
+                    new ElfOnGorillaDecompressorOS(result)
                 };
                 IDecompressor decompressor = decompressors[i];
 
