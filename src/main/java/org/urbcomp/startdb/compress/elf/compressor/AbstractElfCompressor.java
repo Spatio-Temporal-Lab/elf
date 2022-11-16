@@ -1,17 +1,11 @@
 package org.urbcomp.startdb.compress.elf.compressor;
 
-import java.math.BigDecimal;
-
 public abstract class AbstractElfCompressor implements ICompressor {
-    // αlog_2(10) for look-up. We will calculate for the first time.
-    private final static int[] f = new int[325];
+    // αlog_2(10) for look-up
+    private final static int[] f =
+                    new int[] {0, 4, 7, 10, 14, 17, 20, 24, 27, 30, 34, 37, 40, 44, 47, 50, 54, 57,
+                                    60, 64, 67, 70, 74, 77, 80, 84, 87, 90, 94, 97};
     private final static double LOG_2_10 = Math.log(10) / Math.log(2);
-
-    static {
-        for (int i = 0; i < f.length; i++) {
-            f[i] = (int) Math.ceil(i * LOG_2_10);
-        }
-    }
 
     private int size = 0;
 
@@ -55,25 +49,96 @@ public abstract class AbstractElfCompressor implements ICompressor {
     protected abstract int xorCompress(long vPrimeLong);
 
     private static int getFAlpha(int alpha) {
-        if (alpha <= 0 || alpha >= f.length) {
-            throw new IllegalArgumentException(
-                            "The argument should be in [1, " + (f.length - 1) + "]");
+        if (alpha <= 0) {
+            throw new IllegalArgumentException("The argument should be greater than 0");
         }
-        return f[alpha];
+        if (alpha >= f.length) {
+            return (int) Math.ceil(alpha * LOG_2_10);
+        } else {
+            return f[alpha];
+        }
     }
 
+    // Note decimalFormat is got by Double.toString()
     private static int[] getAlphaAndBetaStar(String decimalFormat) {
         int[] alphaAndBetaStar = new int[2];
-        BigDecimal bigDecimal = new BigDecimal(decimalFormat);
-        alphaAndBetaStar[0] = bigDecimal.scale();
-        alphaAndBetaStar[1] = is10i(decimalFormat) ? 0 : bigDecimal.precision();
+        char[] chars = decimalFormat.toCharArray();
+        alphaAndBetaStar[0] = getPrecision(chars);
+        alphaAndBetaStar[1] = is10i(chars) ? 0 : getSignificand(chars);
         return alphaAndBetaStar;
     }
 
-    // Note decimalFormat is got by Double.toString(), and i < 0
-    private static boolean is10i(String decimalFormat) {
+    private static int getSignificand(char[] chars) {
+        int sig = 0;
         int i = 0;
-        for (char c : decimalFormat.toCharArray()) {
+        // omit the first sign, the prefix 0 and .
+        while (i < chars.length) {
+            if (chars[i] == '0' || chars[i] == '.' || chars[i] == '-') {
+                i++;
+            } else {
+                break;
+            }
+        }
+        while (i < chars.length) {
+            if (chars[i] == '.') {
+                i++;
+            } else if (chars[i] != 'E') {
+                sig++;
+                i++;
+            } else {
+                break;
+            }
+        }
+        return sig;
+    }
+
+    private static int getPrecision(char[] chars) {
+        int pre = 0;
+        int i = 0;
+        // find the point
+        while (i < chars.length) {
+            if (chars[i] == '.') {
+                i++;
+                break;
+            } else {
+                i++;
+            }
+        }
+
+        while (i < chars.length) {
+            if (chars[i] != 'E') {
+                pre++;
+                i++;
+            } else {
+                i++;
+                break;
+            }
+        }
+
+        if (i < chars.length) {
+            boolean negative = false;
+            if (chars[i] == '-') {
+                negative = true;
+                i++;
+            }
+            int e = 0;
+            while (i < chars.length) {
+                e = e * 10 + (chars[i] - '0');
+                i++;
+            }
+            if (negative) {
+                pre = pre + e;
+            } else {
+                pre = pre - e;
+            }
+        }
+        return Math.max(pre, 1);
+    }
+
+    // Note decimalFormat is got by Double.toString(), and i < 0
+    private static boolean is10i(char[] chars) {
+        int i = 0;
+        for (char c : chars) {
             if (c == '0' || c == '.' || c == '-') {
                 i++;
             } else {
@@ -81,12 +146,9 @@ public abstract class AbstractElfCompressor implements ICompressor {
             }
         }
         // the former is "0.0...01", the later is "1.0E-x"
-        return (i == decimalFormat.length() - 1 && decimalFormat.charAt(i) == '1') || (
-                        i < decimalFormat.length() - 4 && decimalFormat.charAt(i) == '1'
-                                        && decimalFormat.charAt(i + 1) == '.'
-                                        && decimalFormat.charAt(i + 2) == '0'
-                                        && decimalFormat.charAt(i + 3) == 'E'
-                                        && decimalFormat.charAt(i + 4) == '-');
+        return (i == chars.length - 1 && chars[i] == '1') || (i < chars.length - 4
+                        && chars[i] == '1' && chars[i + 1] == '.' && chars[i + 2] == '0'
+                        && chars[i + 3] == 'E' && chars[i + 4] == '-');
     }
 
     private static int getE(long vLong) {
