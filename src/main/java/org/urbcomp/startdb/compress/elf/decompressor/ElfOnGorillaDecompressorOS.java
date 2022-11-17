@@ -1,16 +1,16 @@
 package org.urbcomp.startdb.compress.elf.decompressor;
 
-import fi.iki.yak.ts.compression.gorilla.DecompressorOptimizeStream;
+import fi.iki.yak.ts.compression.gorilla.DecompressorOS;
 import fi.iki.yak.ts.compression.gorilla.Value;
 import gr.aueb.delorean.chimp.InputBitStream;
 
 import java.io.IOException;
 
 public class ElfOnGorillaDecompressorOS extends AbstractElfDecompressor {
-    private final DecompressorOptimizeStream gorillaDecompressor;
+    private final DecompressorOS gorillaDecompressor;
 
     public ElfOnGorillaDecompressorOS(byte[] bytes) {
-        gorillaDecompressor = new DecompressorOptimizeStream(bytes);
+        gorillaDecompressor = new DecompressorOS(bytes);
     }
 
     @Override protected Double xorDecompress() {

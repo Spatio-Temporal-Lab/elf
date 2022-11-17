@@ -86,11 +86,13 @@ public class ChimpNOptimize {
     private int writeFirst(long value) {
         first = false;
         storedValues[current] = value;
-        out.writeLong(storedValues[current], 64);
+        int trailingZeros = Long.numberOfTrailingZeros(value);
+        out.writeInt(trailingZeros, 6);
+        out.writeLong(storedValues[current] >>> trailingZeros, 64 - trailingZeros);
         int key = (int) ((value & setLsb) >>> shiftCount);
         indices[key] = index;
-        size += 64;
-        return 64;
+        size += 70 - trailingZeros;
+        return 70 - trailingZeros;
     }
 
     /**

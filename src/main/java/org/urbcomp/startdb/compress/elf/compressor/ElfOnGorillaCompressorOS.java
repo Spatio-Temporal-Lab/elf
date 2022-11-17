@@ -1,13 +1,13 @@
 package org.urbcomp.startdb.compress.elf.compressor;
 
-import fi.iki.yak.ts.compression.gorilla.CompressorOptimizeStream;
+import fi.iki.yak.ts.compression.gorilla.CompressorOS;
 import gr.aueb.delorean.chimp.OutputBitStream;
 
 public class ElfOnGorillaCompressorOS extends AbstractElfCompressor{
-    private final CompressorOptimizeStream gorilla;
+    private final CompressorOS gorilla;
 
     public ElfOnGorillaCompressorOS(){
-        gorilla = new CompressorOptimizeStream();
+        gorilla = new CompressorOS();
     }
 
     @Override protected int writeInt(int n, int len) {

@@ -2,7 +2,7 @@ package fi.iki.yak.ts.compression.gorilla;
 
 import gr.aueb.delorean.chimp.OutputBitStream;
 
-public class CompressorOptimizeStream {
+public class CompressorOS {
     private int storedLeadingZeros = Integer.MAX_VALUE;
     private int storedTrailingZeros = 0;
     private long storedVal = 0;
@@ -12,7 +12,7 @@ public class CompressorOptimizeStream {
 
     private final OutputBitStream out;
 
-    public CompressorOptimizeStream() {
+    public CompressorOS() {
         out = new OutputBitStream(new byte[10000]);
         size = 0;
     }

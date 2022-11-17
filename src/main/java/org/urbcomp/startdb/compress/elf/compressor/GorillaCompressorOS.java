@@ -1,11 +1,11 @@
 package org.urbcomp.startdb.compress.elf.compressor;
 
-import fi.iki.yak.ts.compression.gorilla.CompressorOptimizeStream;
+import fi.iki.yak.ts.compression.gorilla.CompressorOS;
 
 public class GorillaCompressorOS implements ICompressor {
-    private final CompressorOptimizeStream gorilla;
+    private final CompressorOS gorilla;
     public GorillaCompressorOS() {
-        this.gorilla = new CompressorOptimizeStream();
+        this.gorilla = new CompressorOS();
     }
 
     @Override public void addValue(double v) {

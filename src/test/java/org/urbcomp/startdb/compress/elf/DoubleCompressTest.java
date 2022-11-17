@@ -39,13 +39,18 @@ class DoubleCompressTest {
             FileReader fileReader = new FileReader();
             List<Double> values = fileReader.readFile(FILE_PATH + filename);
             ICompressor[] compressors = new ICompressor[]{
-                            new GorillaCompressorOS(),
-                            new ElfOnGorillaCompressorOS(),
-                            new ChimpCompressor(),
-                            new ElfOnChimpCompressor(),
+//                            new GorillaCompressorOS(),
+//                            new ElfOnGorillaCompressorOS(),
+//                            new ChimpCompressor(),
+//                            new ElfOnChimpCompressor(),
                             new ChimpNCompressor(128),
                             new ElfOnChimpNCompressor(128),
-                            new ElfOnChimpNCompressorO(128)
+                            new ElfOnChimpNCompressorO(128),
+                            new ElfOnChimpNCompressorO(64),
+                            new ElfOnChimpNCompressorO(32),
+                            new ElfOnChimpNCompressorO(16),
+                            new ElfOnChimpNCompressorO(8),
+                            new ElfOnChimpNCompressorO(4)
             };
             for(int i = 0;i < compressors.length; i++){
                 long totalSize = 0;
@@ -63,13 +68,18 @@ class DoubleCompressTest {
                 totalSize += compressor.getSize();
                 byte[] result = compressor.getBytes();
                 IDecompressor[] decompressors = new IDecompressor[]{
-                                new GorillaDecompressorOS(result),
-                                new ElfOnGorillaDecompressorOS(result),
-                                new ChimpDecompressor(result),
-                                new ElfOnChimpDecompressor(result),
+//                                new GorillaDecompressorOS(result),
+//                                new ElfOnGorillaDecompressorOS(result),
+//                                new ChimpDecompressor(result),
+//                                new ElfOnChimpDecompressor(result),
                                 new ChimpNDecompressor(result,128),
                                 new ElfOnChimpNDecompressor(result,128),
-                                new ElfOnChimpNDecompressor(result, 128)
+                                new ElfOnChimpNDecompressorO(result, 128),
+                                new ElfOnChimpNDecompressorO(result, 64),
+                                new ElfOnChimpNDecompressorO(result, 32),
+                                new ElfOnChimpNDecompressorO(result, 16),
+                                new ElfOnChimpNDecompressorO(result, 8),
+                                new ElfOnChimpNDecompressorO(result, 4)
                 };
                 IDecompressor decompressor = decompressors[i];
 

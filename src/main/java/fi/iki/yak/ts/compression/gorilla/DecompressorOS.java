@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-public class DecompressorOptimizeStream {
+public class DecompressorOS {
 
     private int storedLeadingZeros = Integer.MAX_VALUE;
     private int storedTrailingZeros = 0;
@@ -18,7 +18,7 @@ public class DecompressorOptimizeStream {
 
     private final static long END_SIGN = 0x0000000000000001L;
 
-    public DecompressorOptimizeStream(byte[] bs) {
+    public DecompressorOS(byte[] bs) {
         in = new InputBitStream(bs);
     }
 
