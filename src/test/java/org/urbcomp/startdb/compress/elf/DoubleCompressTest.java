@@ -37,14 +37,15 @@ class DoubleCompressTest {
     public void testCompress() {
         for (String filename : FILENAMES) {
             FileReader fileReader = new FileReader();
-            List<Double> values = fileReader.readFile(FILE_PATH + filename, 0);
+            List<Double> values = fileReader.readFile(FILE_PATH + filename);
             ICompressor[] compressors = new ICompressor[]{
                             new GorillaCompressorOS(),
                             new ElfOnGorillaCompressorOS(),
                             new ChimpCompressor(),
                             new ElfOnChimpCompressor(),
                             new ChimpNCompressor(128),
-                            new ElfOnChimpNCompressor(128)
+                            new ElfOnChimpNCompressor(128),
+                            new ElfOnChimpNCompressorO(128)
             };
             for(int i = 0;i < compressors.length; i++){
                 long totalSize = 0;
@@ -67,7 +68,8 @@ class DoubleCompressTest {
                                 new ChimpDecompressor(result),
                                 new ElfOnChimpDecompressor(result),
                                 new ChimpNDecompressor(result,128),
-                                new ElfOnChimpNDecompressor(result,128)
+                                new ElfOnChimpNDecompressor(result,128),
+                                new ElfOnChimpNDecompressor(result, 128)
                 };
                 IDecompressor decompressor = decompressors[i];
 
