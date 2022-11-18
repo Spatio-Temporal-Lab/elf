@@ -129,6 +129,7 @@ public class ElfXORCompressor {
         }
 
         if (xor == 0) {
+            // case 00
             out.writeInt(previousIndex, this.flagZeroSize);
             size += this.flagZeroSize;
             thisSize += this.flagZeroSize;
@@ -137,6 +138,7 @@ public class ElfXORCompressor {
             int leadingZeros = leadingRound[Long.numberOfLeadingZeros(xor)];
 
             if (trailingZeros > threshold) {
+                // case 01
                 int significantBits = 64 - leadingZeros - trailingZeros;
                 out.writeInt(512 * (previousValues + previousIndex)
                                                 + 64 * leadingRepresentation[leadingZeros] + significantBits,
@@ -147,12 +149,14 @@ public class ElfXORCompressor {
                 thisSize += significantBits + this.flagOneSize;
                 storedLeadingZeros = 65;
             } else if (leadingZeros == storedLeadingZeros) {
+                // case 10
                 out.writeInt(2, 2);
                 int significantBits = 64 - leadingZeros;
                 out.writeLong(xor, significantBits);
                 size += 2 + significantBits;
                 thisSize += 2 + significantBits;
             } else {
+                // case 11
                 storedLeadingZeros = leadingZeros;
                 int significantBits = 64 - leadingZeros;
                 out.writeInt(24 + leadingRepresentation[leadingZeros], 5);
