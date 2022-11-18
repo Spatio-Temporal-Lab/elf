@@ -2,7 +2,7 @@ package gr.aueb.delorean.chimp;
 
 import java.util.Arrays;
 
-public class ChimpNOptimize {
+public class ChimpNO {
     private int storedLeadingZeros = Integer.MAX_VALUE;
     private final long[] storedValues;
     private boolean first = true;
@@ -33,7 +33,7 @@ public class ChimpNOptimize {
     private final int flagZeroSize;
 
     // We should have access to the series?
-    public ChimpNOptimize(int previousValues) {
+    public ChimpNO(int previousValues) {
         out = new OutputBitStream(
                         new byte[8125]); // for elf, we need one more bit for each at the worst case
         size = 0;
@@ -168,13 +168,5 @@ public class ChimpNOptimize {
 
     public int getSize() {
         return size;
-    }
-
-    private static String longToBinaryString(long v) {
-        StringBuilder str = new StringBuilder(Long.toBinaryString(v));
-        while (str.length() < 64) {
-            str.insert(0, "0");
-        }
-        return str.toString();
     }
 }
