@@ -5,7 +5,6 @@ import gr.aueb.delorean.chimp.OutputBitStream;
 import java.util.Arrays;
 
 public class ElfXORCompressor {
-    private int storedLeadingZeros = Integer.MAX_VALUE;
     private final long[] storedValues;
     private boolean first = true;
     private int size;
@@ -144,36 +143,22 @@ public class ElfXORCompressor {
                     size += 2 + previousValuesLog2 + 3 + 1 + 6 + centerBits;
                     thisSize += 2 + previousValuesLog2 + 3 + 1 + 6 + centerBits;
                 }
-
             }
-            storedLeadingZeros = 65;
         } else {
+            // case 1
             m = index % previousValues;
             xor = value ^ storedValues[m];
             int leadingZeros = leadingRound[Long.numberOfLeadingZeros(xor)];
             int trailingZeros = Long.numberOfTrailingZeros(xor);
             int centerBits = 64 - leadingZeros - trailingZeros;
 
-            if(leadingZeros == storedLeadingZeros) {
-                // case 10
-                out.writeInt(2, 2);
-                out.writeInt(centerBits, 6);
-                out.writeLong(xor >>> trailingZeros, centerBits);
+            out.writeBit(true);
+            out.writeInt(leadingRepresentation[leadingZeros], 3);
+            out.writeInt(centerBits, 6);
+            out.writeLong(xor >>> trailingZeros, centerBits);
 
-                size += 2 + 6 + centerBits;
-                thisSize += 2 + 6 + centerBits;
-            } else {
-                // case 11
-                out.writeInt(3, 2);
-                out.writeInt(leadingRepresentation[leadingZeros], 3);
-                out.writeInt(centerBits, 6);
-                out.writeLong(xor >>> trailingZeros, centerBits);
-
-                size += 2 + 3 + 6 + centerBits;
-                thisSize += 2 + 3 + 6 + centerBits;
-
-                storedLeadingZeros = leadingZeros;
-            }
+            size += 1 + 3 + 6 + centerBits;
+            thisSize += 1 + 3 + 6 + centerBits;
         }
 
         current = (current + 1) % previousValues;

@@ -8,7 +8,6 @@ import java.util.List;
 
 public class ElfXORDecompressor {
 
-    private int storedLeadingZeros = Integer.MAX_VALUE;
     private long storedVal = 0;
     private final long[] storedValues;
     private int current = 0;
@@ -79,52 +78,37 @@ public class ElfXORDecompressor {
 
     private void nextValue() throws IOException {
         // Read value
-        int flag = in.readInt(2);
+        int flag = in.readInt(1);
         long value;
         int centerBits;
         int trailingZeros;
+        int leadingZeros;
         int m;
-        switch (flag) {
-            case 3:
-                storedLeadingZeros = leadingRepresentation[in.readInt(3)];
-                centerBits = in.readInt(6);
-                if(centerBits == 0) {
-                    centerBits = 64;
-                }
-                trailingZeros = 64 - storedLeadingZeros - centerBits;
-                value = in.readLong(centerBits) << trailingZeros;
-                value = storedVal ^ value;
 
-                if (value == END_SIGN) {
-                    endOfStream = true;
-                    return;
-                } else {
-                    storedVal = value;
-                    current = (current + 1) % previousValues;
-                    storedValues[current] = storedVal;
-                }
-                break;
-            case 2:
-                centerBits = in.readInt(6);
-                if(centerBits == 0) {
-                    centerBits = 64;
-                }
-                trailingZeros = 64 - storedLeadingZeros - centerBits;
-                value = in.readLong(centerBits) << trailingZeros;
-                value = storedVal ^ value;
-                if (value == END_SIGN) {
-                    endOfStream = true;
-                    return;
-                } else {
-                    storedVal = value;
-                    current = (current + 1) % previousValues;
-                    storedValues[current] = storedVal;
-                }
-                break;
-            case 1:
+        if (flag == 1) {
+            // case 1
+            leadingZeros = leadingRepresentation[in.readInt(3)];
+            centerBits = in.readInt(6);
+            if(centerBits == 0) {
+                centerBits = 64;
+            }
+            trailingZeros = 64 - leadingZeros - centerBits;
+            value = in.readLong(centerBits) << trailingZeros;
+            value = storedVal ^ value;
+
+            if (value == END_SIGN) {
+                endOfStream = true;
+            } else {
+                storedVal = value;
+                current = (current + 1) % previousValues;
+                storedValues[current] = storedVal;
+            }
+        } else {
+            flag = in.readInt(1);
+            if(flag == 1) {
                 m = in.readInt(previousValuesLog2);
                 storedVal = storedValues[m];
-                storedLeadingZeros = leadingRepresentation[in.readInt(3)];
+                leadingZeros = leadingRepresentation[in.readInt(3)];
 
                 if (in.readInt(1) == 0) {
                     centerBits = in.readInt(4);
@@ -138,25 +122,23 @@ public class ElfXORDecompressor {
                     }
                 }
 
-                trailingZeros = 64 - storedLeadingZeros - centerBits;
+                trailingZeros = 64 - leadingZeros - centerBits;
                 value = in.readLong(centerBits) << trailingZeros;
 
                 value = storedVal ^ value;
                 if (value == END_SIGN) {
                     endOfStream = true;
-                    return;
                 } else {
                     storedVal = value;
                     current = (current + 1) % previousValues;
                     storedValues[current] = storedVal;
                 }
-                break;
-            default:
+            } else {
                 // else -> same value as before
                 storedVal = storedValues[(int) in.readLong(previousValuesLog2)];
                 current = (current + 1) % previousValues;
                 storedValues[current] = storedVal;
-                break;
+            }
         }
     }
 }
