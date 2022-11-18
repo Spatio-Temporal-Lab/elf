@@ -9,7 +9,6 @@ import java.util.List;
 public class ElfXORDecompressor {
 
     private int storedLeadingZeros = Integer.MAX_VALUE;
-    private int storedTrailingZeros = 0;
     private long storedVal = 0;
     private final long[] storedValues;
     private int current = 0;
@@ -19,7 +18,6 @@ public class ElfXORDecompressor {
     private final InputBitStream in;
     private final int previousValues;
     private final int previousValuesLog2;
-    private final int initialFill;
 
     public final static short[] leadingRepresentation = {0, 8, 12, 16, 18, 20, 22, 24};
 
@@ -29,7 +27,6 @@ public class ElfXORDecompressor {
         in = new InputBitStream(bs);
         this.previousValues = previousValues;
         this.previousValuesLog2 =  (int)(Math.log(previousValues) / Math.log(2));
-        this.initialFill = previousValuesLog2 + 9;
         this.storedValues = new long[previousValues];
     }
 
@@ -86,6 +83,7 @@ public class ElfXORDecompressor {
         long value;
         int centerBits;
         int trailingZeros;
+        int m;
         switch (flag) {
             case 3:
                 storedLeadingZeros = leadingRepresentation[in.readInt(3)];
@@ -124,18 +122,16 @@ public class ElfXORDecompressor {
                 }
                 break;
             case 1:
-                int fill = this.initialFill;
-                int temp = in.readInt(fill);
-                int index = temp >>> (fill -= previousValuesLog2) & (1 << previousValuesLog2) - 1;
-                storedLeadingZeros = leadingRepresentation[temp >>> (fill -= 3) & (1 << 3) - 1];
-                int significantBits = temp >>> (fill -= 6) & (1 << 6) - 1;
-                storedVal = storedValues[index];
-                if(significantBits == 0) {
-                    significantBits = 64;
+                m = in.readInt(previousValuesLog2);
+                storedVal = storedValues[m];
+                storedLeadingZeros = leadingRepresentation[in.readInt(3)];
+                centerBits = in.readInt(6);
+                if (centerBits == 0) {
+                    centerBits = 64;
                 }
-                storedTrailingZeros = 64 - significantBits - storedLeadingZeros;
-                value = in.readLong(64 - storedLeadingZeros - storedTrailingZeros);
-                value <<= storedTrailingZeros;
+                trailingZeros = 64 - storedLeadingZeros - centerBits;
+                value = in.readLong(centerBits) << trailingZeros;
+
                 value = storedVal ^ value;
                 if (value == END_SIGN) {
                     endOfStream = true;

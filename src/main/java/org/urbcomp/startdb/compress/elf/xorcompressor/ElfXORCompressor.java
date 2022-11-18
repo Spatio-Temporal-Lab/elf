@@ -9,7 +9,6 @@ public class ElfXORCompressor {
     private final long[] storedValues;
     private boolean first = true;
     private int size;
-    private final int threshold;
     private final static long END_SIGN = 0x0000000000000001L;
     public final static short[] leadingRepresentation =
                     {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7,
@@ -25,14 +24,14 @@ public class ElfXORCompressor {
     private final OutputBitStream out;
     private final int previousValues;
 
+    private final int previousValuesLog2;
+
     private final long setLsb;
 
     private final int shiftCount;
     private final int[] indices;
     private int index = 0;
     private int current = 0;
-    private final int flagOneSize;
-    private final int flagZeroSize;
 
     // We should have access to the series?
     public ElfXORCompressor(int previousValues) {
@@ -40,15 +39,13 @@ public class ElfXORCompressor {
                         new byte[8125]); // for elf, we need one more bit for each at the worst case
         size = 0;
         this.previousValues = previousValues;
-        int previousValuesLog2 = (int) (Math.log(previousValues) / Math.log(2));
-        this.threshold = 6 + previousValuesLog2;
+        this.previousValuesLog2 = (int) (Math.log(previousValues) / Math.log(2));
+        int threshold = 6 + previousValuesLog2;
         this.shiftCount = 64 - threshold - 1;
         this.setLsb = ((long) Math.pow(2, threshold + 1) - 1) << shiftCount;
         this.indices = new int[(int) Math.pow(2, threshold + 1)];
         Arrays.fill(this.indices, -1);
         this.storedValues = new long[previousValues];
-        this.flagZeroSize = previousValuesLog2 + 2;
-        this.flagOneSize = previousValuesLog2 + 11;
     }
 
     public OutputBitStream getOutputStream() {
@@ -109,68 +106,64 @@ public class ElfXORCompressor {
     private int compressValue(long value) {
         int thisSize = 0;
         int key = (int) ((value & setLsb) >>> shiftCount);
-        long xor;
-        int previousIndex;
-        int trailingZeros = 0;
-        int currIndex = indices[key];
-        if (currIndex!= -1 && (index - currIndex) < previousValues) {
-            long tempXor = value ^ storedValues[currIndex % previousValues];
-            trailingZeros = Long.numberOfTrailingZeros(tempXor);
-            if (trailingZeros > threshold) {
-                previousIndex = currIndex % previousValues;
-                xor = tempXor;
-            } else {
-                previousIndex = index % previousValues;
-                xor = storedValues[previousIndex] ^ value;
-            }
-        } else {
-            previousIndex = index % previousValues;
-            xor = storedValues[previousIndex] ^ value;
-        }
+        int m = indices[key];
 
-        if (xor == 0) {
-            // case 00
-            out.writeInt(previousIndex, this.flagZeroSize);
-            size += this.flagZeroSize;
-            thisSize += this.flagZeroSize;
+        long xor;
+
+        if (m != -1 && (index - m) < previousValues) {
+            m = m % previousValues;
+            xor = value ^ storedValues[m];
+            if (xor == 0) {
+                // case 00
+                out.writeInt(m, previousValuesLog2 + 2);
+
+                size += previousValuesLog2 + 2;
+                thisSize += previousValuesLog2 + 2;
+            } else {
+                // case 01
+                int leadingZeros = leadingRound[Long.numberOfLeadingZeros(xor)];
+                int trailingZeros = Long.numberOfTrailingZeros(xor);
+                int centerBits = 64 - leadingZeros - trailingZeros;
+
+                out.writeInt(1, 2);
+                out.writeInt(m, previousValuesLog2);
+                out.writeInt(leadingRepresentation[leadingZeros], 3);
+                out.writeInt(centerBits, 6);
+                out.writeLong(xor >>> trailingZeros, centerBits);
+
+                size += 2 + previousValuesLog2 + 3 + 6 + centerBits;
+                thisSize += 2 + previousValuesLog2 + 3 + 6 + centerBits;
+            }
             storedLeadingZeros = 65;
         } else {
+            m = index % previousValues;
+            xor = value ^ storedValues[m];
             int leadingZeros = leadingRound[Long.numberOfLeadingZeros(xor)];
+            int trailingZeros = Long.numberOfTrailingZeros(xor);
+            int centerBits = 64 - leadingZeros - trailingZeros;
 
-            if (trailingZeros > threshold) {
-                // case 01
-                int significantBits = 64 - leadingZeros - trailingZeros;
-                out.writeInt(512 * (previousValues + previousIndex)
-                                                + 64 * leadingRepresentation[leadingZeros] + significantBits,
-                                this.flagOneSize);
-                out.writeLong(xor >>> trailingZeros,
-                                significantBits); // Store the meaningful bits of XOR
-                size += significantBits + this.flagOneSize;
-                thisSize += significantBits + this.flagOneSize;
-                storedLeadingZeros = 65;
-            } else if (leadingZeros == storedLeadingZeros) {
+            if(leadingZeros == storedLeadingZeros) {
                 // case 10
                 out.writeInt(2, 2);
-                trailingZeros = Long.numberOfTrailingZeros(xor);
-                int significantBits = 64 - leadingZeros - trailingZeros;
-                out.writeInt(significantBits, 6);
-                out.writeLong(xor >>> trailingZeros, significantBits);
-                size += 8 + significantBits;
-                thisSize += 8 + significantBits;
+                out.writeInt(centerBits, 6);
+                out.writeLong(xor >>> trailingZeros, centerBits);
+
+                size += 2 + 6 + centerBits;
+                thisSize += 2 + 6 + centerBits;
             } else {
                 // case 11
-                storedLeadingZeros = leadingZeros;
-                trailingZeros = Long.numberOfTrailingZeros(xor);
-                int significantBits = 64 - leadingZeros - trailingZeros;
-
                 out.writeInt(3, 2);
                 out.writeInt(leadingRepresentation[leadingZeros], 3);
-                out.writeInt(significantBits, 6);
-                out.writeLong(xor >>> trailingZeros, significantBits);
-                size += 2 + 3 + 6 + significantBits;
-                thisSize += 2 + 3 + 6 + significantBits;
+                out.writeInt(centerBits, 6);
+                out.writeLong(xor >>> trailingZeros, centerBits);
+
+                size += 2 + 3 + 6 + centerBits;
+                thisSize += 2 + 3 + 6 + centerBits;
+
+                storedLeadingZeros = leadingZeros;
             }
         }
+
         current = (current + 1) % previousValues;
         storedValues[current] = value;
         index++;
