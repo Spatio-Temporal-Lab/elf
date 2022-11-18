@@ -1,10 +1,16 @@
 package org.urbcomp.startdb.compress.elf;
 
 import org.junit.jupiter.api.Test;
-import org.urbcomp.startdb.compress.elf.compressor.*;
-import org.urbcomp.startdb.compress.elf.decompressor.*;
+import org.urbcomp.startdb.compress.elf.compressor.ChimpNCompressor;
+import org.urbcomp.startdb.compress.elf.compressor.ElfCompressor;
+import org.urbcomp.startdb.compress.elf.compressor.ICompressor;
+import org.urbcomp.startdb.compress.elf.decompressor.ChimpNDecompressor;
+import org.urbcomp.startdb.compress.elf.decompressor.ElfDecompressor;
+import org.urbcomp.startdb.compress.elf.decompressor.IDecompressor;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -35,6 +41,8 @@ class DoubleCompressTest {
 
     @Test
     public void testCompress() {
+        HashMap<String, Double> total = new HashMap<>();
+
         for (String filename : FILENAMES) {
             FileReader fileReader = new FileReader();
             List<Double> values = fileReader.readFile(FILE_PATH + filename);
@@ -44,15 +52,15 @@ class DoubleCompressTest {
 //                            new ChimpCompressor(),
 //                            new ElfOnChimpCompressor(),
                             new ChimpNCompressor(128),
-                            new ElfOnChimpNCompressor(128),
-                            new ElfOnChimpNCompressorO(128),
-                            new ElfOnChimpNCompressorO(64),
-                            new ElfOnChimpNCompressorO(32),
-                            new ElfOnChimpNCompressorO(16),
-                            new ElfOnChimpNCompressorO(8),
-                            new ElfOnChimpNCompressorO(4)
+//                            new ElfOnChimpNCompressor(128),
+//                            new ElfOnChimpNCompressorO(4),
+//                            new ElfCompressor(128),
+//                            new ElfCompressor(64),
+                            new ElfCompressor(32),
+//                            new ElfCompressor(16)
             };
-            for(int i = 0;i < compressors.length; i++){
+
+            for (int i = 0;i < compressors.length; i++){
                 long totalSize = 0;
                 long encodingDuration = 0;
                 long decodingDuration = 0;
@@ -73,13 +81,12 @@ class DoubleCompressTest {
 //                                new ChimpDecompressor(result),
 //                                new ElfOnChimpDecompressor(result),
                                 new ChimpNDecompressor(result,128),
-                                new ElfOnChimpNDecompressor(result,128),
-                                new ElfOnChimpNDecompressorO(result, 128),
-                                new ElfOnChimpNDecompressorO(result, 64),
-                                new ElfOnChimpNDecompressorO(result, 32),
-                                new ElfOnChimpNDecompressorO(result, 16),
-                                new ElfOnChimpNDecompressorO(result, 8),
-                                new ElfOnChimpNDecompressorO(result, 4)
+//                                new ElfOnChimpNDecompressor(result,128),
+//                                new ElfOnChimpNDecompressorO(result, 4),
+//                                new ElfDecompressor(result, 128),
+//                                new ElfDecompressor(result, 64),
+                                new ElfDecompressor(result, 32),
+//                                new ElfDecompressor(result, 16)
                 };
                 IDecompressor decompressor = decompressors[i];
 
@@ -91,8 +98,19 @@ class DoubleCompressTest {
                     assertEquals(values.get(j), uncompressedValues.get(j), "Value did not match");
                 }
                 System.out.printf("%s: %s \t Compression time per block: %.6f, Decompression time per block: %.6f, Compression Ratio: %.6f%n", compressor.getClass().getSimpleName(), filename, encodingDuration / 1000000.0, decodingDuration / 1000000.0, totalSize / (values.size()*64.0));
+                String key = compressor.getClass().getSimpleName();
+                if(!total.containsKey(key)) {
+                    total.put(key, totalSize / (values.size()*64.0));
+                } else {
+                    Double exist = total.get(key);
+                    total.put(key, exist + totalSize / (values.size()*64.0));
+                }
             }
             System.out.println();
+        }
+
+        for (Map.Entry<String, Double> kv: total.entrySet()) {
+            System.out.println(kv.getKey() + ": " + (kv.getValue() / FILENAMES.length));
         }
     }
 }

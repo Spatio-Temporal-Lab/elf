@@ -78,50 +78,48 @@ public class ElfXORDecompressor {
 
     private void nextValue() throws IOException {
         // Read value
-        int flag = in.readInt(1);
+        int flag = in.readInt(2);
         long value;
         int centerBits;
         int trailingZeros;
         int leadingZeros;
         int m;
 
-        if (flag == 1) {
-            // case 1
-            leadingZeros = leadingRepresentation[in.readInt(3)];
-            centerBits = in.readInt(6);
-            if(centerBits == 0) {
-                centerBits = 64;
-            }
-            trailingZeros = 64 - leadingZeros - centerBits;
-            value = in.readLong(centerBits) << trailingZeros;
-            value = storedVal ^ value;
+        switch (flag) {
+            case 3:
+                // case 11: m not found
+                leadingZeros = leadingRepresentation[in.readInt(3)];
+                centerBits = in.readInt(6);
+                if(centerBits == 0) {
+                    centerBits = 64;
+                }
+                trailingZeros = 64 - leadingZeros - centerBits;
+                value = in.readLong(centerBits) << trailingZeros;
+                value = storedVal ^ value;
 
-            if (value == END_SIGN) {
-                endOfStream = true;
-            } else {
-                storedVal = value;
+                if (value == END_SIGN) {
+                    endOfStream = true;
+                } else {
+                    storedVal = value;
+                    current = (current + 1) % previousValues;
+                    storedValues[current] = storedVal;
+                }
+                break;
+            case 2:
+                // case 10: same value as before
+                storedVal = storedValues[in.readInt(previousValuesLog2)];
                 current = (current + 1) % previousValues;
                 storedValues[current] = storedVal;
-            }
-        } else {
-            flag = in.readInt(1);
-            if(flag == 1) {
+                break;
+            case 1:
+                // case 01: m is found and center > 16
                 m = in.readInt(previousValuesLog2);
                 storedVal = storedValues[m];
                 leadingZeros = leadingRepresentation[in.readInt(3)];
-
-                if (in.readInt(1) == 0) {
-                    centerBits = in.readInt(4);
-                    if (centerBits == 0) {
-                        centerBits = 16;
-                    }
-                } else {
-                    centerBits = in.readInt(6);
-                    if (centerBits == 0) {
-                        centerBits = 64;
-                    }
+                centerBits = in.readInt(6);
+                if (centerBits == 0) {
+                    centerBits = 64;
                 }
-
                 trailingZeros = 64 - leadingZeros - centerBits;
                 value = in.readLong(centerBits) << trailingZeros;
 
@@ -133,12 +131,28 @@ public class ElfXORDecompressor {
                     current = (current + 1) % previousValues;
                     storedValues[current] = storedVal;
                 }
-            } else {
-                // else -> same value as before
-                storedVal = storedValues[(int) in.readLong(previousValuesLog2)];
-                current = (current + 1) % previousValues;
-                storedValues[current] = storedVal;
-            }
+                break;
+            default:
+                // case 00: m is found and center <= 16
+                m = in.readInt(previousValuesLog2);
+                storedVal = storedValues[m];
+                leadingZeros = leadingRepresentation[in.readInt(3)];
+                centerBits = in.readInt(4);
+                if (centerBits == 0) {
+                    centerBits = 16;
+                }
+                trailingZeros = 64 - leadingZeros - centerBits;
+                value = in.readLong(centerBits) << trailingZeros;
+
+                value = storedVal ^ value;
+                if (value == END_SIGN) {
+                    endOfStream = true;
+                } else {
+                    storedVal = value;
+                    current = (current + 1) % previousValues;
+                    storedValues[current] = storedVal;
+                }
+                break;
         }
     }
 }
