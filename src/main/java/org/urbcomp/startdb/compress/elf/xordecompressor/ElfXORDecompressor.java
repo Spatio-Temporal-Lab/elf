@@ -125,10 +125,19 @@ public class ElfXORDecompressor {
                 m = in.readInt(previousValuesLog2);
                 storedVal = storedValues[m];
                 storedLeadingZeros = leadingRepresentation[in.readInt(3)];
-                centerBits = in.readInt(6);
-                if (centerBits == 0) {
-                    centerBits = 64;
+
+                if (in.readInt(1) == 0) {
+                    centerBits = in.readInt(4);
+                    if (centerBits == 0) {
+                        centerBits = 16;
+                    }
+                } else {
+                    centerBits = in.readInt(6);
+                    if (centerBits == 0) {
+                        centerBits = 64;
+                    }
                 }
+
                 trailingZeros = 64 - storedLeadingZeros - centerBits;
                 value = in.readLong(centerBits) << trailingZeros;
 

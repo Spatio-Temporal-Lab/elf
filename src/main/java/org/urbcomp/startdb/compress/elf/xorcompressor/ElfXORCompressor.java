@@ -36,7 +36,7 @@ public class ElfXORCompressor {
     // We should have access to the series?
     public ElfXORCompressor(int previousValues) {
         out = new OutputBitStream(
-                        new byte[8125]); // for elf, we need one more bit for each at the worst case
+                        new byte[9000]); // for elf, we need one more bit for each at the worst case
         size = 0;
         this.previousValues = previousValues;
         this.previousValuesLog2 = (int) (Math.log(previousValues) / Math.log(2));
@@ -128,11 +128,23 @@ public class ElfXORCompressor {
                 out.writeInt(1, 2);
                 out.writeInt(m, previousValuesLog2);
                 out.writeInt(leadingRepresentation[leadingZeros], 3);
-                out.writeInt(centerBits, 6);
-                out.writeLong(xor >>> trailingZeros, centerBits);
 
-                size += 2 + previousValuesLog2 + 3 + 6 + centerBits;
-                thisSize += 2 + previousValuesLog2 + 3 + 6 + centerBits;
+                if (centerBits <= 16) {
+                    out.writeBit(false);
+                    out.writeInt(centerBits, 4);
+                    out.writeLong(xor >>> trailingZeros, centerBits);
+
+                    size += 2 + previousValuesLog2 + 3 + 1 + 4 + centerBits;
+                    thisSize += 2 + previousValuesLog2 + 3 + 1 + 4 + centerBits;
+                } else {
+                    out.writeBit(true);
+                    out.writeInt(centerBits, 6);
+                    out.writeLong(xor >>> trailingZeros, centerBits);
+
+                    size += 2 + previousValuesLog2 + 3 + 1 + 6 + centerBits;
+                    thisSize += 2 + previousValuesLog2 + 3 + 1 + 6 + centerBits;
+                }
+
             }
             storedLeadingZeros = 65;
         } else {
