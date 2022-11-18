@@ -84,10 +84,17 @@ public class ElfXORDecompressor {
         // Read value
         int flag = in.readInt(2);
         long value;
+        int centerBits;
+        int trailingZeros;
         switch (flag) {
             case 3:
                 storedLeadingZeros = leadingRepresentation[in.readInt(3)];
-                value = in.readLong(64 - storedLeadingZeros);
+                centerBits = in.readInt(6);
+                if(centerBits == 0) {
+                    centerBits = 64;
+                }
+                trailingZeros = 64 - storedLeadingZeros - centerBits;
+                value = in.readLong(centerBits) << trailingZeros;
                 value = storedVal ^ value;
 
                 if (value == END_SIGN) {
@@ -100,8 +107,11 @@ public class ElfXORDecompressor {
                 }
                 break;
             case 2:
-                int centerBits = in.readInt(6);
-                int trailingZeros = 64 - storedLeadingZeros - centerBits;
+                centerBits = in.readInt(6);
+                if(centerBits == 0) {
+                    centerBits = 64;
+                }
+                trailingZeros = 64 - storedLeadingZeros - centerBits;
                 value = in.readLong(centerBits) << trailingZeros;
                 value = storedVal ^ value;
                 if (value == END_SIGN) {

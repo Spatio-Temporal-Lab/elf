@@ -160,12 +160,15 @@ public class ElfXORCompressor {
             } else {
                 // case 11
                 storedLeadingZeros = leadingZeros;
-                int significantBits = 64 - leadingZeros;
+                trailingZeros = Long.numberOfTrailingZeros(xor);
+                int significantBits = 64 - leadingZeros - trailingZeros;
+
                 out.writeInt(3, 2);
                 out.writeInt(leadingRepresentation[leadingZeros], 3);
-                out.writeLong(xor, significantBits);
-                size += 5 + significantBits;
-                thisSize += 5 + significantBits;
+                out.writeInt(significantBits, 6);
+                out.writeLong(xor >>> trailingZeros, significantBits);
+                size += 2 + 3 + 6 + significantBits;
+                thisSize += 2 + 3 + 6 + significantBits;
             }
         }
         current = (current + 1) % previousValues;
