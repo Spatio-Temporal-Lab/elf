@@ -100,7 +100,9 @@ public class ElfXORDecompressor {
                 }
                 break;
             case 2:
-                value = in.readLong(64 - storedLeadingZeros);
+                int centerBits = in.readInt(6);
+                int trailingZeros = 64 - storedLeadingZeros - centerBits;
+                value = in.readLong(centerBits) << trailingZeros;
                 value = storedVal ^ value;
                 if (value == END_SIGN) {
                     endOfStream = true;
