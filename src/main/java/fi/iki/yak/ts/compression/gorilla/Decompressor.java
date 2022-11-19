@@ -18,7 +18,7 @@ public class Decompressor {
 
     private BitInput in;
 
-    private final static long END_SIGN = 0x0000000000000001L;
+    private final static long END_SIGN = Double.doubleToLongBits(Double.NaN);
 
     public Decompressor(BitInput input) {
         in = input;

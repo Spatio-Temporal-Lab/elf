@@ -13,7 +13,7 @@ public class Compressor {
     private long storedVal = 0;
     private boolean first = true;
     private int size;
-    private final static long END_SIGN = 0x0000000000000001L;
+    private final static long END_SIGN = Double.doubleToLongBits(Double.NaN);
     //    public final static short FIRST_DELTA_BITS = 27;
 
     private final BitOutput out;

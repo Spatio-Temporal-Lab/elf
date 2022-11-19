@@ -8,7 +8,7 @@ public class CompressorOS {
     private long storedVal = 0;
     private boolean first = true;
     private int size;
-    private final static long END_SIGN = 0x0000000000000001L;
+    private final static long END_SIGN = Double.doubleToLongBits(Double.NaN);
 
     private final OutputBitStream out;
 

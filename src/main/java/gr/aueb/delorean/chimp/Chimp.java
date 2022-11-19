@@ -12,7 +12,7 @@ public class Chimp {
     private long storedVal = 0;
     private boolean first = true;
     private int size;
-    private final static long END_SIGN = 0x0000000000000001L;
+    private final static long END_SIGN = Double.doubleToLongBits(Double.NaN);
     public final static int THRESHOLD = 6;
 
     public final static short[] leadingRepresentation = {0, 0, 0, 0, 0, 0, 0, 0,

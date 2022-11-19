@@ -1,12 +1,8 @@
 package org.urbcomp.startdb.compress.elf;
 
 import org.junit.jupiter.api.Test;
-import org.urbcomp.startdb.compress.elf.compressor.ChimpNCompressor;
-import org.urbcomp.startdb.compress.elf.compressor.ElfCompressor;
-import org.urbcomp.startdb.compress.elf.compressor.ICompressor;
-import org.urbcomp.startdb.compress.elf.decompressor.ChimpNDecompressor;
-import org.urbcomp.startdb.compress.elf.decompressor.ElfDecompressor;
-import org.urbcomp.startdb.compress.elf.decompressor.IDecompressor;
+import org.urbcomp.startdb.compress.elf.compressor.*;
+import org.urbcomp.startdb.compress.elf.decompressor.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -35,8 +31,8 @@ class DoubleCompressTest {
         "/l4d2_player_stats.csv",
         "/percentage_of_alcohol.csv",
         "/electric_vehicle_charging.csv",
-        "/ECMWF Interim Full Daily Invariant High Vegetation Cover.csv",
-        "/ECMWF Interim Full Daily Invariant Low Vegetation Cover.csv"
+//        "/ECMWF Interim Full Daily Invariant High Vegetation Cover.csv",
+//        "/ECMWF Interim Full Daily Invariant Low Vegetation Cover.csv"
     };
 
     @Test
@@ -49,12 +45,12 @@ class DoubleCompressTest {
             FileReader fileReader = new FileReader();
             List<Double> values = fileReader.readFile(FILE_PATH + filename);
             ICompressor[] compressors = new ICompressor[]{
-//                            new GorillaCompressorOS(),
-//                            new ElfOnGorillaCompressorOS(),
-//                            new ChimpCompressor(),
-//                            new ElfOnChimpCompressor(),
+                            new GorillaCompressorOS(),
+                            new ElfOnGorillaCompressorOS(),
+                            new ChimpCompressor(),
+                            new ElfOnChimpCompressor(),
                             new ChimpNCompressor(128),
-//                            new ElfOnChimpNCompressor(128),
+                            new ElfOnChimpNCompressor(128),
                             new ElfCompressor(2),
             };
 
@@ -74,12 +70,12 @@ class DoubleCompressTest {
                 totalSize += compressor.getSize();
                 byte[] result = compressor.getBytes();
                 IDecompressor[] decompressors = new IDecompressor[]{
-//                                new GorillaDecompressorOS(result),
-//                                new ElfOnGorillaDecompressorOS(result),
-//                                new ChimpDecompressor(result),
-//                                new ElfOnChimpDecompressor(result),
+                                new GorillaDecompressorOS(result),
+                                new ElfOnGorillaDecompressorOS(result),
+                                new ChimpDecompressor(result),
+                                new ElfOnChimpDecompressor(result),
                                 new ChimpNDecompressor(result,128),
-//                                new ElfOnChimpNDecompressor(result,128),
+                                new ElfOnChimpNDecompressor(result,128),
                                 new ElfDecompressor(result, 2)
                 };
                 IDecompressor decompressor = decompressors[i];

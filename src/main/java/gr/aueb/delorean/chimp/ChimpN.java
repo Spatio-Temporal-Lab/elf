@@ -14,7 +14,7 @@ public class ChimpN {
     private int size;
     private int previousValuesLog2;
     private int threshold;
-    private final static long END_SIGN = 0x0000000000000001L;
+    private final static long END_SIGN = Double.doubleToLongBits(Double.NaN);
     public final static short[] leadingRepresentation = {0, 0, 0, 0, 0, 0, 0, 0,
             1, 1, 1, 1, 2, 2, 2, 2,
             3, 3, 4, 4, 5, 5, 6, 6,

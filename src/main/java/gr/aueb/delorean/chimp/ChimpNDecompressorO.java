@@ -21,7 +21,7 @@ public class ChimpNDecompressorO {
 
     public final static short[] leadingRepresentation = {0, 8, 12, 16, 18, 20, 22, 24};
 
-    private final static long END_SIGN = 0x0000000000000001L;
+    private final static long END_SIGN = Double.doubleToLongBits(Double.NaN);
 
     public ChimpNDecompressorO(byte[] bs, int previousValues) {
         in = new InputBitStream(bs);
