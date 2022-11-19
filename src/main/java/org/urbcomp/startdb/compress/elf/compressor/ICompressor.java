@@ -5,4 +5,5 @@ public interface ICompressor {
     int getSize();
     byte[] getBytes();
     void close();
+    String getKey();
 }

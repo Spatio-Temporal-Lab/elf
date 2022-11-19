@@ -5,9 +5,11 @@ import org.urbcomp.startdb.compress.elf.xorcompressor.ElfXORCompressor;
 
 public class ElfCompressor extends AbstractElfCompressor {
     private final ElfXORCompressor xorCompressor;
+    private final int previousValues;
 
     public ElfCompressor(int previousValues) {
         xorCompressor = new ElfXORCompressor(previousValues);
+        this.previousValues = previousValues;
     }
 
     @Override protected int writeInt(int n, int len) {
@@ -34,5 +36,9 @@ public class ElfCompressor extends AbstractElfCompressor {
         // we write one more bit here, for marking an end of the stream.
         writeBit(false);
         xorCompressor.close();
+    }
+
+    @Override public String getKey() {
+        return "ElfCompressor_" + this.previousValues;
     }
 }

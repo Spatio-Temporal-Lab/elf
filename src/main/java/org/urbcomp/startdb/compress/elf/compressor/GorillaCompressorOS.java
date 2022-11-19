@@ -23,4 +23,8 @@ public class GorillaCompressorOS implements ICompressor {
     @Override public void close() {
         this.gorilla.close();
     }
+
+    @Override public String getKey() {
+        return "GorillaCompressorOS";
+    }
 }

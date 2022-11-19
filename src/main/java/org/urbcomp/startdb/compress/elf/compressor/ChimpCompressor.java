@@ -22,4 +22,8 @@ public class ChimpCompressor implements ICompressor {
     @Override public void close() {
         chimp.close();
     }
+
+    @Override public String getKey() {
+        return "ChimpCompressor";
+    }
 }

@@ -45,12 +45,18 @@ class DoubleCompressTest {
             FileReader fileReader = new FileReader();
             List<Double> values = fileReader.readFile(FILE_PATH + filename);
             ICompressor[] compressors = new ICompressor[]{
-                            new GorillaCompressorOS(),
+                            //new GorillaCompressorOS(),
                             new ElfOnGorillaCompressorOS(),
-                            new ChimpCompressor(),
-                            new ElfOnChimpCompressor(),
+                            //new ChimpCompressor(),
+                            //new ElfOnChimpCompressor(),
                             new ChimpNCompressor(128),
                             new ElfOnChimpNCompressor(128),
+                            new ElfCompressor(128),
+                            new ElfCompressor(64),
+                            new ElfCompressor(32),
+                            new ElfCompressor(16),
+                            new ElfCompressor(8),
+                            new ElfCompressor(4),
                             new ElfCompressor(2),
             };
 
@@ -70,12 +76,18 @@ class DoubleCompressTest {
                 totalSize += compressor.getSize();
                 byte[] result = compressor.getBytes();
                 IDecompressor[] decompressors = new IDecompressor[]{
-                                new GorillaDecompressorOS(result),
+                                //new GorillaDecompressorOS(result),
                                 new ElfOnGorillaDecompressorOS(result),
-                                new ChimpDecompressor(result),
-                                new ElfOnChimpDecompressor(result),
+                                //new ChimpDecompressor(result),
+                                //new ElfOnChimpDecompressor(result),
                                 new ChimpNDecompressor(result,128),
                                 new ElfOnChimpNDecompressor(result,128),
+                                new ElfDecompressor(result, 128),
+                                new ElfDecompressor(result, 64),
+                                new ElfDecompressor(result, 32),
+                                new ElfDecompressor(result, 16),
+                                new ElfDecompressor(result, 8),
+                                new ElfDecompressor(result, 4),
                                 new ElfDecompressor(result, 2)
                 };
                 IDecompressor decompressor = decompressors[i];
@@ -87,9 +99,9 @@ class DoubleCompressTest {
                 for (int j = 0; j < values.size(); j++) {
                     assertEquals(values.get(j), uncompressedValues.get(j), "Value did not match");
                 }
-                System.out.printf("%s: %s \t Compression Ratio: %.6f, Compression time per block: %.6f, Decompression time per block: %.6f%n", compressor.getClass().getSimpleName(), filename, totalSize / (values.size()*64.0), encodingDuration / 1000000.0, decodingDuration / 1000000.0);
+                System.out.printf("%s: %s \t Compression Ratio: %.6f, Compression time per block: %.6f, Decompression time per block: %.6f%n", compressor.getKey(), filename, totalSize / (values.size()*64.0), encodingDuration / 1000000.0, decodingDuration / 1000000.0);
 
-                String key = compressor.getClass().getSimpleName();
+                String key = compressor.getKey();
                 if(!totalCompressionRatio.containsKey(key)) {
                     totalCompressionRatio.put(key, totalSize / (values.size()*64.0));
                     totalCompressionTime.put(key, encodingDuration / 1000000.0);

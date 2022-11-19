@@ -35,4 +35,8 @@ public class ElfOnGorillaCompressorOS extends AbstractElfCompressor{
         writeBit(false);
         gorilla.close();
     }
+
+    @Override public String getKey() {
+        return "ElfOnGorillaCompressorOS";
+    }
 }

@@ -4,9 +4,11 @@ import gr.aueb.delorean.chimp.ChimpN;
 
 public class ChimpNCompressor implements ICompressor {
     private final ChimpN chimpN;
+    private final int previousValues;
 
     public ChimpNCompressor(int previousValues) {
         chimpN = new ChimpN(previousValues);
+        this.previousValues = previousValues;
     }
 
     @Override public void addValue(double v) {
@@ -23,5 +25,9 @@ public class ChimpNCompressor implements ICompressor {
 
     @Override public void close() {
         chimpN.close();
+    }
+
+    @Override public String getKey() {
+        return "ChimpNCompressor_" + previousValues;
     }
 }
