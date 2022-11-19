@@ -17,6 +17,10 @@ public class FileReader {
         this.blockSize = blockSize;
     }
 
+    public FileReader(String filePath) throws FileNotFoundException {
+        this(filePath, DEFAULT_BLOCK_SIZE);
+    }
+
     public FileReader(){}
 
     public double[] nextBlock() {
