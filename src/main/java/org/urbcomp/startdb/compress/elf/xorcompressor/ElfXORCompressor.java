@@ -35,7 +35,7 @@ public class ElfXORCompressor {
     // We should have access to the series?
     public ElfXORCompressor(int previousValues) {
         out = new OutputBitStream(
-                        new byte[9000]); // for elf, we need one more bit for each at the worst case
+                        new byte[8125]); // for elf, we need one more bit for each at the worst case
         size = 0;
         this.previousValues = previousValues;
         this.previousValuesLog2 = (int) (Math.log(previousValues) / Math.log(2));

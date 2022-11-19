@@ -22,6 +22,8 @@ public class ElfXORDecompressor {
 
     private final static long END_SIGN = Double.doubleToLongBits(Double.NaN);
 
+    private final int[] counts = new int[4];
+
     public ElfXORDecompressor(byte[] bs, int previousValues) {
         in = new InputBitStream(bs);
         this.previousValues = previousValues;
@@ -74,6 +76,9 @@ public class ElfXORDecompressor {
         } else {
             nextValue();
         }
+        if(endOfStream){
+            System.out.println(counts[0] + " " + counts[1] + " " + counts[2] + " " + counts[3]);
+        }
     }
 
     private void nextValue() throws IOException {
@@ -84,6 +89,8 @@ public class ElfXORDecompressor {
         int trailingZeros;
         int leadingZeros;
         int m;
+
+        counts[flag]++;
 
         switch (flag) {
             case 3:
