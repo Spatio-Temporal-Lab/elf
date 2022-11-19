@@ -91,6 +91,8 @@ public class ElfXORCompressorPre1 {
 
         if (xor == 0) {
             out.writeBit(false);
+            size += 1;
+            thisSize += 1;
         } else {
             int leadingZeros = leadingRound[Long.numberOfLeadingZeros(xor)];
             int trailingZeros = Long.numberOfTrailingZeros(xor);
@@ -102,16 +104,16 @@ public class ElfXORCompressorPre1 {
                 out.writeInt(centerBits, 4);
                 out.writeLong(xor >>> trailingZeros, centerBits);
 
-                size += 8 + centerBits;
-                thisSize += 8 + centerBits;
+                size += 9 + centerBits;
+                thisSize += 9 + centerBits;
             } else {
                 out.writeInt(3, 2);
                 out.writeInt(leadingRepresentation[leadingZeros], 3);
                 out.writeInt(centerBits, 6);
                 out.writeLong(xor >>> trailingZeros, centerBits);
 
-                size += 10 + centerBits;
-                thisSize += 10 + centerBits;
+                size += 11 + centerBits;
+                thisSize += 11 + centerBits;
             }
         }
 
