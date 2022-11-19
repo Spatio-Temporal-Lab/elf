@@ -51,6 +51,7 @@ class DoubleCompressTest {
                             new ElfOnChimpCompressor(),
                             new ChimpNCompressor(128),
                             new ElfOnChimpNCompressor(128),
+                            new ElfOnChimpNCompressorO(128),
                             new ElfCompressor(2),
             };
 
@@ -76,6 +77,7 @@ class DoubleCompressTest {
                                 new ElfOnChimpDecompressor(result),
                                 new ChimpNDecompressor(result,128),
                                 new ElfOnChimpNDecompressor(result,128),
+                                new ElfOnChimpNDecompressorO(result,128),
                                 new ElfDecompressor(result, 2)
                 };
                 IDecompressor decompressor = decompressors[i];
