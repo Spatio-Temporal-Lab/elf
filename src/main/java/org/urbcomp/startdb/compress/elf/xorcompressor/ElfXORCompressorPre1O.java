@@ -15,7 +15,7 @@ public class ElfXORCompressorPre1O {
                     7, 7, 7, 7, 7, 7, 7, 7,
                     7, 7, 7, 7, 7, 7, 7, 7,
                     7, 7, 7, 7, 7, 7, 7, 7,
-                    7, 7, 7, 7, 7, 7, 7, 7, 7
+                    7, 7, 7, 7, 7, 7, 7, 7
     };
 
     public final static short[] leadingRound = {0, 0, 0, 0, 0, 0, 0, 0,
@@ -25,7 +25,7 @@ public class ElfXORCompressorPre1O {
                     24, 24, 24, 24, 24, 24, 24, 24,
                     24, 24, 24, 24, 24, 24, 24, 24,
                     24, 24, 24, 24, 24, 24, 24, 24,
-                    24, 24, 24, 24, 24, 24, 24, 24, 24
+                    24, 24, 24, 24, 24, 24, 24, 24
     };
     //    public final static short FIRST_DELTA_BITS = 27;
 
