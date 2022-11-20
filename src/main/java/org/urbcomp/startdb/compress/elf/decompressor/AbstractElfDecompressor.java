@@ -7,13 +7,10 @@ import java.util.List;
 
 public abstract class AbstractElfDecompressor implements IDecompressor {
 
-    private final static double[] map10iN = new double[325];
-
-    static {
-        for (int i = 0; i < map10iN.length; i++) {
-            map10iN[i] = new BigDecimal("1.0E-" + i).doubleValue();
-        }
-    }
+    private final static double[] map10iN = new double[]{
+        1.0, 1.0E-1, 1.0E-2, 1.0E-3, 1.0E-4, 1.0E-5, 1.0E-6, 1.0E-7, 1.0E-8, 1.0E-9,
+        1.0E-10, 1.0E-11, 1.0E-12, 1.0E-13, 1.0E-14, 1.0E-15, 1.0E-16, 1.0E-17
+    };
 
     public List<Double> decompress() {
         List<Double> values = new ArrayList<>(1024);
@@ -53,11 +50,15 @@ public abstract class AbstractElfDecompressor implements IDecompressor {
     }
 
     private static double get10iN(int i) {
-        if (i <= 0 || i >= map10iN.length) {
+        if (i <= 0) {
             throw new IllegalArgumentException(
-                            "The argument should be in [1, " + (map10iN.length - 1) + "]");
+                            "The argument should be greater than 0");
         }
-        return map10iN[i];
+        if (i >= map10iN.length) {
+            return new BigDecimal("1.0E-" + i).doubleValue();
+        } else {
+            return map10iN[i];
+        }
     }
 
     private static double roundUp(double v, int alpha) {
