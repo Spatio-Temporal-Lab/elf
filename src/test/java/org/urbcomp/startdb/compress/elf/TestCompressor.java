@@ -51,24 +51,10 @@ public class TestCompressor {
             }
             allResult.add(result);
         }
-        storeResult(STORE_PATH+"/result.dat");
+        storeResult(STORE_PATH + "/result.dat");
     }
 
-    public void storeResult(String filePath) throws IOException {
-        FileWriter fileWriter = new FileWriter(filePath);
-        for (Map<String, List<ResultStructure>> result : allResult) {
-            for (List<ResultStructure> ls : result.values()) {
-                double[] param = computeDrawParameter(ls);
-                fileWriter.write(ls.get(0).getFilename() + "\t");
-                fileWriter.write(ls.get(0).getCompressorName());
-                for (double p : param) {
-                    fileWriter.write("\t" + p);
-                }
-                fileWriter.write("\n");
-            }
-        }
-        fileWriter.close();
-    }
+
 
 
     public void testELFCompressor(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws FileNotFoundException {
@@ -185,23 +171,37 @@ public class TestCompressor {
     public double medianValue(List<Double> ld) {
         int num = ld.size();
         ld.sort(Comparator.naturalOrder());
-        if(num%2==1){
-            return ld.get(num/2);
-        }
-        else {
-            return (ld.get(num/2)+ld.get(num/2-1))/2;
+        if (num % 2 == 1) {
+            return ld.get(num / 2);
+        } else {
+            return (ld.get(num / 2) + ld.get(num / 2 - 1)) / 2;
         }
     }
 
     public double quarterLowValue(List<Double> ld) {
         int num = ld.size();
         ld.sort(Comparator.naturalOrder());
-        return ld.get(num/4);
+        return ld.get(num / 4);
     }
 
     public double quarterHighValue(List<Double> ld) {
         int num = ld.size();
         ld.sort(Comparator.naturalOrder());
-        return ld.get(num*3/4);
+        return ld.get(num * 3 / 4);
+    }
+    public void storeResult(String filePath) throws IOException {
+        FileWriter fileWriter = new FileWriter(filePath);
+        for (Map<String, List<ResultStructure>> result : allResult) {
+            for (List<ResultStructure> ls : result.values()) {
+                double[] param = computeDrawParameter(ls);
+                fileWriter.write(ls.get(0).getFilename() + "\t");
+                fileWriter.write(ls.get(0).getCompressorName());
+                for (double p : param) {
+                    fileWriter.write("\t" + p);
+                }
+                fileWriter.write("\n");
+            }
+        }
+        fileWriter.close();
     }
 }
