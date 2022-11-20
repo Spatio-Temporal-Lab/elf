@@ -41,25 +41,42 @@ public class TestCompressor {
 
     private static double TIME_PRECISION = 1000.0;
     List<Map<String, List<ResultStructure>>> allResult = new ArrayList<>();
+
     @Test
     public void testCompressor() throws FileNotFoundException {
         for (String filename : FILENAMES) {
             Map<String, List<ResultStructure>> result = new HashMap<>();
-            for(int i=0;i<10;i++){
+            for (int i = 0; i < 10; i++) {
                 testELFCompressor(FILE_PATH + filename, result);
+                System.out.println(result.get("ChimpNCompressor_128").get(0).getCompressorRatio());
             }
         }
     }
 
     public void testELFCompressor(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws FileNotFoundException {
         FileReader fileReader = new FileReader(fileName);
-        int compressorsNum = 10;
+        ICompressor[] compressorList = new ICompressor[]{
+                //new GorillaCompressorOS(),
+                new ElfOnGorillaCompressorOS(),
+                //new ChimpCompressor(),
+                //new ElfOnChimpCompressor(),
+                new ChimpNCompressor(128),
+                new ElfOnChimpNCompressor(128),
+                new ElfCompressor(128),
+                new ElfCompressor(64),
+                new ElfCompressor(32),
+                new ElfCompressor(16),
+                new ElfCompressor(8),
+                new ElfCompressor(4),
+                new ElfCompressor(2),
+        };
         float totalBlocks = 0;
-        long[] totalSize = new long[10];
-        long[] encodingDuration = new long[10];
-        long[] decodingDuration = new long[10];
+        long[] totalSize = new long[compressorList.length];
+        long[] encodingDuration = new long[compressorList.length];
+        long[] decodingDuration = new long[compressorList.length];
         double[] values;
         while ((values = fileReader.nextBlock()) != null) {
+            totalBlocks += 1;
             ICompressor[] compressors = new ICompressor[]{
                     //new GorillaCompressorOS(),
                     new ElfOnGorillaCompressorOS(),
@@ -86,6 +103,7 @@ public class TestCompressor {
                 encodingDuration[i] += System.nanoTime() - start;
 
                 totalSize[i] += compressor.getSize();
+
                 byte[] result = compressor.getBytes();
                 IDecompressor[] decompressors = new IDecompressor[]{
                         //new GorillaDecompressorOS(result),
@@ -114,7 +132,17 @@ public class TestCompressor {
                 }
             }
         }
-        System.out.println(totalBlocks);
-        System.out.println(totalSize[0]);
+        for (int i = 0; i < compressorList.length; i++) {
+            String key = compressorList[i].getKey();
+            ResultStructure r = new ResultStructure(fileName, key,
+                    totalSize[i] / (totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                    encodingDuration[i] / totalBlocks,
+                    decodingDuration[i] / totalBlocks
+            );
+            if (!resultCompressor.containsKey(compressorList[i].getKey())) {
+                resultCompressor.put(key, new ArrayList<>());
+            }
+            resultCompressor.get(key).add(r);
+        }
     }
 }
