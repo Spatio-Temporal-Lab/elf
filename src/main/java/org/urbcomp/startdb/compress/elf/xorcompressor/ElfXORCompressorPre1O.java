@@ -3,6 +3,7 @@ package org.urbcomp.startdb.compress.elf.xorcompressor;
 import gr.aueb.delorean.chimp.OutputBitStream;
 
 public class ElfXORCompressorPre1O {
+    private int storedLeadingZeros = Integer.MAX_VALUE;
     private long storedVal = 0;
     private boolean first = true;
     private int size;
@@ -90,35 +91,65 @@ public class ElfXORCompressorPre1O {
         long xor = storedVal ^ value;
 
         if (xor == 0) {
+            // case 10
             out.writeInt(2, 2);
 
             size += 2;
             thisSize += 2;
+
+            storedLeadingZeros = 65;
         } else {
             int leadingZeros = leadingRound[Long.numberOfLeadingZeros(xor)];
             int trailingZeros = Long.numberOfTrailingZeros(xor);
             int centerBits = 64 - leadingZeros - trailingZeros;
 
             if(centerBits <= 16) {
-                out.writeInt(0, 1);
-                out.writeInt(leadingRepresentation[leadingZeros], 3);
-                out.writeInt(centerBits, 4);
-                out.writeLong(xor >>> trailingZeros, centerBits);
+                if (leadingZeros == storedLeadingZeros) {
+                    // case 00
+                    out.writeInt(0, 2);
+                    out.writeInt(centerBits, 4);
+                    out.writeLong(xor >>> trailingZeros, centerBits);
 
-                size += 8 + centerBits;
-                thisSize += 8 + centerBits;
+                    size += 6 + centerBits;
+                    thisSize += 6 + centerBits;
+                } else {
+                    // case 01
+                    out.writeInt(1, 2);
+                    out.writeInt(leadingRepresentation[leadingZeros], 3);
+                    out.writeInt(centerBits, 4);
+                    out.writeLong(xor >>> trailingZeros, centerBits);
+
+                    size += 9 + centerBits;
+                    thisSize += 9 + centerBits;
+
+                    storedLeadingZeros = leadingZeros;
+                }
             } else {
-                out.writeInt(3, 2);
-                out.writeInt(leadingRepresentation[leadingZeros], 3);
-                out.writeInt(centerBits, 6);
-                out.writeLong(xor >>> trailingZeros, centerBits);
+                // case 11
+                if (leadingZeros == storedLeadingZeros) {
+                    // case 110
+                    out.writeInt(6, 3);
+                    out.writeInt(centerBits, 6);
+                    out.writeLong(xor >>> trailingZeros, centerBits);
 
-                size += 11 + centerBits;
-                thisSize += 11 + centerBits;
+                    size += 9 + centerBits;
+                    thisSize += 9 + centerBits;
+                } else {
+                    // case 111
+                    out.writeInt(7, 3);
+                    out.writeInt(leadingRepresentation[leadingZeros], 3);
+                    out.writeInt(centerBits, 6);
+                    out.writeLong(xor >>> trailingZeros, centerBits);
+
+                    size += 12 + centerBits;
+                    thisSize += 12 + centerBits;
+
+                    storedLeadingZeros = leadingZeros;
+                }
             }
+            storedVal = value;
         }
 
-        storedVal = value;
         return thisSize;
     }
 

@@ -8,6 +8,7 @@ import java.util.List;
 
 public class ElfXORDecompressorPre1O {
     private long storedVal = 0;
+    private int storedLeadingZeros = Integer.MAX_VALUE;
     private boolean first = true;
     private boolean endOfStream = false;
 
@@ -66,34 +67,63 @@ public class ElfXORDecompressorPre1O {
     }
 
     private void nextValue() throws IOException {
-        if (in.readInt(1) == 0) {
-            int leadingZeros = leadingRepresentation[in.readInt(3)];
-            int centerBits = in.readInt(4);
-            if (centerBits == 0) {
-                centerBits = 16;
-            }
-            int trailingZeros = 64 - leadingZeros - centerBits;
-            long value = in.readLong(centerBits) << trailingZeros;
-            value = storedVal ^ value;
-            if (value == END_SIGN) {
-                endOfStream = true;
-            } else {
-                storedVal = value;
-            }
-        } else if (in.readInt(1) == 1) {
-            int leadingZeros = leadingRepresentation[in.readInt(3)];
-            int centerBits = in.readInt(6);
-            if (centerBits == 0) {
-                centerBits = 64;
-            }
-            int trailingZeros = 64 - leadingZeros - centerBits;
-            long value = in.readLong(centerBits) << trailingZeros;
-            value = storedVal ^ value;
-            if (value == END_SIGN) {
-                endOfStream = true;
-            } else {
-                storedVal = value;
-            }
+        int flag = in.readInt(2);
+        int centerBits, trailingZeros;
+        long value;
+        switch (flag) {
+            case 0:
+                // case 00
+                centerBits = in.readInt(4);
+                if (centerBits == 0) {
+                    centerBits = 16;
+                }
+                trailingZeros = 64 - storedLeadingZeros - centerBits;
+                value = in.readLong(centerBits) << trailingZeros;
+                value = storedVal ^ value;
+                if (value == END_SIGN) {
+                    endOfStream = true;
+                } else {
+                    storedVal = value;
+                }
+                break;
+            case 1:
+                // case 01
+                storedLeadingZeros = leadingRepresentation[in.readInt(3)];
+                centerBits = in.readInt(4);
+                if (centerBits == 0) {
+                    centerBits = 16;
+                }
+                trailingZeros = 64 - storedLeadingZeros - centerBits;
+                value = in.readLong(centerBits) << trailingZeros;
+                value = storedVal ^ value;
+                if (value == END_SIGN) {
+                    endOfStream = true;
+                } else {
+                    storedVal = value;
+                }
+                break;
+            case 3:
+                if (in.readInt(1) != 0) {
+                    // case 111
+                    storedLeadingZeros = leadingRepresentation[in.readInt(3)];
+                }
+                // else if case 110
+                centerBits = in.readInt(6);
+                if (centerBits == 0) {
+                    centerBits = 64;
+                }
+                trailingZeros = 64 - storedLeadingZeros - centerBits;
+                value = in.readLong(centerBits) << trailingZeros;
+                value = storedVal ^ value;
+                if (value == END_SIGN) {
+                    endOfStream = true;
+                } else {
+                    storedVal = value;
+                }
+                break;
+            default:
+                // case 10, we do nothing, the same value as before
+                break;
         }
     }
 }
