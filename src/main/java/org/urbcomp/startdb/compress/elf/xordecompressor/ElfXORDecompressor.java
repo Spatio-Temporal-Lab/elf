@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ElfXORDecompressorPre1O {
+public class ElfXORDecompressor {
     private long storedVal = 0;
     private int storedLeadingZeros = Integer.MAX_VALUE;
     private boolean first = true;
@@ -18,7 +18,7 @@ public class ElfXORDecompressorPre1O {
 
     public final static short[] leadingRepresentation = {0, 8, 12, 16, 18, 20, 22, 24};
 
-    public ElfXORDecompressorPre1O(byte[] bs) {
+    public ElfXORDecompressor(byte[] bs) {
         in = new InputBitStream(bs);
     }
 

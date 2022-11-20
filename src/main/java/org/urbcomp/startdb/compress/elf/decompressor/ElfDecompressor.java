@@ -1,15 +1,15 @@
 package org.urbcomp.startdb.compress.elf.decompressor;
 
 import gr.aueb.delorean.chimp.InputBitStream;
-import org.urbcomp.startdb.compress.elf.xordecompressor.ElfXORDecompressorPre1O;
+import org.urbcomp.startdb.compress.elf.xordecompressor.ElfXORDecompressor;
 
 import java.io.IOException;
 
 public class ElfDecompressor extends AbstractElfDecompressor {
-    private final ElfXORDecompressorPre1O xorDecompressor;
+    private final ElfXORDecompressor xorDecompressor;
 
     public ElfDecompressor(byte[] bytes) {
-        xorDecompressor = new ElfXORDecompressorPre1O(bytes);
+        xorDecompressor = new ElfXORDecompressor(bytes);
     }
 
     @Override protected Double xorDecompress() {

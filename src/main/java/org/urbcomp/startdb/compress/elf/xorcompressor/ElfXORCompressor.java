@@ -2,7 +2,7 @@ package org.urbcomp.startdb.compress.elf.xorcompressor;
 
 import gr.aueb.delorean.chimp.OutputBitStream;
 
-public class ElfXORCompressorPre1O {
+public class ElfXORCompressor {
     private int storedLeadingZeros = Integer.MAX_VALUE;
     private long storedVal = 0;
     private boolean first = true;
@@ -32,7 +32,7 @@ public class ElfXORCompressorPre1O {
 
     private final OutputBitStream out;
 
-    public ElfXORCompressorPre1O() {
+    public ElfXORCompressor() {
         out = new OutputBitStream(new byte[8125]);  // for elf, we need one more bit for each at the worst case
         size = 0;
     }

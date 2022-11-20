@@ -1,13 +1,13 @@
 package org.urbcomp.startdb.compress.elf.compressor;
 
 import gr.aueb.delorean.chimp.OutputBitStream;
-import org.urbcomp.startdb.compress.elf.xorcompressor.ElfXORCompressorPre1O;
+import org.urbcomp.startdb.compress.elf.xorcompressor.ElfXORCompressor;
 
 public class ElfCompressor extends AbstractElfCompressor {
-    private final ElfXORCompressorPre1O xorCompressor;
+    private final ElfXORCompressor xorCompressor;
 
     public ElfCompressor() {
-        xorCompressor = new ElfXORCompressorPre1O();
+        xorCompressor = new ElfXORCompressor();
     }
 
     @Override protected int writeInt(int n, int len) {
