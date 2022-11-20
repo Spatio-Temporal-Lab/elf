@@ -57,7 +57,6 @@ class DoubleCompressTest {
 //                            new ElfCompressor(16),
 //                            new ElfCompressor(8),
 //                            new ElfCompressor(4),
-                            new ElfCompressor(2),
                             new ElfCompressorPre1O()
             };
 
@@ -89,7 +88,6 @@ class DoubleCompressTest {
 //                                new ElfDecompressor(result, 16),
 //                                new ElfDecompressor(result, 8),
 //                                new ElfDecompressor(result, 4),
-                                new ElfDecompressor(result, 2),
                                 new ElfDecompressorPre1O(result)
                 };
                 IDecompressor decompressor = decompressors[i];
