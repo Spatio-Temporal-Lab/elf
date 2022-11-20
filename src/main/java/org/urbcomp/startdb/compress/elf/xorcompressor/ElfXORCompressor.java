@@ -33,7 +33,8 @@ public class ElfXORCompressor {
     private final OutputBitStream out;
 
     public ElfXORCompressor() {
-        out = new OutputBitStream(new byte[8125]);  // for elf, we need one more bit for each at the worst case
+        out = new OutputBitStream(
+                        new byte[8125]);  // for elf, we need one more bit for each at the worst case
         size = 0;
     }
 
@@ -47,7 +48,7 @@ public class ElfXORCompressor {
      * @param value next floating point value in the series
      */
     public int addValue(long value) {
-        if(first) {
+        if (first) {
             return writeFirst(value);
         } else {
             return compressValue(value);
@@ -60,7 +61,7 @@ public class ElfXORCompressor {
      * @param value next floating point value in the series
      */
     public int addValue(double value) {
-        if(first) {
+        if (first) {
             return writeFirst(Double.doubleToRawLongBits(value));
         } else {
             return compressValue(Double.doubleToRawLongBits(value));
@@ -73,6 +74,7 @@ public class ElfXORCompressor {
         int trailingZeros = Long.numberOfTrailingZeros(value);
         out.writeInt(trailingZeros, 6);
         out.writeLong(storedVal >>> trailingZeros, 64 - trailingZeros);
+
         size += 70 - trailingZeros;
         return 70 - trailingZeros;
     }
@@ -103,19 +105,18 @@ public class ElfXORCompressor {
             int trailingZeros = Long.numberOfTrailingZeros(xor);
             int centerBits = 64 - leadingZeros - trailingZeros;
 
-            if(centerBits <= 16) {
+            if (centerBits <= 16) {
                 if (leadingZeros == storedLeadingZeros) {
                     // case 00
-                    out.writeInt(0, 2);
-                    out.writeInt(centerBits, 4);
+                    out.writeInt((centerBits << 28) >>> 28, 6); // 2 + 4
                     out.writeLong(xor >>> trailingZeros, centerBits);
 
                     size += 6 + centerBits;
                     thisSize += 6 + centerBits;
                 } else {
                     // case 01
-                    out.writeInt(1, 2);
-                    out.writeInt(leadingRepresentation[leadingZeros], 3);
+                    out.writeInt(((leadingRepresentation[leadingZeros] << 29) >>> 29) + 8,
+                                    5); // 2 + 3
                     out.writeInt(centerBits, 4);
                     out.writeLong(xor >>> trailingZeros, centerBits);
 
@@ -128,16 +129,15 @@ public class ElfXORCompressor {
                 // case 11
                 if (leadingZeros == storedLeadingZeros) {
                     // case 110
-                    out.writeInt(6, 3);
-                    out.writeInt(centerBits, 6);
+                    out.writeInt(((centerBits << 26) >>> 26) + 384, 9); // 3 + 6
                     out.writeLong(xor >>> trailingZeros, centerBits);
 
                     size += 9 + centerBits;
                     thisSize += 9 + centerBits;
                 } else {
                     // case 111
-                    out.writeInt(7, 3);
-                    out.writeInt(leadingRepresentation[leadingZeros], 3);
+                    out.writeInt(((leadingRepresentation[leadingZeros] << 29) >>> 29) + 56,
+                                    6); // 3 + 3
                     out.writeInt(centerBits, 6);
                     out.writeLong(xor >>> trailingZeros, centerBits);
 
