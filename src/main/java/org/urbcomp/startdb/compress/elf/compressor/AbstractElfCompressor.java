@@ -3,8 +3,7 @@ package org.urbcomp.startdb.compress.elf.compressor;
 public abstract class AbstractElfCompressor implements ICompressor {
     // αlog_2(10) for look-up
     private final static int[] f =
-                    new int[] {0, 4, 7, 10, 14, 17, 20, 24, 27, 30, 34, 37, 40, 44, 47, 50, 54, 57,
-                                    60, 64, 67, 70, 74, 77, 80, 84, 87, 90, 94, 97};
+                    new int[] {0, 4, 7, 10, 14, 17, 20, 24, 27, 30, 34, 37, 40, 44, 47, 50, 54};
     private final static double LOG_2_10 = Math.log(10) / Math.log(2);
 
     private int size = 0;
