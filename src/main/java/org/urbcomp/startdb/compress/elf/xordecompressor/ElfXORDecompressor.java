@@ -88,8 +88,11 @@ public class ElfXORDecompressor {
                 break;
             case 1:
                 // case 01
-                storedLeadingZeros = leadingRepresentation[in.readInt(3)];
-                centerBits = in.readInt(4);
+//                storedLeadingZeros = leadingRepresentation[in.readInt(3)];
+//                centerBits = in.readInt(4);
+                int leadingAndCenterBits = in.readInt(7);
+                storedLeadingZeros = leadingRepresentation[leadingAndCenterBits >>> 4];
+                centerBits = leadingAndCenterBits & 0xf;
                 if (centerBits == 0) {
                     centerBits = 16;
                 }
@@ -105,10 +108,13 @@ public class ElfXORDecompressor {
             case 3:
                 if (in.readInt(1) != 0) {
                     // case 111
-                    storedLeadingZeros = leadingRepresentation[in.readInt(3)];
+                    int leadingAndCenter = in.readInt(9);
+                    storedLeadingZeros = leadingRepresentation[leadingAndCenter >>> 6];
+                    centerBits = leadingAndCenter & 0x3f;
+                } else {
+                    //case 110
+                    centerBits = in.readInt(6);
                 }
-                // else if case 110
-                centerBits = in.readInt(6);
                 if (centerBits == 0) {
                     centerBits = 64;
                 }
