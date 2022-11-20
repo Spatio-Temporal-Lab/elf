@@ -1,7 +1,6 @@
 package org.urbcomp.startdb.compress.elf;
 
 import com.github.kutschkem.fpc.FpcCompressor;
-import gr.aueb.delorean.chimp.benchmarks.TimeseriesFileReader;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -48,26 +47,29 @@ public class TestCompressor {
 //        "/ECMWF Interim Full Daily Invariant High Vegetation Cover.csv",
 //        "/ECMWF Interim Full Daily Invariant Low Vegetation Cover.csv"
     };
-    private static final int MINIMUM_TOTAL_BLOCKS = 50_000;
     private static final String STORE_PATH = "src/test/resources/result";
 
     private static double TIME_PRECISION = 1000.0;
-    List<Map<String, List<ResultStructure>>> allResult = new ArrayList<>();
+    List<Map<String, ResultStructure>> allResult = new ArrayList<>();
 
     @Test
     public void testCompressor() throws IOException {
         for (String filename : FILENAMES) {
             Map<String, List<ResultStructure>> result = new HashMap<>();
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 100; i++) {
                 testELFCompressor(filename, result);
-                testFPC(filename,result);
-                testSnappy(filename,result);
-                testZstd(filename,result);
-                testLZ4(filename,result);
-                testBrotli(filename,result);
-                testXz(filename,result);
+                testFPC(filename, result);
+                testSnappy(filename, result);
+                testZstd(filename, result);
+                testLZ4(filename, result);
+                testBrotli(filename, result);
+                testXz(filename, result);
             }
-            allResult.add(result);
+            for (Map.Entry<String, List<ResultStructure>> kv : result.entrySet()) {
+                Map<String, ResultStructure> r = new HashMap<>();
+                r.put(kv.getKey(),computeAvg(kv.getValue()));
+                allResult.add(r);
+            }
         }
         storeResult(STORE_PATH + "/result.dat");
     }
@@ -82,19 +84,14 @@ public class TestCompressor {
                 //new ElfOnChimpCompressor(),
                 new ChimpNCompressor(128),
                 new ElfOnChimpNCompressor(128),
-                new ElfCompressor(128),
-                new ElfCompressor(64),
-                new ElfCompressor(32),
-                new ElfCompressor(16),
-                new ElfCompressor(8),
-                new ElfCompressor(4),
-                new ElfCompressor(2),
+                new ElfCompressor(),
         };
         float totalBlocks = 0;
         long[] totalSize = new long[compressorList.length];
-        long[] encodingDuration = new long[compressorList.length];
-        long[] decodingDuration = new long[compressorList.length];
         double[] values;
+
+        HashMap<String, List<Double>> totalCompressionTime = new HashMap<>();
+        HashMap<String, List<Double>> totalDecompressionTime = new HashMap<>();
         while ((values = fileReader.nextBlock()) != null) {
             totalBlocks += 1;
             ICompressor[] compressors = new ICompressor[]{
@@ -104,15 +101,11 @@ public class TestCompressor {
                     //new ElfOnChimpCompressor(),
                     new ChimpNCompressor(128),
                     new ElfOnChimpNCompressor(128),
-                    new ElfCompressor(128),
-                    new ElfCompressor(64),
-                    new ElfCompressor(32),
-                    new ElfCompressor(16),
-                    new ElfCompressor(8),
-                    new ElfCompressor(4),
-                    new ElfCompressor(2),
+                    new ElfCompressor(),
             };
             for (int i = 0; i < compressors.length; i++) {
+                double encodingDuration = 0;
+                double decodingDuration = 0;
                 long start = System.nanoTime();
                 ICompressor compressor = compressors[i];
                 for (double value : values) {
@@ -120,7 +113,7 @@ public class TestCompressor {
                 }
                 compressor.close();
 
-                encodingDuration[i] += System.nanoTime() - start;
+                encodingDuration = System.nanoTime() - start;
 
                 totalSize[i] += compressor.getSize();
 
@@ -132,32 +125,33 @@ public class TestCompressor {
                         //new ElfOnChimpDecompressor(result),
                         new ChimpNDecompressor(result, 128),
                         new ElfOnChimpNDecompressor(result, 128),
-                        new ElfDecompressor(result, 128),
-                        new ElfDecompressor(result, 64),
-                        new ElfDecompressor(result, 32),
-                        new ElfDecompressor(result, 16),
-                        new ElfDecompressor(result, 8),
-                        new ElfDecompressor(result, 4),
-                        new ElfDecompressor(result, 2)
+                        new ElfDecompressor(result)
                 };
 
                 IDecompressor decompressor = decompressors[i];
 
                 start = System.nanoTime();
                 List<Double> uncompressedValues = decompressor.decompress();
-                decodingDuration[i] += System.nanoTime() - start;
+                decodingDuration = System.nanoTime() - start;
 
                 for (int j = 0; j < values.length; j++) {
                     assertEquals(values[j], uncompressedValues.get(j), "Value did not match");
                 }
+                String key = compressor.getKey();
+                if (!totalCompressionTime.containsKey(key)) {
+                    totalCompressionTime.put(key, new ArrayList<>());
+                    totalDecompressionTime.put(key, new ArrayList<>());
+                }
+                totalCompressionTime.get(key).add(encodingDuration / TIME_PRECISION);
+                totalDecompressionTime.get(key).add(decodingDuration / TIME_PRECISION);
             }
         }
         for (int i = 0; i < compressorList.length; i++) {
             String key = compressorList[i].getKey();
             ResultStructure r = new ResultStructure(fileName, key,
-                    totalSize[i] / (totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE * 64.0),
-                    encodingDuration[i] / totalBlocks,
-                    decodingDuration[i] / totalBlocks
+                    totalSize[i] / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                    totalCompressionTime.get(key),
+                    totalDecompressionTime.get(key)
             );
             if (!resultCompressor.containsKey(compressorList[i].getKey())) {
                 resultCompressor.put(key, new ArrayList<>());
@@ -171,12 +165,14 @@ public class TestCompressor {
         float totalBlocks = 0;
         long totalSize = 0;
         double[] values;
-        long encodingDuration = 0;
-        long decodingDuration = 0;
+        List<Double> totalCompressionTime = new ArrayList<>();
+        List<Double> totalDecompressionTime = new ArrayList<>();
         while ((values = fileReader.nextBlock()) != null) {
+            double encodingDuration = 0;
+            double decodingDuration = 0;
             FpcCompressor fpc = new FpcCompressor();
 
-            ByteBuffer buffer = ByteBuffer.allocate(TimeseriesFileReader.DEFAULT_BLOCK_SIZE * 10);
+            ByteBuffer buffer = ByteBuffer.allocate(FileReader.DEFAULT_BLOCK_SIZE * 10);
             // Compress
             long start = System.nanoTime();
             fpc.compress(buffer, values);
@@ -189,17 +185,19 @@ public class TestCompressor {
 
             FpcCompressor decompressor = new FpcCompressor();
 
-            double[] dest = new double[TimeseriesFileReader.DEFAULT_BLOCK_SIZE];
+            double[] dest = new double[FileReader.DEFAULT_BLOCK_SIZE];
             start = System.nanoTime();
             decompressor.decompress(buffer, dest);
             decodingDuration += System.nanoTime() - start;
             assertArrayEquals(dest, values);
+            totalCompressionTime.add(encodingDuration / TIME_PRECISION);
+            totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
         }
         String key = "FPC";
         ResultStructure r = new ResultStructure(fileName, key,
-                totalSize / (totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE * 64.0),
-                encodingDuration / totalBlocks,
-                decodingDuration / totalBlocks
+                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                totalCompressionTime,
+                totalDecompressionTime
         );
         if (!resultCompressor.containsKey(key)) {
             resultCompressor.put(key, new ArrayList<>());
@@ -212,11 +210,13 @@ public class TestCompressor {
         float totalBlocks = 0;
         long totalSize = 0;
         double[] values;
-        long encodingDuration = 0;
-        long decodingDuration = 0;
+        List<Double> totalCompressionTime = new ArrayList<>();
+        List<Double> totalDecompressionTime = new ArrayList<>();
         while ((values = fileReader.nextBlock()) != null) {
+            double encodingDuration = 0;
+            double decodingDuration = 0;
             ByteBuffer bb = ByteBuffer.allocate(values.length * 8);
-            for(double d : values) {
+            for (double d : values) {
                 bb.putDouble(d);
             }
             byte[] input = bb.array();
@@ -249,15 +249,17 @@ public class TestCompressor {
             double[] uncompressed = toDoubleArray(plain);
             decodingDuration += System.nanoTime() - start;
             // Decompressed bytes should equal the original
-            for(int i = 0; i < values.length; i++) {
+            for (int i = 0; i < values.length; i++) {
                 assertEquals(values[i], uncompressed[i], "Value did not match");
             }
+            totalCompressionTime.add(encodingDuration / TIME_PRECISION);
+            totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
         }
         String key = "Snappy";
         ResultStructure r = new ResultStructure(fileName, key,
-                totalSize / (totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE * 64.0),
-                encodingDuration / totalBlocks,
-                decodingDuration / totalBlocks
+                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                totalCompressionTime,
+                totalDecompressionTime
         );
         if (!resultCompressor.containsKey(key)) {
             resultCompressor.put(key, new ArrayList<>());
@@ -270,11 +272,13 @@ public class TestCompressor {
         float totalBlocks = 0;
         long totalSize = 0;
         double[] values;
-        long encodingDuration = 0;
-        long decodingDuration = 0;
+        List<Double> totalCompressionTime = new ArrayList<>();
+        List<Double> totalDecompressionTime = new ArrayList<>();
         while ((values = fileReader.nextBlock()) != null) {
+            double encodingDuration = 0;
+            double decodingDuration = 0;
             ByteBuffer bb = ByteBuffer.allocate(values.length * 8);
-            for(double d : values) {
+            for (double d : values) {
                 bb.putDouble(d);
             }
             byte[] input = bb.array();
@@ -307,15 +311,17 @@ public class TestCompressor {
             double[] uncompressed = toDoubleArray(plain);
             decodingDuration += System.nanoTime() - start;
             // Decompressed bytes should equal the original
-            for(int i = 0; i < values.length; i++) {
+            for (int i = 0; i < values.length; i++) {
                 assertEquals(values[i], uncompressed[i], "Value did not match");
             }
+            totalCompressionTime.add(encodingDuration / TIME_PRECISION);
+            totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
         }
         String key = "Zstd";
         ResultStructure r = new ResultStructure(fileName, key,
-                totalSize / (totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE * 64.0),
-                encodingDuration / totalBlocks,
-                decodingDuration / totalBlocks
+                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                totalCompressionTime,
+                totalDecompressionTime
         );
         if (!resultCompressor.containsKey(key)) {
             resultCompressor.put(key, new ArrayList<>());
@@ -328,11 +334,13 @@ public class TestCompressor {
         float totalBlocks = 0;
         long totalSize = 0;
         double[] values;
-        long encodingDuration = 0;
-        long decodingDuration = 0;
+        List<Double> totalCompressionTime = new ArrayList<>();
+        List<Double> totalDecompressionTime = new ArrayList<>();
         while ((values = fileReader.nextBlock()) != null) {
+            double encodingDuration = 0;
+            double decodingDuration = 0;
             ByteBuffer bb = ByteBuffer.allocate(values.length * 8);
-            for(double d : values) {
+            for (double d : values) {
                 bb.putDouble(d);
             }
             byte[] input = bb.array();
@@ -360,15 +368,17 @@ public class TestCompressor {
             double[] uncompressed = toDoubleArray(plain);
             decodingDuration += System.nanoTime() - start;
             // Decompressed bytes should equal the original
-            for(int i = 0; i < values.length; i++) {
+            for (int i = 0; i < values.length; i++) {
                 assertEquals(values[i], uncompressed[i], "Value did not match");
             }
+            totalCompressionTime.add(encodingDuration / TIME_PRECISION);
+            totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
         }
         String key = "LZ4";
         ResultStructure r = new ResultStructure(fileName, key,
-                totalSize / (totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE * 64.0),
-                encodingDuration / totalBlocks,
-                decodingDuration / totalBlocks
+                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                totalCompressionTime,
+                totalDecompressionTime
         );
         if (!resultCompressor.containsKey(key)) {
             resultCompressor.put(key, new ArrayList<>());
@@ -381,11 +391,13 @@ public class TestCompressor {
         float totalBlocks = 0;
         long totalSize = 0;
         double[] values;
-        long encodingDuration = 0;
-        long decodingDuration = 0;
+        List<Double> totalCompressionTime = new ArrayList<>();
+        List<Double> totalDecompressionTime = new ArrayList<>();
         while ((values = fileReader.nextBlock()) != null) {
+            double encodingDuration = 0;
+            double decodingDuration = 0;
             ByteBuffer bb = ByteBuffer.allocate(values.length * 8);
-            for(double d : values) {
+            for (double d : values) {
                 bb.putDouble(d);
             }
             byte[] input = bb.array();
@@ -413,15 +425,17 @@ public class TestCompressor {
             double[] uncompressed = toDoubleArray(plain);
             decodingDuration += System.nanoTime() - start;
             // Decompressed bytes should equal the original
-            for(int i = 0; i < values.length; i++) {
+            for (int i = 0; i < values.length; i++) {
                 assertEquals(values[i], uncompressed[i], "Value did not match");
             }
+            totalCompressionTime.add(encodingDuration / TIME_PRECISION);
+            totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
         }
         String key = "Brotli";
         ResultStructure r = new ResultStructure(fileName, key,
-                totalSize / (totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE * 64.0),
-                encodingDuration / totalBlocks,
-                decodingDuration / totalBlocks
+                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                totalCompressionTime,
+                totalDecompressionTime
         );
         if (!resultCompressor.containsKey(key)) {
             resultCompressor.put(key, new ArrayList<>());
@@ -434,11 +448,13 @@ public class TestCompressor {
         float totalBlocks = 0;
         long totalSize = 0;
         double[] values;
-        long encodingDuration = 0;
-        long decodingDuration = 0;
+        List<Double> totalCompressionTime = new ArrayList<>();
+        List<Double> totalDecompressionTime = new ArrayList<>();
         while ((values = fileReader.nextBlock()) != null) {
+            double encodingDuration = 0;
+            double decodingDuration = 0;
             ByteBuffer bb = ByteBuffer.allocate(values.length * 8);
-            for(double d : values) {
+            for (double d : values) {
                 bb.putDouble(d);
             }
             byte[] input = bb.array();
@@ -471,15 +487,17 @@ public class TestCompressor {
             double[] uncompressed = toDoubleArray(plain);
             decodingDuration += System.nanoTime() - start;
             // Decompressed bytes should equal the original
-            for(int i = 0; i < values.length; i++) {
+            for (int i = 0; i < values.length; i++) {
                 assertEquals(values[i], uncompressed[i], "Value did not match");
             }
+            totalCompressionTime.add(encodingDuration / TIME_PRECISION);
+            totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
         }
         String key = "Xz";
         ResultStructure r = new ResultStructure(fileName, key,
-                totalSize / (totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE * 64.0),
-                encodingDuration / totalBlocks,
-                decodingDuration / totalBlocks
+                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                totalCompressionTime,
+                totalDecompressionTime
         );
         if (!resultCompressor.containsKey(key)) {
             resultCompressor.put(key, new ArrayList<>());
@@ -488,68 +506,55 @@ public class TestCompressor {
     }
 
 
-
-    public double[] computeDrawParameter(List<ResultStructure> result) {
-        List<Double> compressTimeList = new ArrayList<>();
-        List<Double> decompressTimeList = new ArrayList<>();
-        for (ResultStructure r : result) {
-            compressTimeList.add(r.getCompressionTime());
-            decompressTimeList.add(r.getDecompressionTime());
-        }
-        double[] drawParam = new double[7];
-        drawParam[0] = result.get(0).getCompressorRatio();
-        drawParam[1] = medianValue(compressTimeList);
-        drawParam[2] = quarterLowValue(compressTimeList);
-        drawParam[3] = quarterHighValue(compressTimeList);
-        drawParam[4] = medianValue(decompressTimeList);
-        drawParam[5] = quarterLowValue(decompressTimeList);
-        drawParam[6] = quarterHighValue(decompressTimeList);
-        return drawParam;
-    }
-
-    public double medianValue(List<Double> ld) {
-        int num = ld.size();
-        ld.sort(Comparator.naturalOrder());
-        if (num % 2 == 1) {
-            return ld.get(num / 2);
-        } else {
-            return (ld.get(num / 2) + ld.get(num / 2 - 1)) / 2;
-        }
-    }
-
-    public double quarterLowValue(List<Double> ld) {
-        int num = ld.size();
-        ld.sort(Comparator.naturalOrder());
-        return ld.get(num / 4);
-    }
-
-    public double quarterHighValue(List<Double> ld) {
-        int num = ld.size();
-        ld.sort(Comparator.naturalOrder());
-        return ld.get(num * 3 / 4);
-    }
-
     public void storeResult(String filePath) throws IOException {
         FileWriter fileWriter = new FileWriter(filePath);
-        for (Map<String, List<ResultStructure>> result : allResult) {
-            for (List<ResultStructure> ls : result.values()) {
-                double[] param = computeDrawParameter(ls);
-                fileWriter.write(ls.get(0).getFilename() + "\t");
-                fileWriter.write(ls.get(0).getCompressorName());
-                for (double p : param) {
-                    fileWriter.write("\t" + p);
-                }
-                fileWriter.write("\n");
+        for (Map<String, ResultStructure> result : allResult) {
+            for (ResultStructure ls : result.values()) {
+                fileWriter.write(ls.toString());
             }
         }
         fileWriter.close();
     }
 
-    public static double[] toDoubleArray(byte[] byteArray){
+    public ResultStructure computeAvg(List<ResultStructure> lr) {
+        int num = lr.size();
+        double compressionTime = 0;
+        double maxCompressTime = 0;
+        double minCompressTime = 0;
+        double mediaCompressTime = 0;
+        double decompressionTime = 0;
+        double maxDecompressTime = 0;
+        double minDecompressTime = 0;
+        double mediaDecompressTime = 0;
+        for (ResultStructure resultStructure : lr) {
+            compressionTime += resultStructure.getCompressionTime();
+            maxCompressTime += resultStructure.getMaxCompressTime();
+            minCompressTime += resultStructure.getMinCompressTime();
+            mediaCompressTime += resultStructure.getMediaCompressTime();
+            decompressionTime += resultStructure.getDecompressionTime();
+            maxDecompressTime += resultStructure.getMaxDecompressTime();
+            minDecompressTime += resultStructure.getMinDecompressTime();
+            mediaDecompressTime += resultStructure.getMediaDecompressTime();
+        }
+        return new ResultStructure(lr.get(0).getFilename(),
+                lr.get(0).getCompressorName(),
+                lr.get(0).getCompressorRatio(),
+                compressionTime / num,
+                maxCompressTime / num,
+                minCompressTime / num,
+                mediaCompressTime / num,
+                decompressionTime / num,
+                maxDecompressTime / num,
+                minDecompressTime / num,
+                mediaDecompressTime / num
+        );
+    }
+
+    public static double[] toDoubleArray(byte[] byteArray) {
         int times = Double.SIZE / Byte.SIZE;
         double[] doubles = new double[byteArray.length / times];
-        for(int i=0;i<doubles.length;i++){
-            doubles[i] = ByteBuffer.wrap(byteArray, i*times, times).getDouble();
+        for (int i = 0; i < doubles.length; i++) {
+            doubles[i] = ByteBuffer.wrap(byteArray, i * times, times).getDouble();
         }
         return doubles;
     }

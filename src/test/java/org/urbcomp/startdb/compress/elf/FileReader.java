@@ -3,7 +3,6 @@ package org.urbcomp.startdb.compress.elf;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
 
 public class FileReader {
     public static final int DEFAULT_BLOCK_SIZE = 1000;
