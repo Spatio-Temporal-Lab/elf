@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 public class FileReader {
-    public static final int DEFAULT_BLOCK_SIZE = 1_000;
+    public static final int DEFAULT_BLOCK_SIZE = 1000;
     private static final String DELIMITER = ",";
-    private static final int VALUE_POSITION = 2;
+    private static final int VALUE_POSITION = 0;
     BufferedReader bufferedReader;
     private int blockSize;
     public FileReader(String filePath,int blockSize) throws FileNotFoundException {
@@ -30,8 +30,7 @@ public class FileReader {
         try {
             while ((line = bufferedReader.readLine()) != null) {
                 try {
-                    double value = Double.parseDouble(line.split(DELIMITER)[VALUE_POSITION]);
-                    values[counter++] = value;
+                    values[counter++] = Double.parseDouble(line);
                     if (counter == blockSize) {
                         return values;
                     }

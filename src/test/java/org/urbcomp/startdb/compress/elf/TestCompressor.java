@@ -1,11 +1,13 @@
 package org.urbcomp.startdb.compress.elf;
 
 import gr.aueb.delorean.chimp.benchmarks.TimeseriesFileReader;
+import org.junit.jupiter.api.Test;
 import org.urbcomp.startdb.compress.elf.compressor.*;
 import org.urbcomp.startdb.compress.elf.decompressor.*;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,23 +17,23 @@ public class TestCompressor {
     private static final String FILE_PATH = "src/test/resources";
     private static final String[] FILENAMES = {
             "/AvgTemperature.csv",
-            "/circuits_lat.csv",
-            "/circuits_lng.csv",
-            "/diskCapability.csv",
-            "/location-lat.csv",
-            "/location-long.csv",
-            "/mp_price.csv",
-            "/pitStop_duration.csv",
-            "/worldcities_latitude.csv",
-            "/worldcities_longitude.csv",
-            "/x-axis.csv",
-            "/y-axis.csv",
-            "/z-axis.csv",
-            "/NewYork_temperature.csv",
-            "/Tokyo_temperature.csv",
-            "/l4d2_player_stats.csv",
-            "/percentage_of_alcohol.csv",
-            "/electric_vehicle_charging.csv",
+//            "/circuits_lat.csv",
+//            "/circuits_lng.csv",
+//            "/diskCapability.csv",
+//            "/location-lat.csv",
+//            "/location-long.csv",
+//            "/mp_price.csv",
+//            "/pitStop_duration.csv",
+//            "/worldcities_latitude.csv",
+//            "/worldcities_longitude.csv",
+//            "/x-axis.csv",
+//            "/y-axis.csv",
+//            "/z-axis.csv",
+//            "/NewYork_temperature.csv",
+//            "/Tokyo_temperature.csv",
+//            "/l4d2_player_stats.csv",
+//            "/percentage_of_alcohol.csv",
+//            "/electric_vehicle_charging.csv",
 //        "/ECMWF Interim Full Daily Invariant High Vegetation Cover.csv",
 //        "/ECMWF Interim Full Daily Invariant Low Vegetation Cover.csv"
     };
@@ -39,9 +41,17 @@ public class TestCompressor {
 
     private static double TIME_PRECISION = 1000.0;
     List<Map<String, List<ResultStructure>>> allResult = new ArrayList<>();
+    @Test
+    public void testCompressor() throws FileNotFoundException {
+        for (String filename : FILENAMES) {
+            Map<String, List<ResultStructure>> result = new HashMap<>();
+            for(int i=0;i<10;i++){
+                testELFCompressor(FILE_PATH + filename, result);
+            }
+        }
+    }
 
-
-    public void testELFCompressor(String fileName) throws FileNotFoundException {
+    public void testELFCompressor(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws FileNotFoundException {
         FileReader fileReader = new FileReader(fileName);
         int compressorsNum = 10;
         float totalBlocks = 0;
@@ -104,7 +114,7 @@ public class TestCompressor {
                 }
             }
         }
-
-
+        System.out.println(totalBlocks);
+        System.out.println(totalSize[0]);
     }
 }
