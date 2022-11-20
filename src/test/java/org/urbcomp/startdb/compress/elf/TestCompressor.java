@@ -47,8 +47,7 @@ public class TestCompressor {
         for (String filename : FILENAMES) {
             Map<String, List<ResultStructure>> result = new HashMap<>();
             for (int i = 0; i < 10; i++) {
-                testELFCompressor(FILE_PATH + filename, result);
-                System.out.println(result.get("ChimpNCompressor_128").get(0).getCompressorRatio());
+                testELFCompressor(filename, result);
             }
             allResult.add(result);
         }
@@ -73,7 +72,7 @@ public class TestCompressor {
 
 
     public void testELFCompressor(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws FileNotFoundException {
-        FileReader fileReader = new FileReader(fileName);
+        FileReader fileReader = new FileReader(FILE_PATH + fileName);
         ICompressor[] compressorList = new ICompressor[]{
                 //new GorillaCompressorOS(),
                 new ElfOnGorillaCompressorOS(),
