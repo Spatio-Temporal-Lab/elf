@@ -35,8 +35,4 @@ public class ElfOnChimpCompressor extends AbstractElfCompressor {
         writeBit(false);
         chimp.close();
     }
-
-    @Override public String getKey() {
-        return "ElfOnChimpCompressor";
-    }
 }

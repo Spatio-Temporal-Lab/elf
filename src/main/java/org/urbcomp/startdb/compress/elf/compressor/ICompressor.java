@@ -5,5 +5,7 @@ public interface ICompressor {
     int getSize();
     byte[] getBytes();
     void close();
-    String getKey();
+    default String getKey() {
+        return getClass().getSimpleName();
+    }
 }

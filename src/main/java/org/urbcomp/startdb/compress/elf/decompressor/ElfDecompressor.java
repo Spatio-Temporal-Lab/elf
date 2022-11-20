@@ -5,10 +5,10 @@ import org.urbcomp.startdb.compress.elf.xordecompressor.ElfXORDecompressorPre1O;
 
 import java.io.IOException;
 
-public class ElfDecompressorPre1O extends AbstractElfDecompressor {
+public class ElfDecompressor extends AbstractElfDecompressor {
     private final ElfXORDecompressorPre1O xorDecompressor;
 
-    public ElfDecompressorPre1O(byte[] bytes) {
+    public ElfDecompressor(byte[] bytes) {
         xorDecompressor = new ElfXORDecompressorPre1O(bytes);
     }
 

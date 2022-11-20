@@ -3,10 +3,10 @@ package org.urbcomp.startdb.compress.elf.compressor;
 import gr.aueb.delorean.chimp.OutputBitStream;
 import org.urbcomp.startdb.compress.elf.xorcompressor.ElfXORCompressorPre1O;
 
-public class ElfCompressorPre1O extends AbstractElfCompressor {
+public class ElfCompressor extends AbstractElfCompressor {
     private final ElfXORCompressorPre1O xorCompressor;
 
-    public ElfCompressorPre1O() {
+    public ElfCompressor() {
         xorCompressor = new ElfXORCompressorPre1O();
     }
 
@@ -34,9 +34,5 @@ public class ElfCompressorPre1O extends AbstractElfCompressor {
         // we write one more bit here, for marking an end of the stream.
         writeBit(false);
         xorCompressor.close();
-    }
-
-    @Override public String getKey() {
-        return "ElfCompressorPre1O";
     }
 }
