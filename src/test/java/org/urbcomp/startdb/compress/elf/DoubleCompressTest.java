@@ -99,7 +99,6 @@ class DoubleCompressTest {
                 for (int j = 0; j < values.size(); j++) {
                     assertEquals(values.get(j), uncompressedValues.get(j), "Value did not match");
                 }
-                System.out.println(totalSize);
                 System.out.printf("%s: %s \t Compression Ratio: %.6f, Compression time per block: %.6f, Decompression time per block: %.6f%n", compressor.getKey(), filename, totalSize / (values.size()*64.0), encodingDuration / 1000000.0, decodingDuration / 1000000.0);
 
                 String key = compressor.getKey();
