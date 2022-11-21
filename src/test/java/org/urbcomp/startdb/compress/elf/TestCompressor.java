@@ -24,28 +24,28 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestCompressor {
-    private static final String FILE_PATH = "src/test/resources";
+    private static final String FILE_PATH = "src/test/resources/ElfTestData";
     private static final String[] FILENAMES = {
-            "/AvgTemperature.csv",
-//            "/circuits_lat.csv",
-//            "/circuits_lng.csv",
-//            "/diskCapability.csv",
-//            "/location-lat.csv",
-//            "/location-long.csv",
-//            "/mp_price.csv",
-//            "/pitStop_duration.csv",
-//            "/worldcities_latitude.csv",
-//            "/worldcities_longitude.csv",
-//            "/x-axis.csv",
-//            "/y-axis.csv",
-//            "/z-axis.csv",
-//            "/NewYork_temperature.csv",
-//            "/Tokyo_temperature.csv",
-//            "/l4d2_player_stats.csv",
-//            "/percentage_of_alcohol.csv",
-//            "/electric_vehicle_charging.csv",
-//        "/ECMWF Interim Full Daily Invariant High Vegetation Cover.csv",
-//        "/ECMWF Interim Full Daily Invariant Low Vegetation Cover.csv"
+            "/Air_pressure.csv",
+            "/Air-sensor.csv",
+            "/Basel_Temperature.csv",
+            "/Basel_Wind_Speed.csv",
+            "/Bird-migration.csv",
+            "/Bitcoin-price.csv",
+            "/Blockchain-tr.csv",
+            "/City-temp.csv",
+            "/worldcities_latitude.csv",
+            "/worldcities_longitude.csv",
+            "/Dew-point-temp .csv",
+            "/electric_vehicle_charging.csv",
+            "/FoodPrices.csv",
+            "/IR-bio-temp.csv",
+            "/PM10-dust.csv",
+            "/SSD-bench.csv",
+            "/Stocks_DE.csv",
+            "/Stocks_UK.csv",
+            "/Stocks_USA.csv",
+            "/Wind-dir.csv"
     };
     private static final String STORE_PATH = "src/test/resources/result";
 
@@ -56,6 +56,7 @@ public class TestCompressor {
     public void testCompressor() throws IOException {
         for (String filename : FILENAMES) {
             Map<String, List<ResultStructure>> result = new HashMap<>();
+            System.out.println(filename);
             for (int i = 0; i < 100; i++) {
                 testELFCompressor(filename, result);
                 testFPC(filename, result);
@@ -78,10 +79,10 @@ public class TestCompressor {
     public void testELFCompressor(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws FileNotFoundException {
         FileReader fileReader = new FileReader(FILE_PATH + fileName);
         ICompressor[] compressorList = new ICompressor[]{
-                //new GorillaCompressorOS(),
+                new GorillaCompressorOS(),
                 new ElfOnGorillaCompressorOS(),
-                //new ChimpCompressor(),
-                //new ElfOnChimpCompressor(),
+                new ChimpCompressor(),
+                new ElfOnChimpCompressor(),
                 new ChimpNCompressor(128),
                 new ElfOnChimpNCompressor(128),
                 new ElfCompressor(),
@@ -95,10 +96,10 @@ public class TestCompressor {
         while ((values = fileReader.nextBlock()) != null) {
             totalBlocks += 1;
             ICompressor[] compressors = new ICompressor[]{
-                    //new GorillaCompressorOS(),
+                    new GorillaCompressorOS(),
                     new ElfOnGorillaCompressorOS(),
-                    //new ChimpCompressor(),
-                    //new ElfOnChimpCompressor(),
+                    new ChimpCompressor(),
+                    new ElfOnChimpCompressor(),
                     new ChimpNCompressor(128),
                     new ElfOnChimpNCompressor(128),
                     new ElfCompressor(),
@@ -119,10 +120,10 @@ public class TestCompressor {
 
                 byte[] result = compressor.getBytes();
                 IDecompressor[] decompressors = new IDecompressor[]{
-                        //new GorillaDecompressorOS(result),
+                        new GorillaDecompressorOS(result),
                         new ElfOnGorillaDecompressorOS(result),
-                        //new ChimpDecompressor(result),
-                        //new ElfOnChimpDecompressor(result),
+                        new ChimpDecompressor(result),
+                        new ElfOnChimpDecompressor(result),
                         new ChimpNDecompressor(result, 128),
                         new ElfOnChimpNDecompressor(result, 128),
                         new ElfDecompressor(result)
@@ -135,7 +136,7 @@ public class TestCompressor {
                 decodingDuration = System.nanoTime() - start;
 
                 for (int j = 0; j < values.length; j++) {
-                    assertEquals(values[j], uncompressedValues.get(j), "Value did not match");
+                    assertEquals(values[j], uncompressedValues.get(j), "Value did not match"+compressor.getKey());
                 }
                 String key = compressor.getKey();
                 if (!totalCompressionTime.containsKey(key)) {
