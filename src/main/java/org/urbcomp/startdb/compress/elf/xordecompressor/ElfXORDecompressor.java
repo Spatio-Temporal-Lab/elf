@@ -56,7 +56,7 @@ public class ElfXORDecompressor {
     private void next() throws IOException {
         if (first) {
             first = false;
-            int trailingZeros = in.readInt(6);
+            int trailingZeros = in.readInt(7);
             storedVal = in.readLong(64 - trailingZeros) << trailingZeros;
             if (storedVal == END_SIGN) {
                 endOfStream = true;

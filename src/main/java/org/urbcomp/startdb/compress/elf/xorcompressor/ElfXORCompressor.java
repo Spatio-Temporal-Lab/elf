@@ -72,11 +72,11 @@ public class ElfXORCompressor {
         first = false;
         storedVal = value;
         int trailingZeros = Long.numberOfTrailingZeros(value);
-        out.writeInt(trailingZeros, 6);
+        out.writeInt(trailingZeros, 7);
         out.writeLong(storedVal >>> trailingZeros, 64 - trailingZeros);
 
-        size += 70 - trailingZeros;
-        return 70 - trailingZeros;
+        size += 71 - trailingZeros;
+        return 71 - trailingZeros;
     }
 
     /**
