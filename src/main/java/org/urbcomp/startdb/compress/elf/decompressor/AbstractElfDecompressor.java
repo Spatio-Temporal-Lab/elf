@@ -7,15 +7,15 @@ import java.util.List;
 
 public abstract class AbstractElfDecompressor implements IDecompressor {
 
-    private final static double[] map10iN = new double[]{
-        1.0, 1.0E-1, 1.0E-2, 1.0E-3, 1.0E-4, 1.0E-5, 1.0E-6, 1.0E-7, 1.0E-8, 1.0E-9,
-        1.0E-10, 1.0E-11, 1.0E-12, 1.0E-13, 1.0E-14, 1.0E-15, 1.0E-16, 1.0E-17
-    };
+    private final static double[] map10iN =
+                    new double[] {1.0, 1.0E-1, 1.0E-2, 1.0E-3, 1.0E-4, 1.0E-5, 1.0E-6, 1.0E-7,
+                                    1.0E-8, 1.0E-9, 1.0E-10, 1.0E-11, 1.0E-12, 1.0E-13, 1.0E-14,
+                                    1.0E-15, 1.0E-16, 1.0E-17};
 
     public List<Double> decompress() {
         List<Double> values = new ArrayList<>(1024);
         Double value;
-        while((value = nextValue()) != null) {
+        while ((value = nextValue()) != null) {
             values.add(value);
         }
         return values;
@@ -33,6 +33,9 @@ public abstract class AbstractElfDecompressor implements IDecompressor {
             int sp = getStartSignificandPosition(vPrime);
             if (betaStar == 0) {
                 v = get10iN(-sp - 1);
+                if (vPrime < 0) {
+                    v = -v;
+                }
             } else {
                 int alpha = betaStar - sp - 1;
                 v = roundUp(vPrime, alpha);
@@ -51,8 +54,7 @@ public abstract class AbstractElfDecompressor implements IDecompressor {
 
     private static double get10iN(int i) {
         if (i <= 0) {
-            throw new IllegalArgumentException(
-                            "The argument should be greater than 0");
+            throw new IllegalArgumentException("The argument should be greater than 0");
         }
         if (i >= map10iN.length) {
             return new BigDecimal("1.0E-" + i).doubleValue();
