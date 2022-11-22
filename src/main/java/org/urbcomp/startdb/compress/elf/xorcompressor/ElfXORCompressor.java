@@ -108,6 +108,7 @@ public class ElfXORCompressor {
             int trailingZeros = Long.numberOfTrailingZeros(xor);
 
             if (leadingZeros == storedLeadingZeros && trailingZeros >= storedTrailingZeros) {
+                // case 10
                 int centerBits = 64 - storedLeadingZeros - storedTrailingZeros;
                 out.writeInt(1, 1);
                 out.writeInt(0, 1);
@@ -119,14 +120,30 @@ public class ElfXORCompressor {
                 storedLeadingZeros = leadingZeros;
                 storedTrailingZeros = trailingZeros;
                 int centerBits = 64 - storedLeadingZeros - storedTrailingZeros;
-                out.writeInt(1, 1);
-                out.writeInt(1, 1);
-                out.writeInt(leadingRepresentation[storedLeadingZeros], 3);
-                out.writeInt(centerBits, 6);
-                out.writeLong(xor >>> storedTrailingZeros, centerBits);
 
-                size += 11 + centerBits;
-                thisSize += 11 + centerBits;
+                if (centerBits <= 16) {
+                    // case 110
+                    out.writeInt(1, 1);
+                    out.writeInt(1, 1);
+                    out.writeInt(0, 1);
+                    out.writeInt(leadingRepresentation[storedLeadingZeros], 3);
+                    out.writeInt(centerBits, 4);
+                    out.writeLong(xor >>> storedTrailingZeros, centerBits);
+
+                    size += 10 + centerBits;
+                    thisSize += 10 + centerBits;
+                } else {
+                    // case 111
+                    out.writeInt(1, 1);
+                    out.writeInt(1, 1);
+                    out.writeInt(1, 1);
+                    out.writeInt(leadingRepresentation[storedLeadingZeros], 3);
+                    out.writeInt(centerBits, 6);
+                    out.writeLong(xor >>> storedTrailingZeros, centerBits);
+
+                    size += 12 + centerBits;
+                    thisSize += 12 + centerBits;
+                }
             }
 
             storedVal = value;

@@ -82,7 +82,23 @@ public class ElfXORDecompressor {
             } else {
                 storedVal = value;
             }
+        } else if (in.readInt(1) == 0) {
+            // case 110
+            storedLeadingZeros = leadingRepresentation[in.readInt(3)];
+            int centerBits = in.readInt(4);
+            if(centerBits == 0) {
+                centerBits = 16;
+            }
+            storedTralingZeros = 64 - storedLeadingZeros - centerBits;
+            value = in.readLong(centerBits) << storedTralingZeros;
+            value = storedVal ^ value;
+            if (value == END_SIGN) {
+                endOfStream = true;
+            } else {
+                storedVal = value;
+            }
         } else {
+            // case 111
             storedLeadingZeros = leadingRepresentation[in.readInt(3)];
             int centerBits = in.readInt(6);
             if(centerBits == 0) {
@@ -97,6 +113,5 @@ public class ElfXORDecompressor {
                 storedVal = value;
             }
         }
-
     }
 }
