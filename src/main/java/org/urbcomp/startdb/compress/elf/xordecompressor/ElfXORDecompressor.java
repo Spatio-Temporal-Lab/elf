@@ -9,6 +9,7 @@ import java.util.List;
 public class ElfXORDecompressor {
     private long storedVal = 0;
     private int storedLeadingZeros = Integer.MAX_VALUE;
+    private int storedTralingZeros = Integer.MAX_VALUE;
     private boolean first = true;
     private boolean endOfStream = false;
 
@@ -16,7 +17,7 @@ public class ElfXORDecompressor {
 
     private final static long END_SIGN = Double.doubleToLongBits(Double.NaN);
 
-    public final static short[] leadingRepresentation = {0, 8, 12, 16, 18, 20, 22, 24};
+    private final static short[] leadingRepresentation = {0, 8, 12, 16, 18, 20, 22, 24};
 
     public ElfXORDecompressor(byte[] bs) {
         in = new InputBitStream(bs);
@@ -67,69 +68,35 @@ public class ElfXORDecompressor {
     }
 
     private void nextValue() throws IOException {
-        int flag = in.readInt(2);
-        int centerBits, trailingZeros;
         long value;
-        switch (flag) {
-            case 0:
-                // case 00
-                centerBits = in.readInt(4);
-                if (centerBits == 0) {
-                    centerBits = 16;
-                }
-                trailingZeros = 64 - storedLeadingZeros - centerBits;
-                value = in.readLong(centerBits) << trailingZeros;
-                value = storedVal ^ value;
-                if (value == END_SIGN) {
-                    endOfStream = true;
-                } else {
-                    storedVal = value;
-                }
-                break;
-            case 1:
-                // case 01
-//                storedLeadingZeros = leadingRepresentation[in.readInt(3)];
-//                centerBits = in.readInt(4);
-                int leadingAndCenterBits = in.readInt(7);
-                storedLeadingZeros = leadingRepresentation[leadingAndCenterBits >>> 4];
-                centerBits = leadingAndCenterBits & 0xf;
-                if (centerBits == 0) {
-                    centerBits = 16;
-                }
-                trailingZeros = 64 - storedLeadingZeros - centerBits;
-                value = in.readLong(centerBits) << trailingZeros;
-                value = storedVal ^ value;
-                if (value == END_SIGN) {
-                    endOfStream = true;
-                } else {
-                    storedVal = value;
-                }
-                break;
-            case 3:
-                if (in.readInt(1) != 0) {
-                    // case 111
-                    int leadingAndCenter = in.readInt(9);
-                    storedLeadingZeros = leadingRepresentation[leadingAndCenter >>> 6];
-                    centerBits = leadingAndCenter & 0x3f;
-                } else {
-                    //case 110
-                    centerBits = in.readInt(6);
-                }
-                if (centerBits == 0) {
-                    centerBits = 64;
-                }
-                trailingZeros = 64 - storedLeadingZeros - centerBits;
-                value = in.readLong(centerBits) << trailingZeros;
-                value = storedVal ^ value;
-                if (value == END_SIGN) {
-                    endOfStream = true;
-                } else {
-                    storedVal = value;
-                }
-                break;
-            default:
-                // case 10, we do nothing, the same value as before
-                break;
+
+        if (in.readInt(1) == 0) {
+            // case 0, we do nothing, the same value as before
+        } else if (in.readInt(1) == 0) {
+            // case 10
+            int centerBits = 64 - storedLeadingZeros - storedTralingZeros;
+            value = in.readLong(centerBits) << storedTralingZeros;
+            value = storedVal ^ value;
+            if (value == END_SIGN) {
+                endOfStream = true;
+            } else {
+                storedVal = value;
+            }
+        } else {
+            storedLeadingZeros = leadingRepresentation[in.readInt(3)];
+            int centerBits = in.readInt(6);
+            if(centerBits == 0) {
+                centerBits = 64;
+            }
+            storedTralingZeros = 64 - storedLeadingZeros - centerBits;
+            value = in.readLong(centerBits) << storedTralingZeros;
+            value = storedVal ^ value;
+            if (value == END_SIGN) {
+                endOfStream = true;
+            } else {
+                storedVal = value;
+            }
         }
+
     }
 }
