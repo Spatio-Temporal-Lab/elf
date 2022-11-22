@@ -42,10 +42,12 @@ public class TestCompressor {
             "/IR-bio-temp.csv",
             "/PM10-dust.csv",
             "/SSD-bench.csv",
+            "/POI-lat.csv",
+            "/POI_long.csv",
             "/Stocks_DE.csv",
             "/Stocks_UK.csv",
             "/Stocks_USA.csv",
-            "/Wind-dir.csv"
+            "/Wind-dir.csv",
     };
     private static final String STORE_PATH = "src/test/resources/result";
 
@@ -72,7 +74,7 @@ public class TestCompressor {
                 allResult.add(r);
             }
         }
-        storeResult(STORE_PATH + "/result.dat");
+        storeResult(STORE_PATH + "/result1.0.dat");
     }
 
 
