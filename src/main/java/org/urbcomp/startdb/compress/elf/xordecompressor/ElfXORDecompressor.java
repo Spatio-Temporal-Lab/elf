@@ -74,20 +74,6 @@ public class ElfXORDecompressor {
         switch (flag) {
             case 3:
                 // case 11
-                centerBits = 64 - storedLeadingZeros - storedTrailingZeros;
-                value = in.readLong(centerBits) << storedTrailingZeros;
-                value = storedVal ^ value;
-                if (value == END_SIGN) {
-                    endOfStream = true;
-                } else {
-                    storedVal = value;
-                }
-                break;
-            case 2:
-                // case 10, we do nothing, the same value as before
-                break;
-            case 1:
-                // case 01
                 leadAndCenter = in.readInt(9);
                 storedLeadingZeros = leadingRepresentation[leadAndCenter >>> 6];
                 centerBits = leadAndCenter & 0x3f;
@@ -103,8 +89,8 @@ public class ElfXORDecompressor {
                     storedVal = value;
                 }
                 break;
-            default:
-                // case 00
+            case 2:
+                // case 10
                 leadAndCenter = in.readInt(7);
                 storedLeadingZeros = leadingRepresentation[leadAndCenter >>> 4];
                 centerBits = leadAndCenter & 0xf;
@@ -112,6 +98,20 @@ public class ElfXORDecompressor {
                     centerBits = 16;
                 }
                 storedTrailingZeros = 64 - storedLeadingZeros - centerBits;
+                value = in.readLong(centerBits) << storedTrailingZeros;
+                value = storedVal ^ value;
+                if (value == END_SIGN) {
+                    endOfStream = true;
+                } else {
+                    storedVal = value;
+                }
+                break;
+            case 1:
+                // case 01, we do nothing, the same value as before
+                break;
+            default:
+                // case 00
+                centerBits = 64 - storedLeadingZeros - storedTrailingZeros;
                 value = in.readLong(centerBits) << storedTrailingZeros;
                 value = storedVal ^ value;
                 if (value == END_SIGN) {

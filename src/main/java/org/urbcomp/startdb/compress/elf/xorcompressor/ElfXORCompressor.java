@@ -95,8 +95,8 @@ public class ElfXORCompressor {
         long xor = storedVal ^ value;
 
         if (xor == 0) {
-            // case 10
-            out.writeInt(2, 2);
+            // case 01
+            out.writeInt(1, 2);
 
             size += 2;
             thisSize += 2;
@@ -108,10 +108,9 @@ public class ElfXORCompressor {
             int trailingZeros = Long.numberOfTrailingZeros(xor);
 
             if (leadingZeros == storedLeadingZeros && trailingZeros >= storedTrailingZeros) {
-                // case 11
+                // case 00
                 int centerBits = 64 - storedLeadingZeros - storedTrailingZeros;
-                out.writeInt(3, 2);
-                out.writeLong(xor >>> storedTrailingZeros, centerBits);
+                out.writeLong(xor >>> storedTrailingZeros, centerBits + 2);
 
                 size += 2 + centerBits;
                 thisSize += 2 + centerBits;
@@ -121,17 +120,15 @@ public class ElfXORCompressor {
                 int centerBits = 64 - storedLeadingZeros - storedTrailingZeros;
 
                 if (centerBits <= 16) {
-                    // case 00
-                    out.writeInt(leadingRepresentation[storedLeadingZeros], 5); // 2 + 3
-                    out.writeInt(centerBits, 4);
+                    // case 10
+                    out.writeInt((((0x2 << 3) | leadingRepresentation[storedLeadingZeros]) << 4) | (centerBits & 0xf), 9);
                     out.writeLong(xor >>> storedTrailingZeros, centerBits);
 
                     size += 9 + centerBits;
                     thisSize += 9 + centerBits;
                 } else {
-                    // case 01
-                    out.writeInt((leadingRepresentation[storedLeadingZeros] & 0x7) + 8, 5); // 2 + 3
-                    out.writeInt(centerBits, 6);
+                    // case 11
+                    out.writeInt((((0x3 << 3) | leadingRepresentation[storedLeadingZeros]) << 6) | (centerBits & 0x3f), 11);
                     out.writeLong(xor >>> storedTrailingZeros, centerBits);
 
                     size += 11 + centerBits;
