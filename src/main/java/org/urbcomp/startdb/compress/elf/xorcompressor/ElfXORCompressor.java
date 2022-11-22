@@ -95,11 +95,12 @@ public class ElfXORCompressor {
         long xor = storedVal ^ value;
 
         if (xor == 0) {
-            // case 0
+            // case 10
+            out.writeInt(1, 1);
             out.writeInt(0, 1);
 
-            size += 1;
-            thisSize += 1;
+            size += 2;
+            thisSize += 2;
 
             storedLeadingZeros = 65;
             storedTrailingZeros = 65;
@@ -108,10 +109,10 @@ public class ElfXORCompressor {
             int trailingZeros = Long.numberOfTrailingZeros(xor);
 
             if (leadingZeros == storedLeadingZeros && trailingZeros >= storedTrailingZeros) {
-                // case 10
+                // case 11
                 int centerBits = 64 - storedLeadingZeros - storedTrailingZeros;
                 out.writeInt(1, 1);
-                out.writeInt(0, 1);
+                out.writeInt(1, 1);
                 out.writeLong(xor >>> storedTrailingZeros, centerBits);
 
                 size += 2 + centerBits;
@@ -122,27 +123,25 @@ public class ElfXORCompressor {
                 int centerBits = 64 - storedLeadingZeros - storedTrailingZeros;
 
                 if (centerBits <= 16) {
-                    // case 110
-                    out.writeInt(1, 1);
-                    out.writeInt(1, 1);
+                    // case 00
+                    out.writeInt(0, 1);
                     out.writeInt(0, 1);
                     out.writeInt(leadingRepresentation[storedLeadingZeros], 3);
                     out.writeInt(centerBits, 4);
                     out.writeLong(xor >>> storedTrailingZeros, centerBits);
 
-                    size += 10 + centerBits;
-                    thisSize += 10 + centerBits;
+                    size += 9 + centerBits;
+                    thisSize += 9 + centerBits;
                 } else {
-                    // case 111
-                    out.writeInt(1, 1);
-                    out.writeInt(1, 1);
+                    // case 01
+                    out.writeInt(0, 1);
                     out.writeInt(1, 1);
                     out.writeInt(leadingRepresentation[storedLeadingZeros], 3);
                     out.writeInt(centerBits, 6);
                     out.writeLong(xor >>> storedTrailingZeros, centerBits);
 
-                    size += 12 + centerBits;
-                    thisSize += 12 + centerBits;
+                    size += 11 + centerBits;
+                    thisSize += 11 + centerBits;
                 }
             }
 
