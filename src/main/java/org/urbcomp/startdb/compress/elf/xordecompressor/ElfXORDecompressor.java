@@ -9,7 +9,7 @@ import java.util.List;
 public class ElfXORDecompressor {
     private long storedVal = 0;
     private int storedLeadingZeros = Integer.MAX_VALUE;
-    private int storedTralingZeros = Integer.MAX_VALUE;
+    private int storedTrailingZeros = Integer.MAX_VALUE;
     private boolean first = true;
     private boolean endOfStream = false;
 
@@ -74,8 +74,8 @@ public class ElfXORDecompressor {
             // case 0, we do nothing, the same value as before
         } else if (in.readInt(1) == 0) {
             // case 10
-            int centerBits = 64 - storedLeadingZeros - storedTralingZeros;
-            value = in.readLong(centerBits) << storedTralingZeros;
+            int centerBits = 64 - storedLeadingZeros - storedTrailingZeros;
+            value = in.readLong(centerBits) << storedTrailingZeros;
             value = storedVal ^ value;
             if (value == END_SIGN) {
                 endOfStream = true;
@@ -89,8 +89,8 @@ public class ElfXORDecompressor {
             if(centerBits == 0) {
                 centerBits = 16;
             }
-            storedTralingZeros = 64 - storedLeadingZeros - centerBits;
-            value = in.readLong(centerBits) << storedTralingZeros;
+            storedTrailingZeros = 64 - storedLeadingZeros - centerBits;
+            value = in.readLong(centerBits) << storedTrailingZeros;
             value = storedVal ^ value;
             if (value == END_SIGN) {
                 endOfStream = true;
@@ -104,8 +104,8 @@ public class ElfXORDecompressor {
             if(centerBits == 0) {
                 centerBits = 64;
             }
-            storedTralingZeros = 64 - storedLeadingZeros - centerBits;
-            value = in.readLong(centerBits) << storedTralingZeros;
+            storedTrailingZeros = 64 - storedLeadingZeros - centerBits;
+            value = in.readLong(centerBits) << storedTrailingZeros;
             value = storedVal ^ value;
             if (value == END_SIGN) {
                 endOfStream = true;
