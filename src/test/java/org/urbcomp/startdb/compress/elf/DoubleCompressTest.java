@@ -11,28 +11,28 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DoubleCompressTest {
-    private static final String FILE_PATH = "src/test/resources";
+    private static final String FILE_PATH = "src/test/resources/ElfTestData";
     private static final String[] FILENAMES = {
-        "/AvgTemperature.csv",
-        "/circuits_lat.csv",
-        "/circuits_lng.csv",
-        "/diskCapability.csv",
-        "/location-lat.csv",
-        "/location-long.csv",
-        "/mp_price.csv",
-        "/pitStop_duration.csv",
-        "/worldcities_latitude.csv",
-        "/worldcities_longitude.csv",
-        "/x-axis.csv",
-        "/y-axis.csv",
-        "/z-axis.csv",
-        "/NewYork_temperature.csv",
-        "/Tokyo_temperature.csv",
-        "/l4d2_player_stats.csv",
-        "/percentage_of_alcohol.csv",
-        "/electric_vehicle_charging.csv",
-//        "/ECMWF Interim Full Daily Invariant High Vegetation Cover.csv",
-//        "/ECMWF Interim Full Daily Invariant Low Vegetation Cover.csv"
+                    "/Air_pressure.csv",
+//                    "/Air-sensor.csv",
+//                    "/Basel_Temperature.csv",
+//                    "/Basel_Wind_Speed.csv",
+//                    "/Bird-migration.csv",
+//                    "/Bitcoin-price.csv",
+//                    "/Blockchain-tr.csv",
+//                    "/City-temp.csv",
+//                    "/worldcities_latitude.csv",
+//                    "/worldcities_longitude.csv",
+//                    "/Dew-point-temp .csv",
+//                    "/electric_vehicle_charging.csv",
+//                    "/FoodPrices.csv",
+//                    "/IR-bio-temp.csv",
+//                    "/PM10-dust.csv",
+//                    "/SSD-bench.csv",
+//                    "/Stocks_DE.csv",
+//                    "/Stocks_UK.csv",
+//                    "/Stocks_USA.csv",
+//                    "/Wind-dir.csv"
     };
 
     @Test
@@ -43,10 +43,10 @@ class DoubleCompressTest {
 
         for (String filename : FILENAMES) {
             FileReader fileReader = new FileReader();
-            List<Double> values = fileReader.readFile(FILE_PATH + filename);
+            List<Double> values = fileReader.readFile(FILE_PATH + filename, 1000);
             ICompressor[] compressors = new ICompressor[]{
 //                            new GorillaCompressorOS(),
-                            new ElfOnGorillaCompressorOS(),
+//                            new ElfOnGorillaCompressorOS(),
 //                            new ChimpCompressor(),
 //                            new ElfOnChimpCompressor(),
 //                            new ChimpNCompressor(128),
@@ -71,7 +71,7 @@ class DoubleCompressTest {
                 byte[] result = compressor.getBytes();
                 IDecompressor[] decompressors = new IDecompressor[]{
 //                                new GorillaDecompressorOS(result),
-                                new ElfOnGorillaDecompressorOS(result),
+//                                new ElfOnGorillaDecompressorOS(result),
 //                                new ChimpDecompressor(result),
 //                                new ElfOnChimpDecompressor(result),
 //                                new ChimpNDecompressor(result,128),

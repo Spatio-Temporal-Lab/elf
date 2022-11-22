@@ -44,15 +44,18 @@ public class FileReader {
         return null;
     }
 
-    public List<Double> readFile(String filePath) {
+    public List<Double> readFile(String filePath, int number) {
         List<Double> ld = new ArrayList<>();
+        int i = 0;
         try (java.io.FileReader fr = new java.io.FileReader(filePath);
                         BufferedReader br = new BufferedReader(fr)) {
             String data;
-            while ((data = br.readLine()) != null) {
+            while ((data = br.readLine()) != null && i < number) {
                 ld.add(Double.parseDouble(data));
+                i++;
             }
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             e.printStackTrace();
         }
         return ld;
