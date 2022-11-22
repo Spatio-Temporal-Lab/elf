@@ -69,7 +69,7 @@ public class ElfXORDecompressor {
 
     private void nextValue() throws IOException {
         long value;
-        int centerBits;
+        int centerBits, leadAndCenter;
         int flag = in.readInt(2);
         switch (flag) {
             case 3:
@@ -88,8 +88,9 @@ public class ElfXORDecompressor {
                 break;
             case 1:
                 // case 01
-                storedLeadingZeros = leadingRepresentation[in.readInt(3)];
-                centerBits = in.readInt(6);
+                leadAndCenter = in.readInt(9);
+                storedLeadingZeros = leadingRepresentation[leadAndCenter >>> 6];
+                centerBits = leadAndCenter & 0x3f;
                 if(centerBits == 0) {
                     centerBits = 64;
                 }
@@ -104,8 +105,9 @@ public class ElfXORDecompressor {
                 break;
             default:
                 // case 00
-                storedLeadingZeros = leadingRepresentation[in.readInt(3)];
-                centerBits = in.readInt(4);
+                leadAndCenter = in.readInt(7);
+                storedLeadingZeros = leadingRepresentation[leadAndCenter >>> 4];
+                centerBits = leadAndCenter & 0xf;
                 if(centerBits == 0) {
                     centerBits = 16;
                 }
