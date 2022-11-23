@@ -135,7 +135,20 @@ public class ResultStructure {
         this.decompressionTime = decompressionTime;
     }
 
-
+    public static String getHead(){
+        return "FileName\t" +
+                        "CompressorName\t" +
+                        "CompressorRatio\t" +
+                        "CompressionTime\t" +
+                        "MaxCompressTime\t" +
+                        "MinCompressTime\t" +
+                        "MediaCompressTime\t" +
+                        "DecompressionTime\t" +
+                        "MaxDecompressTime\t" +
+                        "MinDecompressTime\t" +
+                        "MediaDecompressTime\t" +
+                        '\n';
+    }
     @Override
     public String toString() {
         return filename + '\t' +
