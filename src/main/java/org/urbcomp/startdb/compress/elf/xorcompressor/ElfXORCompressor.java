@@ -110,10 +110,16 @@ public class ElfXORCompressor {
             if (leadingZeros == storedLeadingZeros && trailingZeros >= storedTrailingZeros) {
                 // case 00
                 int centerBits = 64 - storedLeadingZeros - storedTrailingZeros;
-                out.writeLong(xor >>> storedTrailingZeros, centerBits + 2);
+                int len = 2 + centerBits;
+                if(len > 64) {
+                    out.writeInt(0, 2);
+                    out.writeLong(xor >>> storedTrailingZeros, centerBits);
+                } else {
+                    out.writeLong(xor >>> storedTrailingZeros, len);
+                }
 
-                size += 2 + centerBits;
-                thisSize += 2 + centerBits;
+                size += len;
+                thisSize += len;
             } else {
                 storedLeadingZeros = leadingZeros;
                 storedTrailingZeros = trailingZeros;
