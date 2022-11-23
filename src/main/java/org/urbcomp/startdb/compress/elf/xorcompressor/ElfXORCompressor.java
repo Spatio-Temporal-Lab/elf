@@ -100,9 +100,6 @@ public class ElfXORCompressor {
 
             size += 2;
             thisSize += 2;
-
-            storedLeadingZeros = 65;
-            storedTrailingZeros = 65;
         } else {
             int leadingZeros = leadingRound[Long.numberOfLeadingZeros(xor)];
             int trailingZeros = Long.numberOfTrailingZeros(xor);
