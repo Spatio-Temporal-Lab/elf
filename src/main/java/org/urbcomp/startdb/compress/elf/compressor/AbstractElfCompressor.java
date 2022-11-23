@@ -152,8 +152,6 @@ public abstract class AbstractElfCompressor implements ICompressor {
     }
 
     private static int getE(long vLong) {
-        long eMask = 0x7ff0000000000000L;
-        long e = (eMask & vLong) >> 52;
-        return (int) e;
+        return ((int)(vLong >> 52)) & 0x7ff;
     }
 }
