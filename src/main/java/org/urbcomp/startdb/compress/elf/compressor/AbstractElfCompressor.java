@@ -64,56 +64,35 @@ public abstract class AbstractElfCompressor implements ICompressor {
         }
         int[] alphaAndBetaStar = new int[2];
         double log10v = Math.log10(v);
-        alphaAndBetaStar[0] = getPrecision(v);
-        alphaAndBetaStar[1] = (v < 1 && log10v % 1 == 0) ?
-                        0 :
-                        alphaAndBetaStar[0] + (int) Math.floor(log10v) + 1;
+        int beta = getSignificantCount(v);
+        alphaAndBetaStar[0] = beta - (int) Math.floor(log10v) - 1;
+        alphaAndBetaStar[1] = (v < 1 && log10v % 1 == 0) ? 0 : beta;
         return alphaAndBetaStar;
     }
 
-    private static int getPrecision(double v) {
+    private static int getSignificantCount(double v) {
         String vString = Double.toString(v);
         int len = vString.length();
-        int pre = 0;
         int i = 0;
-        // find the point
+        // omit the former 0 and point
+        while (i < len) {
+            if (vString.charAt(i) != '0' && vString.charAt(i) != '.') {
+                break;
+            }
+            i++;
+        }
+        int sig = 0;
         while (i < len) {
             if (vString.charAt(i) == '.') {
                 i++;
-                break;
-            } else {
-                i++;
-            }
-        }
-
-        while (i < len) {
-            if (vString.charAt(i) != 'E') {
-                pre++;
+            } else if(vString.charAt(i) != 'E') {
+                sig++;
                 i++;
             } else {
-                i++;
                 break;
             }
         }
-
-        if (i < len) {
-            boolean negative = false;
-            if (vString.charAt(i) == '-') {
-                negative = true;
-                i++;
-            }
-            int e = 0;
-            while (i < len) {
-                e = e * 10 + (vString.charAt(i) - '0');
-                i++;
-            }
-            if (negative) {
-                pre = pre + e;
-            } else {
-                pre = pre - e;
-            }
-        }
-        return Math.max(pre, 1);
+        return sig;
     }
 
     private static int getE(long vLong) {
