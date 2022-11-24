@@ -32,7 +32,7 @@ public abstract class AbstractElfDecompressor implements IDecompressor {
         } else {
             int betaStar = readInt(4);
             Double vPrime = xorDecompress();
-            int sp = getStartSignificandPosition(vPrime);
+            int sp = (int) Math.floor(Math.log10(Math.abs(vPrime)));
             if (betaStar == 0) {
                 v = get10iN(-sp - 1);
                 if (vPrime < 0) {
@@ -49,10 +49,6 @@ public abstract class AbstractElfDecompressor implements IDecompressor {
     protected abstract Double xorDecompress();
 
     protected abstract int readInt(int len);
-
-    private static int getStartSignificandPosition(double v) {
-        return (int) Math.floor(Math.log10(Math.abs(v)));
-    }
 
     private static double get10iN(int i) {
         if (i <= 0) {
