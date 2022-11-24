@@ -10,7 +10,8 @@ public class FileReader {
     private static final int VALUE_POSITION = 0;
     BufferedReader bufferedReader;
     private int blockSize;
-    public FileReader(String filePath,int blockSize) throws FileNotFoundException {
+
+    public FileReader(String filePath, int blockSize) throws FileNotFoundException {
         java.io.FileReader fr = new java.io.FileReader(filePath);
         this.bufferedReader = new BufferedReader(fr);
         this.blockSize = blockSize;
@@ -20,7 +21,9 @@ public class FileReader {
         this(filePath, DEFAULT_BLOCK_SIZE);
     }
 
-    public FileReader(){}
+
+    public FileReader() {
+    }
 
     public double[] nextBlock() {
         double[] values = new double[DEFAULT_BLOCK_SIZE];
@@ -44,11 +47,33 @@ public class FileReader {
         return null;
     }
 
+    public double[] nextBlockWithBeta(int beta) {
+        double[] values = new double[DEFAULT_BLOCK_SIZE];
+        String line;
+        int counter = 0;
+        try {
+            while ((line = bufferedReader.readLine()) != null) {
+                try {
+                    values[counter++] = Double.parseDouble(getSubString(line, beta));
+                    if (counter == blockSize) {
+                        return values;
+                    }
+                } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                    continue;
+                }
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public List<Double> readFile(String filePath, int number) {
         List<Double> ld = new ArrayList<>();
         int i = 0;
         try (java.io.FileReader fr = new java.io.FileReader(filePath);
-                        BufferedReader br = new BufferedReader(fr)) {
+             BufferedReader br = new BufferedReader(fr)) {
             String data;
             while ((data = br.readLine()) != null && i < number) {
                 ld.add(Double.parseDouble(data));
@@ -61,4 +86,20 @@ public class FileReader {
         return ld;
     }
 
+    private String getSubString(String str, int beta) {
+        if (str.charAt(0) == '-') {
+            beta++;
+            if (str.charAt(1) == '0') {
+                beta++;
+            }
+        } else if (str.charAt(0) == '0') {
+            beta++;
+        }
+        beta++;
+        if (str.length() <= beta) {
+            return str;
+        } else {
+            return str.substring(0, beta);
+        }
+    }
 }
