@@ -119,13 +119,14 @@ public class TestBeta {
 
 
     public void storeResult(String filePath) throws IOException {
-        FileWriter fileWriter = new FileWriter(filePath);
-        for (Map<String, ResultStructure> result : allResult) {
-            for (ResultStructure ls : result.values()) {
-                fileWriter.write(ls.toString());
+        try (FileWriter fileWriter = new FileWriter(filePath)) {
+            fileWriter.write(ResultStructure.getHead());
+            for (Map<String, ResultStructure> result : allResult) {
+                for (ResultStructure ls : result.values()) {
+                    fileWriter.write(ls.toString());
+                }
             }
         }
-        fileWriter.close();
     }
 
     public ResultStructure computeAvg(List<ResultStructure> lr) {
