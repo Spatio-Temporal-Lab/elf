@@ -82,7 +82,7 @@ public class TestCompressor {
         FileReader fileReader = new FileReader(FILE_PATH + fileName);
         ICompressor[] compressorList = new ICompressor[]{
 //                new GorillaCompressorOS(),
-//                new ElfOnGorillaCompressorOS(),
+                new ElfOnGorillaCompressorOS(),
 //                new ChimpCompressor(),
 //                new ElfOnChimpCompressor(),
                 new ChimpNCompressor(128),
@@ -99,7 +99,7 @@ public class TestCompressor {
             totalBlocks += 1;
             ICompressor[] compressors = new ICompressor[]{
 //                    new GorillaCompressorOS(),
-//                    new ElfOnGorillaCompressorOS(),
+                    new ElfOnGorillaCompressorOS(),
 //                    new ChimpCompressor(),
 //                    new ElfOnChimpCompressor(),
                     new ChimpNCompressor(128),
@@ -123,7 +123,7 @@ public class TestCompressor {
                 byte[] result = compressor.getBytes();
                 IDecompressor[] decompressors = new IDecompressor[]{
 //                        new GorillaDecompressorOS(result),
-//                        new ElfOnGorillaDecompressorOS(result),
+                        new ElfOnGorillaDecompressorOS(result),
 //                        new ChimpDecompressor(result),
 //                        new ElfOnChimpDecompressor(result),
                         new ChimpNDecompressor(result, 128),
