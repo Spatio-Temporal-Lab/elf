@@ -64,20 +64,21 @@ public abstract class AbstractElfCompressor implements ICompressor {
         }
         int[] alphaAndBetaStar = new int[2];
         double log10v = Math.log10(v);
-        char[] chars = Double.toString(v).toCharArray();        //这里最慢
-        alphaAndBetaStar[0] = getPrecision(chars);
+        alphaAndBetaStar[0] = getPrecision(v);
         alphaAndBetaStar[1] = (v < 1 && log10v % 1 == 0) ?
                         0 :
                         alphaAndBetaStar[0] + (int) Math.floor(log10v) + 1;
         return alphaAndBetaStar;
     }
 
-    private static int getPrecision(char[] chars) {
+    private static int getPrecision(double v) {
+        String vString = Double.toString(v);
+        int len = vString.length();
         int pre = 0;
         int i = 0;
         // find the point
-        while (i < chars.length) {
-            if (chars[i] == '.') {
+        while (i < len) {
+            if (vString.charAt(i) == '.') {
                 i++;
                 break;
             } else {
@@ -85,8 +86,8 @@ public abstract class AbstractElfCompressor implements ICompressor {
             }
         }
 
-        while (i < chars.length) {
-            if (chars[i] != 'E') {
+        while (i < len) {
+            if (vString.charAt(i) != 'E') {
                 pre++;
                 i++;
             } else {
@@ -95,15 +96,15 @@ public abstract class AbstractElfCompressor implements ICompressor {
             }
         }
 
-        if (i < chars.length) {
+        if (i < len) {
             boolean negative = false;
-            if (chars[i] == '-') {
+            if (vString.charAt(i) == '-') {
                 negative = true;
                 i++;
             }
             int e = 0;
-            while (i < chars.length) {
-                e = e * 10 + (chars[i] - '0');
+            while (i < len) {
+                e = e * 10 + (vString.charAt(i) - '0');
                 i++;
             }
             if (negative) {
