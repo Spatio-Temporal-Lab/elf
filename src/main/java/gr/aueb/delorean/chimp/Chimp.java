@@ -40,7 +40,7 @@ public class Chimp {
 
     // We should have access to the series?
     public Chimp() {
-        out = new OutputBitStream(new byte[8125]);  // for elf, we need one more bit for each at the worst case
+        out = new OutputBitStream(new byte[10000]);  // for elf, we need one more bit for each at the worst case
         size = 0;
     }
 
