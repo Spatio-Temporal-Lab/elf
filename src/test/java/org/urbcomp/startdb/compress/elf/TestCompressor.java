@@ -51,7 +51,7 @@ public class TestCompressor {
     };
     private static final String STORE_PATH = "src/test/resources/result";
 
-    private static double TIME_PRECISION = 1000.0;
+    private static final double TIME_PRECISION = 1000.0;
     List<Map<String, ResultStructure>> allResult = new ArrayList<>();
 
     @Test
@@ -59,14 +59,14 @@ public class TestCompressor {
         for (String filename : FILENAMES) {
             Map<String, List<ResultStructure>> result = new HashMap<>();
             System.out.println(filename);
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 50; i++) {
                 testELFCompressor(filename, result);
-                testFPC(filename, result);
-                testSnappy(filename, result);
-                testZstd(filename, result);
-                testLZ4(filename, result);
-                testBrotli(filename, result);
-                testXz(filename, result);
+//                testFPC(filename, result);
+//                testSnappy(filename, result);
+//                testZstd(filename, result);
+//                testLZ4(filename, result);
+//                testBrotli(filename, result);
+//                testXz(filename, result);
             }
             for (Map.Entry<String, List<ResultStructure>> kv : result.entrySet()) {
                 Map<String, ResultStructure> r = new HashMap<>();
@@ -74,19 +74,19 @@ public class TestCompressor {
                 allResult.add(r);
             }
         }
-        storeResult(STORE_PATH + "/result1.0.dat");
+        storeResult(STORE_PATH + "/result1.0.csv");
     }
 
 
     public void testELFCompressor(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws FileNotFoundException {
         FileReader fileReader = new FileReader(FILE_PATH + fileName);
         ICompressor[] compressorList = new ICompressor[]{
-                new GorillaCompressorOS(),
-                new ElfOnGorillaCompressorOS(),
-                new ChimpCompressor(),
-                new ElfOnChimpCompressor(),
+//                new GorillaCompressorOS(),
+//                new ElfOnGorillaCompressorOS(),
+//                new ChimpCompressor(),
+//                new ElfOnChimpCompressor(),
                 new ChimpNCompressor(128),
-                new ElfOnChimpNCompressor(128),
+//                new ElfOnChimpNCompressor(128),
                 new ElfCompressor(),
         };
         float totalBlocks = 0;
@@ -98,12 +98,12 @@ public class TestCompressor {
         while ((values = fileReader.nextBlock()) != null) {
             totalBlocks += 1;
             ICompressor[] compressors = new ICompressor[]{
-                    new GorillaCompressorOS(),
-                    new ElfOnGorillaCompressorOS(),
-                    new ChimpCompressor(),
-                    new ElfOnChimpCompressor(),
+//                    new GorillaCompressorOS(),
+//                    new ElfOnGorillaCompressorOS(),
+//                    new ChimpCompressor(),
+//                    new ElfOnChimpCompressor(),
                     new ChimpNCompressor(128),
-                    new ElfOnChimpNCompressor(128),
+//                    new ElfOnChimpNCompressor(128),
                     new ElfCompressor(),
             };
             for (int i = 0; i < compressors.length; i++) {
@@ -122,12 +122,12 @@ public class TestCompressor {
 
                 byte[] result = compressor.getBytes();
                 IDecompressor[] decompressors = new IDecompressor[]{
-                        new GorillaDecompressorOS(result),
-                        new ElfOnGorillaDecompressorOS(result),
-                        new ChimpDecompressor(result),
-                        new ElfOnChimpDecompressor(result),
+//                        new GorillaDecompressorOS(result),
+//                        new ElfOnGorillaDecompressorOS(result),
+//                        new ChimpDecompressor(result),
+//                        new ElfOnChimpDecompressor(result),
                         new ChimpNDecompressor(result, 128),
-                        new ElfOnChimpNDecompressor(result, 128),
+//                        new ElfOnChimpNDecompressor(result, 128),
                         new ElfDecompressor(result)
                 };
 
@@ -510,13 +510,14 @@ public class TestCompressor {
 
 
     public void storeResult(String filePath) throws IOException {
-        FileWriter fileWriter = new FileWriter(filePath);
-        for (Map<String, ResultStructure> result : allResult) {
-            for (ResultStructure ls : result.values()) {
-                fileWriter.write(ls.toString());
+        try (FileWriter fileWriter = new FileWriter(filePath)) {
+            fileWriter.write(ResultStructure.getHead());
+            for (Map<String, ResultStructure> result : allResult) {
+                for (ResultStructure ls : result.values()) {
+                    fileWriter.write(ls.toString());
+                }
             }
         }
-        fileWriter.close();
     }
 
     public ResultStructure computeAvg(List<ResultStructure> lr) {
