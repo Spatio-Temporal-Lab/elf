@@ -1,6 +1,5 @@
 package org.urbcomp.startdb.compress.elf.decompressor;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,11 +9,10 @@ public abstract class AbstractElfDecompressor implements IDecompressor {
                     new double[] {1.0, 1.0E-1, 1.0E-2, 1.0E-3, 1.0E-4, 1.0E-5, 1.0E-6, 1.0E-7,
                                     1.0E-8, 1.0E-9, 1.0E-10, 1.0E-11, 1.0E-12, 1.0E-13, 1.0E-14,
                                     1.0E-15, 1.0E-16, 1.0E-17, 1.0E-18, 1.0E-19, 1.0E-20};
-    private final static long[] map10iP =
-                    new long[] {1L, 10L, 100L, 1000L, 10000L, 100000L, 1000000L, 10000000L,
-                                    100000000L, 1000000000L, 10000000000L, 100000000000L,
-                                    1000000000000L, 10000000000000L, 100000000000000L,
-                                    1000000000000000L, 10000000000000000L, 100000000000000000L};
+    private final static double[] map10iP =
+                    new double[] {1.0, 1.0E1, 1.0E2, 1.0E3, 1.0E4, 1.0E5, 1.0E6, 1.0E7,
+                                    1.0E8, 1.0E9, 1.0E10, 1.0E11, 1.0E12, 1.0E13, 1.0E14,
+                                    1.0E15, 1.0E16, 1.0E17, 1.0E18, 1.0E19, 1.0E20};
 
     public List<Double> decompress() {
         List<Double> values = new ArrayList<>(1024);
@@ -61,25 +59,25 @@ public abstract class AbstractElfDecompressor implements IDecompressor {
             throw new IllegalArgumentException("The argument should be greater than 0");
         }
         if (i >= map10iN.length) {
-            return new BigDecimal("1.0E-" + i).doubleValue();
+            return Double.parseDouble("1.0E-" + i);
         } else {
             return map10iN[i];
         }
     }
 
-    private static long get10iP(int i) {
+    private static double get10iP(int i) {
         if (i <= 0) {
             throw new IllegalArgumentException("The argument should be greater than 0");
         }
         if (i >= map10iP.length) {
-            return new BigDecimal("1.0E" + i).longValue();
+            return Double.parseDouble("1.0E" + i);
         } else {
             return map10iP[i];
         }
     }
 
     private static double roundUp(double v, int alpha) {
-        long scale = get10iP(alpha);
+        double scale = get10iP(alpha);
         if (v < 0) {
             return Math.floor(v * scale) / scale;
         } else {
