@@ -76,7 +76,7 @@ public abstract class AbstractElfCompressor implements ICompressor {
         return alphaAndBetaStar;
     }
 
-    public static int getSignificantCount(double v, int sp) {
+    private static int getSignificantCount(double v, int sp) {
         int i;
         if(sp >= 0) {
             i = 1;
