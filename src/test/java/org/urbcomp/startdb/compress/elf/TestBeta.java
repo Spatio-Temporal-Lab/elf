@@ -35,11 +35,12 @@ public class TestBeta {
     @Test
     public void testCompressor() throws IOException {
         for (String filename : FILENAMES) {
-            for (int j = 17; j >= 1; j--) {
+            for (int j = 18; j >= 1; j--) {
                 Map<String, List<ResultStructure>> result = new HashMap<>();
-                for (int i = 0; i < 1; i++) {
+                for (int i = 0; i < 10; i++) {
 //                    testELFCompressor(filename, result, j);
                     testSnappy(filename, result, j);
+//                    testZstd(filename,result,j);
                 }
                 for (Map.Entry<String, List<ResultStructure>> kv : result.entrySet()) {
                     Map<String, ResultStructure> r = new HashMap<>();
@@ -49,7 +50,7 @@ public class TestBeta {
             }
 
         }
-        storeResult(STORE_PATH + "/resultBeta8.3.dat");
+        storeResult(STORE_PATH + "/resultBeta8.4.dat");
     }
 
     public void testELFCompressor(String fileName, Map<String, List<ResultStructure>> resultCompressor, int beta) throws FileNotFoundException {
@@ -206,7 +207,7 @@ public class TestBeta {
         double[] values;
         List<Double> totalCompressionTime = new ArrayList<>();
         List<Double> totalDecompressionTime = new ArrayList<>();
-        while ((values = fileReader.nextBlock()) != null) {
+        while ((values = fileReader.nextBlockWithBeta(beta)) != null) {
             double encodingDuration = 0;
             double decodingDuration = 0;
             ByteBuffer bb = ByteBuffer.allocate(values.length * 8);
