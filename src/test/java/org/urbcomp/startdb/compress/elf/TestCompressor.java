@@ -26,28 +26,29 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class TestCompressor {
     private static final String FILE_PATH = "src/test/resources/ElfTestData";
     private static final String[] FILENAMES = {
-            "/Air_pressure.csv",
+            "/init.csv",    //First run a dataset to ensure the relevant hbase settings of the zstd and snappy compressors
+            "/Air-pressure.csv",
             "/Air-sensor.csv",
-            "/Basel_Temperature.csv",
-            "/Basel_Wind_Speed.csv",
+            "/Basel-temp.csv",
+            "/Basel-wind.csv",
             "/Bird-migration.csv",
             "/Bitcoin-price.csv",
             "/Blockchain-tr.csv",
             "/City-temp.csv",
-            "/worldcities_latitude.csv",
-            "/worldcities_longitude.csv",
-            "/Dew-point-temp .csv",
+            "/City-lat.csv",
+            "/City-lon.csv",
+            "/Dew-point-temp.csv",
             "/electric_vehicle_charging.csv",
-            "/FoodPrices.csv",
+            "/Food-price.csv",
             "/IR-bio-temp.csv",
             "/PM10-dust.csv",
             "/SSD-bench.csv",
             "/POI-lat.csv",
-            "/POI_long.csv",
-            "/Stocks_DE.csv",
-            "/Stocks_UK.csv",
-            "/Stocks_USA.csv",
-            "/Wind-dir.csv",
+            "/POI-lon.csv",
+            "/Stocks-DE.csv",
+            "/Stocks-UK.csv",
+            "/Stocks-USA.csv",
+            "/Wind-Speed.csv",
     };
     private static final String STORE_PATH = "src/test/resources/result";
 
@@ -58,35 +59,32 @@ public class TestCompressor {
     public void testCompressor() throws IOException {
         for (String filename : FILENAMES) {
             Map<String, List<ResultStructure>> result = new HashMap<>();
-            System.out.println(filename);
-            for (int i = 0; i < 50; i++) {
-                testELFCompressor(filename, result);
-//                testFPC(filename, result);
-//                testSnappy(filename, result);
-//                testZstd(filename, result);
-//                testLZ4(filename, result);
-//                testBrotli(filename, result);
-//                testXz(filename, result);
-            }
+            testELFCompressor(filename, result);
+            testFPC(filename, result);
+            testSnappy(filename, result);
+            testZstd(filename, result);
+            testLZ4(filename, result);
+            testBrotli(filename, result);
+            testXz(filename, result);
             for (Map.Entry<String, List<ResultStructure>> kv : result.entrySet()) {
                 Map<String, ResultStructure> r = new HashMap<>();
-                r.put(kv.getKey(),computeAvg(kv.getValue()));
+                r.put(kv.getKey(), computeAvg(kv.getValue()));
                 allResult.add(r);
             }
         }
-        storeResult(STORE_PATH + "/result1.0.csv");
+        storeResult(STORE_PATH + "/result.dat");
     }
 
 
     public void testELFCompressor(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws FileNotFoundException {
         FileReader fileReader = new FileReader(FILE_PATH + fileName);
         ICompressor[] compressorList = new ICompressor[]{
-//                new GorillaCompressorOS(),
+                new GorillaCompressorOS(),
                 new ElfOnGorillaCompressorOS(),
-//                new ChimpCompressor(),
-//                new ElfOnChimpCompressor(),
+                new ChimpCompressor(),
+                new ElfOnChimpCompressor(),
                 new ChimpNCompressor(128),
-//                new ElfOnChimpNCompressor(128),
+                new ElfOnChimpNCompressor(128),
                 new ElfCompressor(),
         };
         float totalBlocks = 0;
@@ -98,17 +96,17 @@ public class TestCompressor {
         while ((values = fileReader.nextBlock()) != null) {
             totalBlocks += 1;
             ICompressor[] compressors = new ICompressor[]{
-//                    new GorillaCompressorOS(),
+                    new GorillaCompressorOS(),
                     new ElfOnGorillaCompressorOS(),
-//                    new ChimpCompressor(),
-//                    new ElfOnChimpCompressor(),
+                    new ChimpCompressor(),
+                    new ElfOnChimpCompressor(),
                     new ChimpNCompressor(128),
-//                    new ElfOnChimpNCompressor(128),
+                    new ElfOnChimpNCompressor(128),
                     new ElfCompressor(),
             };
             for (int i = 0; i < compressors.length; i++) {
-                double encodingDuration = 0;
-                double decodingDuration = 0;
+                double encodingDuration;
+                double decodingDuration;
                 long start = System.nanoTime();
                 ICompressor compressor = compressors[i];
                 for (double value : values) {
@@ -122,12 +120,12 @@ public class TestCompressor {
 
                 byte[] result = compressor.getBytes();
                 IDecompressor[] decompressors = new IDecompressor[]{
-//                        new GorillaDecompressorOS(result),
+                        new GorillaDecompressorOS(result),
                         new ElfOnGorillaDecompressorOS(result),
-//                        new ChimpDecompressor(result),
-//                        new ElfOnChimpDecompressor(result),
+                        new ChimpDecompressor(result),
+                        new ElfOnChimpDecompressor(result),
                         new ChimpNDecompressor(result, 128),
-//                        new ElfOnChimpNDecompressor(result, 128),
+                        new ElfOnChimpNDecompressor(result, 128),
                         new ElfDecompressor(result)
                 };
 
@@ -138,7 +136,7 @@ public class TestCompressor {
                 decodingDuration = System.nanoTime() - start;
 
                 for (int j = 0; j < values.length; j++) {
-                    assertEquals(values[j], uncompressedValues.get(j), "Value did not match"+compressor.getKey());
+                    assertEquals(values[j], uncompressedValues.get(j), "Value did not match" + compressor.getKey());
                 }
                 String key = compressor.getKey();
                 if (!totalCompressionTime.containsKey(key)) {
@@ -170,6 +168,7 @@ public class TestCompressor {
         double[] values;
         List<Double> totalCompressionTime = new ArrayList<>();
         List<Double> totalDecompressionTime = new ArrayList<>();
+
         while ((values = fileReader.nextBlock()) != null) {
             double encodingDuration = 0;
             double decodingDuration = 0;
@@ -215,6 +214,7 @@ public class TestCompressor {
         double[] values;
         List<Double> totalCompressionTime = new ArrayList<>();
         List<Double> totalDecompressionTime = new ArrayList<>();
+
         while ((values = fileReader.nextBlock()) != null) {
             double encodingDuration = 0;
             double decodingDuration = 0;
@@ -277,6 +277,7 @@ public class TestCompressor {
         double[] values;
         List<Double> totalCompressionTime = new ArrayList<>();
         List<Double> totalDecompressionTime = new ArrayList<>();
+
         while ((values = fileReader.nextBlock()) != null) {
             double encodingDuration = 0;
             double decodingDuration = 0;
@@ -339,6 +340,7 @@ public class TestCompressor {
         double[] values;
         List<Double> totalCompressionTime = new ArrayList<>();
         List<Double> totalDecompressionTime = new ArrayList<>();
+
         while ((values = fileReader.nextBlock()) != null) {
             double encodingDuration = 0;
             double decodingDuration = 0;
@@ -396,6 +398,7 @@ public class TestCompressor {
         double[] values;
         List<Double> totalCompressionTime = new ArrayList<>();
         List<Double> totalDecompressionTime = new ArrayList<>();
+
         while ((values = fileReader.nextBlock()) != null) {
             double encodingDuration = 0;
             double decodingDuration = 0;
@@ -453,6 +456,7 @@ public class TestCompressor {
         double[] values;
         List<Double> totalCompressionTime = new ArrayList<>();
         List<Double> totalDecompressionTime = new ArrayList<>();
+
         while ((values = fileReader.nextBlock()) != null) {
             double encodingDuration = 0;
             double decodingDuration = 0;
