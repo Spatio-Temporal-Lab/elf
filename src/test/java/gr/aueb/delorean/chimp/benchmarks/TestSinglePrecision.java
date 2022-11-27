@@ -117,11 +117,11 @@ public class TestSinglePrecision {
                 ChimpDecompressor32 d = new ChimpDecompressor32(compressor.getOut());
                 for(Double value : values) {
                     start = System.nanoTime();
-                    Value pair = d.readPair();
+                    Float pair = d.readValue();
                     decodingDuration += System.nanoTime() - start;
-                    assertEquals(value.floatValue(), pair.getFloatValue(), "Value did not match");
+                    assertEquals(value.floatValue(), pair.floatValue(), "Value did not match");
                 }
-                assertNull(d.readPair());
+                assertNull(d.readValue());
 
             }
             System.out.println(String.format("Chimp32: %s - Bits/value: %.2f, Compression time per block: %.2f, Decompression time per block: %.2f", filename, totalSize / (totalBlocks * TimeseriesFileReader.DEFAULT_BLOCK_SIZE), encodingDuration / totalBlocks, decodingDuration / totalBlocks));

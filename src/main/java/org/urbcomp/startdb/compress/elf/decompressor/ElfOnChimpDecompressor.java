@@ -7,15 +7,18 @@ import java.io.IOException;
 
 public class ElfOnChimpDecompressor extends AbstractElfDecompressor {
     private final ChimpDecompressor chimpDecompressor;
+
     public ElfOnChimpDecompressor(byte[] bytes) {
         chimpDecompressor = new ChimpDecompressor(bytes);
     }
 
-    @Override protected Double xorDecompress() {
+    @Override
+    protected Double xorDecompress() {
         return chimpDecompressor.readValue();
     }
 
-    @Override protected int readInt(int len) {
+    @Override
+    protected int readInt(int len) {
         InputBitStream in = chimpDecompressor.getInputStream();
         try {
             return in.readInt(len);

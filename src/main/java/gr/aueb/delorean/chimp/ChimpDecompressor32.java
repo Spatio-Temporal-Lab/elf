@@ -1,6 +1,8 @@
 package gr.aueb.delorean.chimp;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Decompresses a compressed stream created by the Compressor. Returns pairs of timestamp and floating point value.
@@ -19,10 +21,24 @@ public class ChimpDecompressor32 {
 
     private final static int NAN_INT = 0x7fc00000;
 
-	public final static short[] leadingRepresentation = {0, 8, 12, 16, 18, 20, 22, 24};
-    
+    public final static short[] leadingRepresentation = {0, 8, 12, 16, 18, 20, 22, 24};
+
     public ChimpDecompressor32(byte[] bs) {
-    	in = new InputBitStream(bs);
+        in = new InputBitStream(bs);
+    }
+
+    public List<Float> getValues() {
+        List<Float> list = new LinkedList<>();
+        Float value = readValue();
+        while (value != null) {
+            list.add(value);
+            value = readValue();
+        }
+        return list;
+    }
+
+    public InputBitStream getInputStream() {
+        return in;
     }
 
     /**
@@ -30,29 +46,29 @@ public class ChimpDecompressor32 {
      *
      * @return Pair if there's next value, null if series is done.
      */
-    public Value readPair() {
+    public Float readValue() {
         try {
-			next();
-		} catch (IOException e) {
-			throw new RuntimeException(e.getMessage());
-		}
-        if(endOfStream) {
+            next();
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        if (endOfStream) {
             return null;
         }
-        return new Value(storedVal);
+        return Float.intBitsToFloat(storedVal);
     }
 
     private void next() throws IOException {
         if (first) {
-        	first = false;
+            first = false;
             storedVal = in.readInt(32);
             if (storedVal == NAN_INT) {
-            	endOfStream = true;
-            	return;
+                endOfStream = true;
+                return;
             }
 
         } else {
-        	nextValue();
+            nextValue();
         }
     }
 
@@ -65,22 +81,22 @@ public class ChimpDecompressor32 {
                 storedLeadingZeros = leadingRepresentation[in.readInt(3)];
             }
             int significantBits = 32 - storedLeadingZeros;
-            if(significantBits == 0) {
+            if (significantBits == 0) {
                 significantBits = 32;
             }
             int value = in.readInt(32 - storedLeadingZeros);
             value = storedVal ^ value;
             if (value == NAN_INT) {
-            	endOfStream = true;
-            	return;
+                endOfStream = true;
+                return;
             } else {
-            	storedVal = value;
+                storedVal = value;
             }
 
         } else if (in.readBit() == 1) {
-        	storedLeadingZeros = leadingRepresentation[in.readInt(3)];
-        	int significantBits = in.readInt(5);
-        	if(significantBits == 0) {
+            storedLeadingZeros = leadingRepresentation[in.readInt(3)];
+            int significantBits = in.readInt(5);
+            if (significantBits == 0) {
                 significantBits = 32;
             }
             storedTrailingZeros = 32 - significantBits - storedLeadingZeros;
@@ -88,10 +104,10 @@ public class ChimpDecompressor32 {
             value <<= storedTrailingZeros;
             value = storedVal ^ value;
             if (value == NAN_INT) {
-            	endOfStream = true;
-            	return;
+                endOfStream = true;
+                return;
             } else {
-            	storedVal = value;
+                storedVal = value;
             }
         }
         // else -> same value as before

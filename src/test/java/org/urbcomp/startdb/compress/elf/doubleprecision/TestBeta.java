@@ -1,10 +1,9 @@
-package org.urbcomp.startdb.compress.elf;
+package org.urbcomp.startdb.compress.elf.doubleprecision;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.io.compress.xerial.SnappyCodec;
-import org.apache.hadoop.hbase.io.compress.zstd.ZstdCodec;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.compress.CompressionInputStream;
 import org.apache.hadoop.io.compress.CompressionOutputStream;
@@ -26,7 +25,7 @@ public class TestBeta {
     private static final String[] FILENAMES = {
             "/init.csv",  //First run a dataset to ensure the relevant hbase settings of the zstd and snappy compressors
             "/Air-sensor.csv",
-            "/POI-lon.csv",
+//            "/POI-lon.csv",
     };
     private static final String STORE_PATH = "src/test/resources/result";
 
@@ -46,9 +45,8 @@ public class TestBeta {
                     allResult.add(r);
                 }
             }
-
         }
-        storeResult(STORE_PATH + "/resultBeta.dat");
+        storeResult(STORE_PATH + "/resultBeta11.5.dat");
     }
 
     public void testELFCompressor(String fileName, Map<String, List<ResultStructure>> resultCompressor, int beta) throws FileNotFoundException {

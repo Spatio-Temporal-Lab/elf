@@ -1,4 +1,4 @@
-package org.urbcomp.startdb.compress.elf;
+package org.urbcomp.startdb.compress.elf.doubleprecision;
 
 import com.github.kutschkem.fpc.FpcCompressor;
 import org.apache.hadoop.conf.Configuration;
@@ -511,7 +511,6 @@ public class TestCompressor {
         }
         resultCompressor.get(key).add(r);
     }
-
 
     public void storeResult(String filePath) throws IOException {
         try (FileWriter fileWriter = new FileWriter(filePath)) {

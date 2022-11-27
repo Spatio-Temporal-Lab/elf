@@ -1,4 +1,4 @@
-package org.urbcomp.startdb.compress.elf;
+package org.urbcomp.startdb.compress.elf.doubleprecision;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -22,9 +22,6 @@ public class FileReader {
     }
 
 
-    public FileReader() {
-    }
-
     public double[] nextBlock() {
         double[] values = new double[DEFAULT_BLOCK_SIZE];
         String line;
@@ -37,7 +34,6 @@ public class FileReader {
                         return values;
                     }
                 } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-                    continue;
                 }
 
             }
@@ -59,7 +55,6 @@ public class FileReader {
                         return values;
                     }
                 } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-                    continue;
                 }
 
             }
@@ -67,23 +62,6 @@ public class FileReader {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public List<Double> readFile(String filePath, int number) {
-        List<Double> ld = new ArrayList<>();
-        int i = 0;
-        try (java.io.FileReader fr = new java.io.FileReader(filePath);
-             BufferedReader br = new BufferedReader(fr)) {
-            String data;
-            while ((data = br.readLine()) != null && i < number) {
-                ld.add(Double.parseDouble(data));
-                i++;
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-        }
-        return ld;
     }
 
     private String getSubString(String str, int beta) {
