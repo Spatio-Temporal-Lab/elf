@@ -24,8 +24,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class TestBeta {
     private static final String FILE_PATH = "src/test/resources/ElfTestData";
     private static final String[] FILENAMES = {
+            "/init.csv",  //First run a dataset to ensure the relevant hbase settings of the zstd and snappy compressors
             "/Air-sensor.csv",
-//            "/POI_long.csv",
+            "/POI-lon.csv",
     };
     private static final String STORE_PATH = "src/test/resources/result";
 
@@ -37,11 +38,8 @@ public class TestBeta {
         for (String filename : FILENAMES) {
             for (int j = 18; j >= 1; j--) {
                 Map<String, List<ResultStructure>> result = new HashMap<>();
-                for (int i = 0; i < 10; i++) {
-//                    testELFCompressor(filename, result, j);
-                    testSnappy(filename, result, j);
-//                    testZstd(filename,result,j);
-                }
+                testELFCompressor(filename, result, j);
+                testSnappy(filename, result, j);
                 for (Map.Entry<String, List<ResultStructure>> kv : result.entrySet()) {
                     Map<String, ResultStructure> r = new HashMap<>();
                     r.put(kv.getKey(), computeAvg(kv.getValue()));
@@ -50,7 +48,7 @@ public class TestBeta {
             }
 
         }
-        storeResult(STORE_PATH + "/resultBeta8.4.dat");
+        storeResult(STORE_PATH + "/resultBeta.dat");
     }
 
     public void testELFCompressor(String fileName, Map<String, List<ResultStructure>> resultCompressor, int beta) throws FileNotFoundException {
@@ -89,7 +87,6 @@ public class TestBeta {
 
                 byte[] result = compressor.getBytes();
                 IDecompressor[] decompressors = new IDecompressor[]{
-//                        new GorillaDecompressorOS(result),
                         new ElfOnGorillaDecompressorOS(result),
                         new ChimpNDecompressor(result, 128),
                         new ElfDecompressor(result)
@@ -136,68 +133,6 @@ public class TestBeta {
                 }
             }
         }
-    }
-
-    public void testZstd(String fileName, Map<String, List<ResultStructure>> resultCompressor, int beta) throws IOException {
-        FileReader fileReader = new FileReader(FILE_PATH + fileName);
-        float totalBlocks = 0;
-        long totalSize = 0;
-        double[] values;
-        List<Double> totalCompressionTime = new ArrayList<>();
-        List<Double> totalDecompressionTime = new ArrayList<>();
-        while ((values = fileReader.nextBlockWithBeta(beta)) != null) {
-            double encodingDuration = 0;
-            double decodingDuration = 0;
-            ByteBuffer bb = ByteBuffer.allocate(values.length * 8);
-            for (double d : values) {
-                bb.putDouble(d);
-            }
-            byte[] input = bb.array();
-
-            Configuration conf = HBaseConfiguration.create();
-            // ZStandard levels range from 1 to 22.
-            // Level 22 might take up to a minute to complete. 3 is the Hadoop default, and will be fast.
-            conf.setInt(CommonConfigurationKeys.IO_COMPRESSION_CODEC_ZSTD_LEVEL_KEY, 3);
-            ZstdCodec codec = new ZstdCodec();
-            codec.setConf(conf);
-
-            // Compress
-            long start = System.nanoTime();
-            org.apache.hadoop.io.compress.Compressor compressor = codec.createCompressor();
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            CompressionOutputStream out = codec.createOutputStream(baos, compressor);
-            out.write(input);
-            out.close();
-            encodingDuration += System.nanoTime() - start;
-            final byte[] compressed = baos.toByteArray();
-            totalSize += compressed.length * 8;
-            totalBlocks++;
-
-            final byte[] plain = new byte[input.length];
-            org.apache.hadoop.io.compress.Decompressor decompressor = codec.createDecompressor();
-            start = System.nanoTime();
-            CompressionInputStream in = codec.createInputStream(new ByteArrayInputStream(compressed), decompressor);
-            IOUtils.readFully(in, plain, 0, plain.length);
-            in.close();
-            double[] uncompressed = toDoubleArray(plain);
-            decodingDuration += System.nanoTime() - start;
-            // Decompressed bytes should equal the original
-            for (int i = 0; i < values.length; i++) {
-                assertEquals(values[i], uncompressed[i], "Value did not match");
-            }
-            totalCompressionTime.add(encodingDuration / TIME_PRECISION);
-            totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
-        }
-        String key = "Zstd";
-        ResultStructure r = new ResultStructure(fileName + " " + beta, key,
-                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
-                totalCompressionTime,
-                totalDecompressionTime
-        );
-        if (!resultCompressor.containsKey(key)) {
-            resultCompressor.put(key, new ArrayList<>());
-        }
-        resultCompressor.get(key).add(r);
     }
 
     public void testSnappy(String fileName, Map<String, List<ResultStructure>> resultCompressor, int beta) throws IOException {
@@ -251,7 +186,7 @@ public class TestBeta {
             totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
         }
         String key = "Snappy";
-        ResultStructure r = new ResultStructure(fileName+" "+beta, key,
+        ResultStructure r = new ResultStructure(fileName + " " + beta, key,
                 totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
                 totalCompressionTime,
                 totalDecompressionTime
