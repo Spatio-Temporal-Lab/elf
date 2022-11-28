@@ -68,7 +68,7 @@ public class TestCompressor {
     public void testELFCompressor(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws FileNotFoundException {
         org.urbcomp.startdb.compress.elf.singleprecision.FileReader fileReader = new org.urbcomp.startdb.compress.elf.singleprecision.FileReader(FILE_PATH + fileName);
         ICompressor32[] compressorList = new ICompressor32[]{
-//                new GorillaCompressorOS(),
+                new GorillaCompressor32OS(),
 //                new ElfOnGorillaCompressorOS(),
 //                new ChimpCompressor32(),
 //                new ElfOnChimpCompressor32(),
@@ -85,7 +85,7 @@ public class TestCompressor {
         while ((values = fileReader.nextBlock()) != null) {
             totalBlocks += 1;
             ICompressor32[] compressors = new ICompressor32[]{
-//                    new GorillaCompressorOS(),
+                    new GorillaCompressor32OS(),
 //                    new ElfOnGorillaCompressorOS(),
 //                    new ChimpCompressor32(),
 //                    new ElfOnChimpCompressor32(),
@@ -109,7 +109,7 @@ public class TestCompressor {
 
                 byte[] result = compressor.getBytes();
                 IDecompressor32[] decompressors = new IDecompressor32[]{
-//                        new GorillaDecompressorOS(result),
+                        new GorillaDecompressor32OS(result),
 //                        new ElfOnGorillaDecompressorOS(result),
 //                        new ChimpDecompressor32(result),
 //                        new ElfOnChimpDecompressor32(result),
