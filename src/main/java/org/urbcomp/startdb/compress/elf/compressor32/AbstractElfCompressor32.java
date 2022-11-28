@@ -27,12 +27,12 @@ public abstract class AbstractElfCompressor32 implements ICompressor32 {
             vPrimeInt = 0xffc00000 & vInt;
         } else {
             int[] alphaAndBetaStar = getAlphaAndBetaStar(v);
-            int e = ((vInt >> 23)) & 0xff;
+            int e = (vInt >> 23) & 0xff;
             int gAlpha = getFAlpha(alphaAndBetaStar[0]) + e - 127;
             int eraseBits = 23 - gAlpha;
             int mask = 0xffffffff << eraseBits;
             int delta = (~mask) & vInt;
-            if (alphaAndBetaStar[1] < 8 && delta != 0 && eraseBits > 3) {
+            if (delta != 0 && eraseBits > 3) {
                 size += writeInt(alphaAndBetaStar[1] | 0x8, 4);
                 vPrimeInt = mask & vInt;
             } else {
