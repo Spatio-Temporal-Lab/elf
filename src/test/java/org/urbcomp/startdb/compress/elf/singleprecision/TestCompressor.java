@@ -1,9 +1,7 @@
 package org.urbcomp.startdb.compress.elf.singleprecision;
 
 import org.junit.jupiter.api.Test;
-import org.urbcomp.startdb.compress.elf.compressor.*;
 import org.urbcomp.startdb.compress.elf.compressor32.*;
-import org.urbcomp.startdb.compress.elf.decompressor.*;
 import org.urbcomp.startdb.compress.elf.decompressor32.*;
 import org.urbcomp.startdb.compress.elf.doubleprecision.FileReader;
 import org.urbcomp.startdb.compress.elf.doubleprecision.ResultStructure;
@@ -69,10 +67,10 @@ public class TestCompressor {
         org.urbcomp.startdb.compress.elf.singleprecision.FileReader fileReader = new org.urbcomp.startdb.compress.elf.singleprecision.FileReader(FILE_PATH + fileName);
         ICompressor32[] compressorList = new ICompressor32[]{
                 new GorillaCompressor32OS(),
-//                new ElfOnGorillaCompressorOS(),
-//                new ChimpCompressor32(),
-//                new ElfOnChimpCompressor32(),
-//                new ChimpNCompressor32(64),
+                new ElfOnGorillaCompressor32OS(),
+                new ChimpCompressor32(),
+                new ElfOnChimpCompressor32(),
+                new ChimpNCompressor32(64),
                 new ElfOnChimpNCompressor32(64),
                 new ElfCompressor32(),
         };
@@ -86,10 +84,10 @@ public class TestCompressor {
             totalBlocks += 1;
             ICompressor32[] compressors = new ICompressor32[]{
                     new GorillaCompressor32OS(),
-//                    new ElfOnGorillaCompressorOS(),
-//                    new ChimpCompressor32(),
-//                    new ElfOnChimpCompressor32(),
-//                    new ChimpNCompressor32(64),
+                    new ElfOnGorillaCompressor32OS(),
+                    new ChimpCompressor32(),
+                    new ElfOnChimpCompressor32(),
+                    new ChimpNCompressor32(64),
                     new ElfOnChimpNCompressor32(64),
                     new ElfCompressor32(),
             };
@@ -110,10 +108,10 @@ public class TestCompressor {
                 byte[] result = compressor.getBytes();
                 IDecompressor32[] decompressors = new IDecompressor32[]{
                         new GorillaDecompressor32OS(result),
-//                        new ElfOnGorillaDecompressorOS(result),
-//                        new ChimpDecompressor32(result),
-//                        new ElfOnChimpDecompressor32(result),
-//                        new ChimpNDecompressor32(result, 64),
+                        new ElfOnGorillaDecompressor32OS(result),
+                        new ChimpDecompressor32(result),
+                        new ElfOnChimpDecompressor32(result),
+                        new ChimpNDecompressor32(result, 64),
                         new ElfOnChimpNDecompressor32(result, 64),
                         new ElfDecompressor32(result)
                 };

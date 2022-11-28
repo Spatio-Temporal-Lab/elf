@@ -1,7 +1,6 @@
 package org.urbcomp.startdb.compress.elf.decompressor32;
 
 import gr.aueb.delorean.chimp.InputBitStream;
-import org.urbcomp.startdb.compress.elf.xordecompressor.ElfXORDecompressor;
 import org.urbcomp.startdb.compress.elf.xordecompressor.ElfXORDecompressor32;
 
 import java.io.IOException;

@@ -1,9 +1,5 @@
 package org.urbcomp.startdb.compress.elf.compressor32;
 
-import org.omg.PortableInterceptor.INACTIVE;
-import org.urbcomp.startdb.compress.elf.compressor.ICompressor;
-import sun.misc.DoubleConsts;
-import sun.misc.FloatConsts;
 
 public abstract class AbstractElfCompressor32 implements ICompressor32 {
     // αlog_2(10) for look-up

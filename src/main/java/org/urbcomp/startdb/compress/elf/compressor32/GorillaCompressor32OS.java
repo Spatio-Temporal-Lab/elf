@@ -1,8 +1,6 @@
 package org.urbcomp.startdb.compress.elf.compressor32;
 
-import fi.iki.yak.ts.compression.gorilla.CompressorOS;
 import gr.aueb.delorean.chimp.Compressor32OS;
-import gr.aueb.delorean.chimp.OutputBitStream;
 
 public class GorillaCompressor32OS implements ICompressor32{
     private final Compressor32OS gorilla;

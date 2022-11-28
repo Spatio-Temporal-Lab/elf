@@ -1,8 +1,6 @@
 package org.urbcomp.startdb.compress.elf.compressor32;
 
-import gr.aueb.delorean.chimp.ChimpN;
 import gr.aueb.delorean.chimp.ChimpN32;
-import org.urbcomp.startdb.compress.elf.compressor.ICompressor;
 
 public class ChimpNCompressor32 implements ICompressor32 {
 

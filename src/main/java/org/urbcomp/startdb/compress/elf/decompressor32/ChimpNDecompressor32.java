@@ -1,6 +1,5 @@
 package org.urbcomp.startdb.compress.elf.decompressor32;
 
-import org.urbcomp.startdb.compress.elf.decompressor.IDecompressor;
 
 import java.util.List;
 
