@@ -24,7 +24,7 @@ public abstract class AbstractElfCompressor32 implements ICompressor32 {
             vPrimeInt = vInt;
         } else if (Float.isNaN(v)) {
             size += writeBit(false);
-            vPrimeInt = 0xff800000 & vInt;
+            vPrimeInt = 0xffc00000 & vInt;
         } else {
             int[] alphaAndBetaStar = getAlphaAndBetaStar(v);
             int e = ((vInt >> 23)) & 0xff;
