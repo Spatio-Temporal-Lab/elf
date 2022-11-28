@@ -55,16 +55,20 @@ public class ChimpN32 {
         this.storedValues = new int[previousValues];
     }
 
+    public OutputBitStream getOutputStream() {
+        return out;
+    }
+
     /**
      * Adds a new long value to the series. Note, values must be inserted in order.
      *
      * @param value next floating point value in the series
      */
-    public void addValue(int value) {
+    public int addValue(int value) {
         if (first) {
-            writeFirst(value);
+            return writeFirst(value);
         } else {
-            compressValue(value);
+            return compressValue(value);
         }
     }
 
@@ -73,20 +77,21 @@ public class ChimpN32 {
      *
      * @param value next floating point value in the series
      */
-    public void addValue(float value) {
+    public int addValue(float value) {
         if (first) {
-            writeFirst(Float.floatToRawIntBits(value));
+            return writeFirst(Float.floatToRawIntBits(value));
         } else {
-            compressValue(Float.floatToRawIntBits(value));
+            return compressValue(Float.floatToRawIntBits(value));
         }
     }
 
-    private void writeFirst(int value) {
+    private int writeFirst(int value) {
         first = false;
         storedValues[current] = value;
         out.writeInt(storedValues[current], 32);
         indices[value & setLsb] = index;
         size += 32;
+        return 32;
     }
 
     /**
@@ -98,7 +103,8 @@ public class ChimpN32 {
         out.flush();
     }
 
-    private void compressValue(int value) {
+    private int compressValue(int value) {
+        int thisSize = 0;
         int key = value & setLsb;
         int xor;
         int previousIndex;
@@ -128,6 +134,7 @@ public class ChimpN32 {
             out.writeBit(false);
             out.writeInt(previousIndex, previousValuesLog2);
             size += 2 + previousValuesLog2;
+            thisSize += 2 + previousValuesLog2;
             storedLeadingZeros = 33;
         } else {
             int leadingZeros = Integer.numberOfLeadingZeros(xor);
@@ -137,6 +144,7 @@ public class ChimpN32 {
                 out.writeInt(256 * (previousValues + previousIndex) + 32 * leadingRepresentation[leadingZeros] + significantBits, previousValuesLog2 + 10);
                 out.writeInt(xor >>> trailingZeros, significantBits); // Store the meaningful bits of XOR
                 size += 10 + significantBits + previousValuesLog2;
+                thisSize += 10 + significantBits + previousValuesLog2;
                 storedLeadingZeros = 33;
             } else if (leadingRound[leadingZeros] == storedLeadingZeros) {
                 out.writeBit(true);
@@ -144,19 +152,21 @@ public class ChimpN32 {
                 int significantBits = 32 - leadingRound[leadingZeros];
                 out.writeInt(xor, significantBits);
                 size += 2 + significantBits;
+                thisSize += 2 + significantBits;
             } else {
                 storedLeadingZeros = leadingRound[leadingZeros];
                 int significantBits = 32 - leadingRound[leadingZeros];
                 out.writeInt(16 + 8 + leadingRepresentation[leadingZeros], 5);
                 out.writeInt(xor, significantBits);
                 size += 5 + significantBits;
+                thisSize += 5 + significantBits;
             }
         }
         current = ((current + 1) % previousValues);
         storedValues[current] = value;
         index++;
         indices[key] = index;
-
+        return thisSize;
     }
 
     public int getSize() {

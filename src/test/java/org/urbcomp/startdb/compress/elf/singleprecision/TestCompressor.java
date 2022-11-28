@@ -62,7 +62,7 @@ public class TestCompressor {
                 allResult.add(r);
             }
         }
-        storeResult(STORE_PATH + "/result3.dat");
+        storeResult(STORE_PATH + "/result.dat");
     }
 
     public void testELFCompressor(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws FileNotFoundException {
@@ -73,7 +73,7 @@ public class TestCompressor {
 //                new ChimpCompressor32(),
 //                new ElfOnChimpCompressor32(),
 //                new ChimpNCompressor32(64),
-//                new ElfOnChimpNCompressor(128),
+                new ElfOnChimpNCompressor32(64),
                 new ElfCompressor32(),
         };
         float totalBlocks = 0;
@@ -90,7 +90,7 @@ public class TestCompressor {
 //                    new ChimpCompressor32(),
 //                    new ElfOnChimpCompressor32(),
 //                    new ChimpNCompressor32(64),
-//                    new ElfOnChimpNCompressor(128),
+                    new ElfOnChimpNCompressor32(64),
                     new ElfCompressor32(),
             };
             for (int i = 0; i < compressors.length; i++) {
@@ -114,7 +114,7 @@ public class TestCompressor {
 //                        new ChimpDecompressor32(result),
 //                        new ElfOnChimpDecompressor32(result),
 //                        new ChimpNDecompressor32(result, 64),
-//                        new ElfOnChimpNDecompressor(result, 128),
+                        new ElfOnChimpNDecompressor32(result, 64),
                         new ElfDecompressor32(result)
                 };
 

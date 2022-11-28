@@ -34,6 +34,10 @@ public class ChimpNDecompressor32 {
         this.storedValues = new int[previousValues];
     }
 
+    public InputBitStream getInputStream() {
+        return in;
+    }
+
     public List<Float> getValues() {
         List<Float> list = new LinkedList<>();
         Float value = readValue();
