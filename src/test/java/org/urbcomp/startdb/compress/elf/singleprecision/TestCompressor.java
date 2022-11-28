@@ -2,15 +2,9 @@ package org.urbcomp.startdb.compress.elf.singleprecision;
 
 import org.junit.jupiter.api.Test;
 import org.urbcomp.startdb.compress.elf.compressor.*;
-import org.urbcomp.startdb.compress.elf.compressor32.ChimpCompressor32;
-import org.urbcomp.startdb.compress.elf.compressor32.ChimpNCompressor32;
-import org.urbcomp.startdb.compress.elf.compressor32.ElfOnChimpCompressor32;
-import org.urbcomp.startdb.compress.elf.compressor32.ICompressor32;
+import org.urbcomp.startdb.compress.elf.compressor32.*;
 import org.urbcomp.startdb.compress.elf.decompressor.*;
-import org.urbcomp.startdb.compress.elf.decompressor32.ChimpDecompressor32;
-import org.urbcomp.startdb.compress.elf.decompressor32.ChimpNDecompressor32;
-import org.urbcomp.startdb.compress.elf.decompressor32.ElfOnChimpDecompressor32;
-import org.urbcomp.startdb.compress.elf.decompressor32.IDecompressor32;
+import org.urbcomp.startdb.compress.elf.decompressor32.*;
 import org.urbcomp.startdb.compress.elf.doubleprecision.FileReader;
 import org.urbcomp.startdb.compress.elf.doubleprecision.ResultStructure;
 
@@ -68,7 +62,7 @@ public class TestCompressor {
                 allResult.add(r);
             }
         }
-        storeResult(STORE_PATH + "/result.dat");
+        storeResult(STORE_PATH + "/result3.dat");
     }
 
     public void testELFCompressor(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws FileNotFoundException {
@@ -76,11 +70,11 @@ public class TestCompressor {
         ICompressor32[] compressorList = new ICompressor32[]{
 //                new GorillaCompressorOS(),
 //                new ElfOnGorillaCompressorOS(),
-                new ChimpCompressor32(),
-                new ElfOnChimpCompressor32(),
+//                new ChimpCompressor32(),
+//                new ElfOnChimpCompressor32(),
 //                new ChimpNCompressor32(64),
 //                new ElfOnChimpNCompressor(128),
-//                new ElfCompressor(),
+                new ElfCompressor32(),
         };
         float totalBlocks = 0;
         long[] totalSize = new long[compressorList.length];
@@ -93,11 +87,11 @@ public class TestCompressor {
             ICompressor32[] compressors = new ICompressor32[]{
 //                    new GorillaCompressorOS(),
 //                    new ElfOnGorillaCompressorOS(),
-                    new ChimpCompressor32(),
-                    new ElfOnChimpCompressor32(),
+//                    new ChimpCompressor32(),
+//                    new ElfOnChimpCompressor32(),
 //                    new ChimpNCompressor32(64),
 //                    new ElfOnChimpNCompressor(128),
-//                    new ElfCompressor(),
+                    new ElfCompressor32(),
             };
             for (int i = 0; i < compressors.length; i++) {
                 double encodingDuration;
@@ -117,11 +111,11 @@ public class TestCompressor {
                 IDecompressor32[] decompressors = new IDecompressor32[]{
 //                        new GorillaDecompressorOS(result),
 //                        new ElfOnGorillaDecompressorOS(result),
-                        new ChimpDecompressor32(result),
-                        new ElfOnChimpDecompressor32(result),
+//                        new ChimpDecompressor32(result),
+//                        new ElfOnChimpDecompressor32(result),
 //                        new ChimpNDecompressor32(result, 64),
 //                        new ElfOnChimpNDecompressor(result, 128),
-//                        new ElfDecompressor(result)
+                        new ElfDecompressor32(result)
                 };
 
                 IDecompressor32 decompressor = decompressors[i];
