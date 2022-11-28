@@ -13,14 +13,14 @@ public class ElfXORCompressor32 {
 
     public final static short[] leadingRepresentation = {
             0, 0, 0, 0, 0, 0, 1, 1,
-            2, 2, 3, 3, 4, 4, 4, 4,
+            1, 1, 2, 2, 3, 3, 4, 4,
             5, 5, 6, 6, 7, 7, 7, 7,
             7, 7, 7, 7, 7, 7, 7, 7
     };
 
     public final static short[] leadingRound = {
             0, 0, 0, 0, 0, 0, 6, 6,
-            8, 8, 10, 10, 12, 12, 12, 12,
+            6, 6, 10, 10, 12, 12, 14, 14,
             16, 16, 18, 18, 20, 20, 20, 20,
             20, 20, 20, 20, 20, 20, 20, 20
     };

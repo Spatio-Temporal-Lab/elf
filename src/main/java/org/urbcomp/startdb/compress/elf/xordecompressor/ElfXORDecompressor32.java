@@ -17,7 +17,7 @@ public class ElfXORDecompressor32 {
 
     private final static int END_SIGN = Float.floatToIntBits(Float.NaN);
 
-    private final static short[] leadingRepresentation = {0, 6, 8, 10, 12, 16, 18, 20};
+    private final static short[] leadingRepresentation = {0, 6, 10, 12, 14, 16, 18, 20};
 
     public ElfXORDecompressor32(byte[] bs) {
         in = new InputBitStream(bs);
