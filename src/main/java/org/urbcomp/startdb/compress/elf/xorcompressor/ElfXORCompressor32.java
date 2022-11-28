@@ -113,13 +113,13 @@ public class ElfXORCompressor32 {
                 storedLeadingZeros = leadingZeros;
                 storedTrailingZeros = trailingZeros;
                 int centerBits = 32 - storedLeadingZeros - storedTrailingZeros;
-                if (centerBits <= 16) {
+                if (centerBits <= 8) {
                     // case 10
-                    out.writeInt((((0x2 << 3) | leadingRepresentation[storedLeadingZeros]) << 4) | (centerBits & 0xf), 9);
+                    out.writeInt((((0x2 << 3) | leadingRepresentation[storedLeadingZeros]) << 3) | (centerBits & 0x7), 8);
                     out.writeInt(xor >>> storedTrailingZeros, centerBits);
 
-                    size += 9 + centerBits;
-                    thisSize += 9 + centerBits;
+                    size += 8 + centerBits;
+                    thisSize += 8 + centerBits;
                 } else {
                     // case 11
                     out.writeInt((((0x3 << 3) | leadingRepresentation[storedLeadingZeros]) << 5) | (centerBits & 0x1f), 10);

@@ -91,11 +91,11 @@ public class ElfXORDecompressor32 {
                 break;
             case 2:
                 // case 10
-                leadAndCenter = in.readInt(7);
-                storedLeadingZeros = leadingRepresentation[leadAndCenter >>> 4];
-                centerBits = leadAndCenter & 0xf;
+                leadAndCenter = in.readInt(6);
+                storedLeadingZeros = leadingRepresentation[leadAndCenter >>> 3];
+                centerBits = leadAndCenter & 0x7;
                 if(centerBits == 0) {
-                    centerBits = 16;
+                    centerBits = 8;
                 }
                 storedTrailingZeros = 32 - storedLeadingZeros - centerBits;
                 value = in.readInt(centerBits) << storedTrailingZeros;
