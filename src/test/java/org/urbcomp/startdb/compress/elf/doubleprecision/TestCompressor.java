@@ -180,7 +180,7 @@ public class TestCompressor {
             fpc.compress(buffer, values);
             encodingDuration += System.nanoTime() - start;
 
-            totalSize += buffer.position() * 8;
+            totalSize += buffer.position() * 8L;
             totalBlocks += 1;
 
             buffer.flip();
@@ -240,7 +240,7 @@ public class TestCompressor {
             out.close();
             encodingDuration += System.nanoTime() - start;
             final byte[] compressed = baos.toByteArray();
-            totalSize += compressed.length * 8;
+            totalSize += compressed.length * 8L;
             totalBlocks++;
 
             final byte[] plain = new byte[input.length];
@@ -303,7 +303,7 @@ public class TestCompressor {
             out.close();
             encodingDuration += System.nanoTime() - start;
             final byte[] compressed = baos.toByteArray();
-            totalSize += compressed.length * 8;
+            totalSize += compressed.length * 8L;
             totalBlocks++;
 
             final byte[] plain = new byte[input.length];
@@ -361,7 +361,7 @@ public class TestCompressor {
             out.close();
             encodingDuration += System.nanoTime() - start;
             final byte[] compressed = baos.toByteArray();
-            totalSize += compressed.length * 8;
+            totalSize += compressed.length * 8L;
             totalBlocks++;
 
             final byte[] plain = new byte[input.length];
@@ -419,7 +419,7 @@ public class TestCompressor {
             out.close();
             encodingDuration += System.nanoTime() - start;
             final byte[] compressed = baos.toByteArray();
-            totalSize += compressed.length * 8;
+            totalSize += compressed.length * 8L;
             totalBlocks++;
 
             final byte[] plain = new byte[input.length];
@@ -482,7 +482,7 @@ public class TestCompressor {
             out.close();
             encodingDuration += System.nanoTime() - start;
             final byte[] compressed = baos.toByteArray();
-            totalSize += compressed.length * 8;
+            totalSize += compressed.length * 8L;
             totalBlocks++;
 
             final byte[] plain = new byte[input.length];
