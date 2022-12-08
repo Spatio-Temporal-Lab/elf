@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class TestCompressor {
     private static final String FILE_PATH = "src/test/resources/ElfTestData";
     private static final String[] FILENAMES = {
-            "/init.csv",    //First run a dataset to ensure the relevant hbase settings of the zstd and snappy compressors
+            "/init.csv",    //First run a dataset to ensure that the relevant hbase settings of the zstd and snappy compressors are ready
             "/Air-pressure.csv",
             "/Air-sensor.csv",
             "/Basel-temp.csv",
@@ -73,7 +73,7 @@ public class TestCompressor {
                 allResult.add(r);
             }
         }
-        storeResult(STORE_PATH + "/result.dat");
+        storeResult(STORE_PATH + "/result.csv");
     }
 
     public void testELFCompressor32(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws FileNotFoundException {
@@ -193,7 +193,7 @@ public class TestCompressor {
             out.close();
             encodingDuration += System.nanoTime() - start;
             final byte[] compressed = baos.toByteArray();
-            totalSize += compressed.length * 8;
+            totalSize += compressed.length * 8L;
             totalBlocks++;
 
             final byte[] plain = new byte[input.length];
@@ -256,7 +256,7 @@ public class TestCompressor {
             out.close();
             encodingDuration += System.nanoTime() - start;
             final byte[] compressed = baos.toByteArray();
-            totalSize += compressed.length * 8;
+            totalSize += compressed.length * 8L;
             totalBlocks++;
 
             final byte[] plain = new byte[input.length];
@@ -314,7 +314,7 @@ public class TestCompressor {
             out.close();
             encodingDuration += System.nanoTime() - start;
             final byte[] compressed = baos.toByteArray();
-            totalSize += compressed.length * 8;
+            totalSize += compressed.length * 8L;
             totalBlocks++;
 
             final byte[] plain = new byte[input.length];
@@ -372,7 +372,7 @@ public class TestCompressor {
             out.close();
             encodingDuration += System.nanoTime() - start;
             final byte[] compressed = baos.toByteArray();
-            totalSize += compressed.length * 8;
+            totalSize += compressed.length * 8L;
             totalBlocks++;
 
             final byte[] plain = new byte[input.length];
@@ -435,7 +435,7 @@ public class TestCompressor {
             out.close();
             encodingDuration += System.nanoTime() - start;
             final byte[] compressed = baos.toByteArray();
-            totalSize += compressed.length * 8;
+            totalSize += compressed.length * 8L;
             totalBlocks++;
 
             final byte[] plain = new byte[input.length];

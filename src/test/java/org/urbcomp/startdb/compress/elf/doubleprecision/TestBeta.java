@@ -23,13 +23,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class TestBeta {
     private static final String FILE_PATH = "src/test/resources/ElfTestData";
     private static final String[] FILENAMES = {
-            "/init.csv",  //First run a dataset to ensure the relevant hbase settings of the zstd and snappy compressors
+            "/init.csv",  //First run a dataset to ensure that the relevant hbase settings of the zstd and snappy compressors are ready
             "/Air-sensor.csv",
 //            "/POI-lon.csv",
     };
     private static final String STORE_PATH = "src/test/resources/result";
 
-    private static double TIME_PRECISION = 1000.0;
+    private static final double TIME_PRECISION = 1000.0;
     List<Map<String, ResultStructure>> allResult = new ArrayList<>();
 
     @Test
@@ -46,22 +46,19 @@ public class TestBeta {
                 }
             }
         }
-        storeResult(STORE_PATH + "/resultBeta11.5.dat");
+        storeResult(STORE_PATH + "/resultBeta11.5.csv");
     }
 
     public void testELFCompressor(String fileName, Map<String, List<ResultStructure>> resultCompressor, int beta) throws FileNotFoundException {
         FileReader fileReader = new FileReader(FILE_PATH + fileName);
-        ICompressor[] compressorList = new ICompressor[]{
-                new ElfOnGorillaCompressorOS(),
-                new ChimpNCompressor(128),
-                new ElfCompressor(),
-        };
+
         float totalBlocks = 0;
-        long[] totalSize = new long[compressorList.length];
         double[] values;
 
         HashMap<String, List<Double>> totalCompressionTime = new HashMap<>();
         HashMap<String, List<Double>> totalDecompressionTime = new HashMap<>();
+        HashMap<String, Long> key2TotalSize = new HashMap<>();
+
         while ((values = fileReader.nextBlockWithBeta(beta)) != null) {
             totalBlocks += 1;
             ICompressor[] compressors = new ICompressor[]{
@@ -80,8 +77,6 @@ public class TestBeta {
                 compressor.close();
 
                 encodingDuration = System.nanoTime() - start;
-
-                totalSize[i] += compressor.getSize();
 
                 byte[] result = compressor.getBytes();
                 IDecompressor[] decompressors = new IDecompressor[]{
@@ -102,19 +97,23 @@ public class TestBeta {
                 if (!totalCompressionTime.containsKey(key)) {
                     totalCompressionTime.put(key, new ArrayList<>());
                     totalDecompressionTime.put(key, new ArrayList<>());
+                    key2TotalSize.put(key, 0L);
                 }
                 totalCompressionTime.get(key).add(encodingDuration / TIME_PRECISION);
                 totalDecompressionTime.get(key).add(decodingDuration / TIME_PRECISION);
+                key2TotalSize.put(key, compressor.getSize() + key2TotalSize.get(key));
             }
         }
-        for (int i = 0; i < compressorList.length; i++) {
-            String key = compressorList[i].getKey();
-            ResultStructure r = new ResultStructure(fileName + " " + beta, key,
-                    totalSize[i] / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
-                    totalCompressionTime.get(key),
-                    totalDecompressionTime.get(key)
+
+        for (Map.Entry<String, Long> kv: key2TotalSize.entrySet()) {
+            String key = kv.getKey();
+            Long totalSize = kv.getValue();
+            ResultStructure r = new ResultStructure(fileName  + " " + beta, key,
+                            totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                            totalCompressionTime.get(key),
+                            totalDecompressionTime.get(key)
             );
-            if (!resultCompressor.containsKey(compressorList[i].getKey())) {
+            if (!resultCompressor.containsKey(key)) {
                 resultCompressor.put(key, new ArrayList<>());
             }
             resultCompressor.get(key).add(r);
@@ -165,7 +164,7 @@ public class TestBeta {
             out.close();
             encodingDuration += System.nanoTime() - start;
             final byte[] compressed = baos.toByteArray();
-            totalSize += compressed.length * 8;
+            totalSize += compressed.length * 8L;
             totalBlocks++;
 
             final byte[] plain = new byte[input.length];
