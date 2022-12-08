@@ -72,27 +72,20 @@ public class TestCompressor {
                 allResult.add(r);
             }
         }
-        storeResult(STORE_PATH + "/result.dat");
+        storeResult(STORE_PATH + "/result.csv");
     }
 
 
     public void testELFCompressor(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws FileNotFoundException {
         FileReader fileReader = new FileReader(FILE_PATH + fileName);
-        ICompressor[] compressorList = new ICompressor[]{
-                new GorillaCompressorOS(),
-                new ElfOnGorillaCompressorOS(),
-                new ChimpCompressor(),
-                new ElfOnChimpCompressor(),
-                new ChimpNCompressor(128),
-                new ElfOnChimpNCompressor(128),
-                new ElfCompressor(),
-        };
+
         float totalBlocks = 0;
-        long[] totalSize = new long[compressorList.length];
         double[] values;
 
         HashMap<String, List<Double>> totalCompressionTime = new HashMap<>();
         HashMap<String, List<Double>> totalDecompressionTime = new HashMap<>();
+        HashMap<String, Long> key2TotalSize = new HashMap<>();
+        
         while ((values = fileReader.nextBlock()) != null) {
             totalBlocks += 1;
             ICompressor[] compressors = new ICompressor[]{
@@ -116,8 +109,6 @@ public class TestCompressor {
 
                 encodingDuration = System.nanoTime() - start;
 
-                totalSize[i] += compressor.getSize();
-
                 byte[] result = compressor.getBytes();
                 IDecompressor[] decompressors = new IDecompressor[]{
                         new GorillaDecompressorOS(result),
@@ -138,23 +129,28 @@ public class TestCompressor {
                 for (int j = 0; j < values.length; j++) {
                     assertEquals(values[j], uncompressedValues.get(j), "Value did not match" + compressor.getKey());
                 }
+                
                 String key = compressor.getKey();
                 if (!totalCompressionTime.containsKey(key)) {
                     totalCompressionTime.put(key, new ArrayList<>());
                     totalDecompressionTime.put(key, new ArrayList<>());
+                    key2TotalSize.put(key, 0L);
                 }
                 totalCompressionTime.get(key).add(encodingDuration / TIME_PRECISION);
                 totalDecompressionTime.get(key).add(decodingDuration / TIME_PRECISION);
+                key2TotalSize.put(key, compressor.getSize() + key2TotalSize.get(key));
             }
         }
-        for (int i = 0; i < compressorList.length; i++) {
-            String key = compressorList[i].getKey();
+
+        for (Map.Entry<String, Long> kv: key2TotalSize.entrySet()) {
+            String key = kv.getKey();
+            Long totalSize = kv.getValue();
             ResultStructure r = new ResultStructure(fileName, key,
-                    totalSize[i] / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
-                    totalCompressionTime.get(key),
-                    totalDecompressionTime.get(key)
+                            totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                            totalCompressionTime.get(key),
+                            totalDecompressionTime.get(key)
             );
-            if (!resultCompressor.containsKey(compressorList[i].getKey())) {
+            if (!resultCompressor.containsKey(key)) {
                 resultCompressor.put(key, new ArrayList<>());
             }
             resultCompressor.get(key).add(r);
