@@ -17,6 +17,7 @@ public abstract class AbstractElfCompressor implements ICompressor {
     public void addValue(double v) {
         long vLong = Double.doubleToRawLongBits(v);
         long vPrimeLong;
+        int betaStar = Integer.MAX_VALUE;
 
         if (v == 0.0 || Double.isInfinite(v)) {
             size += writeBit(false);
@@ -26,6 +27,7 @@ public abstract class AbstractElfCompressor implements ICompressor {
             vPrimeLong = 0xfff8000000000000L & vLong;
         } else {
             int[] alphaAndBetaStar = getAlphaAndBetaStar(v);
+            betaStar = alphaAndBetaStar[1];
             int e = ((int) (vLong >> 52)) & 0x7ff;
             int gAlpha = getFAlpha(alphaAndBetaStar[0]) + e - 1023;
             int eraseBits = 52 - gAlpha;
@@ -39,7 +41,7 @@ public abstract class AbstractElfCompressor implements ICompressor {
                 vPrimeLong = vLong;
             }
         }
-        size += xorCompress(vPrimeLong);
+        size += xorCompress(vPrimeLong, betaStar);
     }
 
     public int getSize() {
@@ -50,7 +52,7 @@ public abstract class AbstractElfCompressor implements ICompressor {
 
     protected abstract int writeBit(boolean bit);
 
-    protected abstract int xorCompress(long vPrimeLong);
+    protected abstract int xorCompress(long vPrimeLong, int betaStar);
 
     private static int getFAlpha(int alpha) {
         if (alpha <= 0) {
