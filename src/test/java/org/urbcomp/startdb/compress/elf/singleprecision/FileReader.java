@@ -8,10 +8,8 @@ import java.util.List;
 
 public class FileReader {
     public static final int DEFAULT_BLOCK_SIZE = 1000;
-    private static final String DELIMITER = ",";
-    private static final int VALUE_POSITION = 0;
     BufferedReader bufferedReader;
-    private int blockSize;
+    private final int blockSize;
 
     public FileReader(String filePath, int blockSize) throws FileNotFoundException {
         java.io.FileReader fr = new java.io.FileReader(filePath);
@@ -24,9 +22,6 @@ public class FileReader {
     }
 
 
-    public FileReader() {
-    }
-
     public float[] nextBlock() {
         float[] values = new float[DEFAULT_BLOCK_SIZE];
         String line;
@@ -38,7 +33,7 @@ public class FileReader {
                     if (counter == blockSize) {
                         return values;
                     }
-                } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                } catch (NumberFormatException | ArrayIndexOutOfBoundsException ignored) {
                 }
 
             }
@@ -59,7 +54,7 @@ public class FileReader {
                     if (counter == blockSize) {
                         return values;
                     }
-                } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                } catch (NumberFormatException | ArrayIndexOutOfBoundsException ignored) {
                 }
 
             }
