@@ -2,6 +2,7 @@ package org.urbcomp.startdb.compress.elf.doubleprecision;
 
 import org.junit.jupiter.api.Test;
 import org.urbcomp.startdb.compress.elf.eraser.Eraser;
+import org.urbcomp.startdb.compress.elf.utils.ElfUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -36,7 +37,36 @@ public class TestRuiyuanLi {
 
     @Test
     public void testCompressor() throws IOException {
-        getMantissaLeadingZerosDistribution();
+        getBetaStarEqualDistribution();
+    }
+
+    private void getBetaStarEqualDistribution() throws FileNotFoundException {
+        for(String fileName : FILENAMES) {
+            FileReader fileReader = new FileReader(FILE_PATH + fileName);
+            int[] counts = new int[2];
+            int lastBetaStar = 0;
+            long total = 0;
+            double[] values;
+            while((values = fileReader.nextBlock()) != null) {
+                for(double value : values) {
+                    if(value != 0.0 && !Double.isInfinite(value) && !Double.isNaN(value)) {
+                        int betaStar = ElfUtils.getAlphaAndBetaStar(value)[1];
+                        if(betaStar == lastBetaStar) {
+                            counts[1]++;
+                        } else {
+                            counts[0]++;
+                        }
+                        lastBetaStar = betaStar;
+                    }
+                }
+                total += values.length;
+            }
+            System.out.print(fileName);
+            for(int count : counts) {
+                System.out.print("\t" + (count * 1.0 / total));
+            }
+            System.out.println();
+        }
     }
 
     private void getMantissaLeadingZerosDistribution() throws FileNotFoundException {
