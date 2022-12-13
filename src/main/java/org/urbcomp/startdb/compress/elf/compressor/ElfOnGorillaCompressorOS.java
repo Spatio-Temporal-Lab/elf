@@ -22,7 +22,7 @@ public class ElfOnGorillaCompressorOS extends AbstractElfCompressor{
         return 1;
     }
 
-    @Override protected int xorCompress(long vPrimeLong, int betaStar) {
+    @Override protected int xorCompress(long vPrimeLong) {
         return gorilla.addValue(vPrimeLong);
     }
 
