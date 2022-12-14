@@ -1,7 +1,6 @@
 package org.urbcomp.startdb.compress.elf.doubleprecision;
 
 import org.junit.jupiter.api.Test;
-import org.urbcomp.startdb.compress.elf.eraser.Eraser;
 import org.urbcomp.startdb.compress.elf.utils.ElfUtils;
 
 import java.io.FileNotFoundException;
@@ -78,7 +77,7 @@ public class TestRuiyuanLi {
             while((values = fileReader.nextBlock()) != null) {
                 double last = 0.0;
                 for(double value : values) {
-                    value = Eraser.erase(value);
+                    value = ElfUtils.erase(value);
                     long xor = Double.doubleToLongBits(last) ^ Double.doubleToLongBits(value);
                     last = value;
                     long mantissaBits = (xor << 12) >>> 12;

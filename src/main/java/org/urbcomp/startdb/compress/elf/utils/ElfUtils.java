@@ -10,6 +10,12 @@ public class ElfUtils {
                     new double[] {1.0, 1.0E1, 1.0E2, 1.0E3, 1.0E4, 1.0E5, 1.0E6, 1.0E7,
                                     1.0E8, 1.0E9, 1.0E10, 1.0E11, 1.0E12, 1.0E13, 1.0E14,
                                     1.0E15, 1.0E16, 1.0E17, 1.0E18, 1.0E19, 1.0E20};
+
+    private final static double[] map10iN =
+                    new double[] {1.0, 1.0E-1, 1.0E-2, 1.0E-3, 1.0E-4, 1.0E-5, 1.0E-6, 1.0E-7,
+                                    1.0E-8, 1.0E-9, 1.0E-10, 1.0E-11, 1.0E-12, 1.0E-13, 1.0E-14,
+                                    1.0E-15, 1.0E-16, 1.0E-17, 1.0E-18, 1.0E-19, 1.0E-20};
+
     private final static double LOG_2_10 = Math.log(10) / Math.log(2);
 
     public static int getFAlpha(int alpha) {
@@ -23,6 +29,30 @@ public class ElfUtils {
         }
     }
 
+    public static double erase(double v) {
+        long vLong = Double.doubleToRawLongBits(v);
+        long vPrimeLong;
+
+        if (v == 0.0 || Double.isInfinite(v)) {
+            vPrimeLong = vLong;
+        } else if (Double.isNaN(v)) {
+            vPrimeLong = 0xfff8000000000000L & vLong;
+        } else {
+            int[] alphaAndBetaStar = getAlphaAndBetaStar(v);
+            int e = ((int) (vLong >> 52)) & 0x7ff;
+            int gAlpha = getFAlpha(alphaAndBetaStar[0]) + e - 1023;
+            int eraseBits = 52 - gAlpha;
+            long mask = 0xffffffffffffffffL << eraseBits;
+            long delta = (~mask) & vLong;
+            if (alphaAndBetaStar[1] < 16 && delta != 0 && eraseBits > 4) {
+                vPrimeLong = mask & vLong;
+            } else {
+                vPrimeLong = vLong;
+            }
+        }
+        return Double.longBitsToDouble(vPrimeLong);
+    }
+
     public static int[] getAlphaAndBetaStar(double v) {
         if (v < 0) {
             v = -v;
@@ -34,6 +64,15 @@ public class ElfUtils {
         alphaAndBetaStar[0] = beta - sp - 1;
         alphaAndBetaStar[1] = (v < 1 && sp == log10v) ? 0 : beta;
         return alphaAndBetaStar;
+    }
+
+    public static double roundUp(double v, int alpha) {
+        double scale = get10iP(alpha);
+        if (v < 0) {
+            return Math.floor(v * scale) / scale;
+        } else {
+            return Math.ceil(v * scale) / scale;
+        }
     }
 
     private static int getSignificantCount(double v, int sp) {
@@ -65,6 +104,17 @@ public class ElfUtils {
             return Double.parseDouble("1.0E" + i);
         } else {
             return map10iP[i];
+        }
+    }
+
+    public static double get10iN(int i) {
+        if (i <= 0) {
+            throw new IllegalArgumentException("The argument should be greater than 0");
+        }
+        if (i >= map10iN.length) {
+            return Double.parseDouble("1.0E-" + i);
+        } else {
+            return map10iN[i];
         }
     }
 }

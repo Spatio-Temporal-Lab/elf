@@ -5,7 +5,10 @@ import org.urbcomp.startdb.compress.elf.utils.ElfUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractElfDecompressor implements IDecompressor {
+public abstract class AbstractElfPlusDecompressor implements IDecompressor {
+
+    private int lastBetaStar = Integer.MAX_VALUE;
+
     public List<Double> decompress() {
         List<Double> values = new ArrayList<>(1024);
         Double value;
@@ -24,7 +27,14 @@ public abstract class AbstractElfDecompressor implements IDecompressor {
         if (flag == 0) {
             v = xorDecompress(betaStar);
         } else {
-            betaStar = readInt(4);
+            flag = readInt(1);
+            if(flag == 0) {
+                betaStar = lastBetaStar;
+            } else {
+                betaStar = readInt(4);
+                lastBetaStar = betaStar;
+            }
+
             Double vPrime = xorDecompress(betaStar);
             int sp = (int) Math.floor(Math.log10(Math.abs(vPrime)));
             if (betaStar == 0) {
