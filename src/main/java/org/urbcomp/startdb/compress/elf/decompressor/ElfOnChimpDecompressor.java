@@ -13,7 +13,7 @@ public class ElfOnChimpDecompressor extends AbstractElfDecompressor {
     }
 
     @Override
-    protected Double xorDecompress(int betaStar) {
+    protected Double xorDecompress() {
         return chimpDecompressor.readValue();
     }
 

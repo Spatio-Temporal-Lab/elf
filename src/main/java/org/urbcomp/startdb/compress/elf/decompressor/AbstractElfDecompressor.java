@@ -18,14 +18,12 @@ public abstract class AbstractElfDecompressor implements IDecompressor {
     private Double nextValue() {
         int flag = readInt(1);
 
-        int betaStar = Integer.MAX_VALUE;
-
         Double v;
         if (flag == 0) {
-            v = xorDecompress(betaStar);
+            v = xorDecompress();
         } else {
-            betaStar = readInt(4);
-            Double vPrime = xorDecompress(betaStar);
+            int betaStar = readInt(4);
+            Double vPrime = xorDecompress();
             int sp = (int) Math.floor(Math.log10(Math.abs(vPrime)));
             if (betaStar == 0) {
                 v = ElfUtils.get10iN(-sp - 1);
@@ -40,8 +38,7 @@ public abstract class AbstractElfDecompressor implements IDecompressor {
         return v;
     }
 
-    protected abstract Double xorDecompress(int betaStar);
+    protected abstract Double xorDecompress();
 
     protected abstract int readInt(int len);
-
 }

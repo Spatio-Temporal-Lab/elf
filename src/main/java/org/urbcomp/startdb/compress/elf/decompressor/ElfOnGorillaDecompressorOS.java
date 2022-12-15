@@ -13,7 +13,7 @@ public class ElfOnGorillaDecompressorOS extends AbstractElfDecompressor {
         gorillaDecompressor = new DecompressorOS(bytes);
     }
 
-    @Override protected Double xorDecompress(int betaStar) {
+    @Override protected Double xorDecompress() {
         Value value = gorillaDecompressor.readPair();
         if (value == null) {
             return null;
