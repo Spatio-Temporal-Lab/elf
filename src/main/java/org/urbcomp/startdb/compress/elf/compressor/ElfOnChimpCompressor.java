@@ -2,11 +2,13 @@ package org.urbcomp.startdb.compress.elf.compressor;
 
 import gr.aueb.delorean.chimp.Chimp;
 import gr.aueb.delorean.chimp.OutputBitStream;
+import org.urbcomp.startdb.compress.elf.eraser.IEraser;
 
 public class ElfOnChimpCompressor extends AbstractElfCompressor {
     private final Chimp chimp;
 
-    public ElfOnChimpCompressor() {
+    public ElfOnChimpCompressor(IEraser eraser) {
+        super(eraser);
         chimp = new Chimp();
     }
 

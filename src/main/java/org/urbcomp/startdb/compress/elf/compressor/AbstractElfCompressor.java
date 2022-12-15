@@ -1,13 +1,16 @@
 package org.urbcomp.startdb.compress.elf.compressor;
 
-import org.urbcomp.startdb.compress.elf.eraser.ElfEraser;
 import org.urbcomp.startdb.compress.elf.eraser.IEraser;
 
 public abstract class AbstractElfCompressor implements ICompressor {
 
     private int size = 0;
 
-    private final IEraser eraser = new ElfEraser();
+    private final IEraser eraser;
+
+    public AbstractElfCompressor(IEraser eraser) {
+        this.eraser = eraser;
+    }
 
     public void addValue(double v) {
         size += eraser.erase(v, this::writeInt, this::writeBit, this::xorCompress);

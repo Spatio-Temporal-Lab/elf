@@ -1,12 +1,14 @@
 package org.urbcomp.startdb.compress.elf.compressor;
 
 import gr.aueb.delorean.chimp.OutputBitStream;
+import org.urbcomp.startdb.compress.elf.eraser.IEraser;
 import org.urbcomp.startdb.compress.elf.xorcompressor.ElfXORCompressor;
 
 public class ElfCompressor extends AbstractElfCompressor {
     private final ElfXORCompressor xorCompressor;
 
-    public ElfCompressor() {
+    public ElfCompressor(IEraser eraser) {
+        super(eraser);
         xorCompressor = new ElfXORCompressor();
     }
 

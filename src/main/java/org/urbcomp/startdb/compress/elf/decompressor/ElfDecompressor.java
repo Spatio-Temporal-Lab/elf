@@ -1,6 +1,7 @@
 package org.urbcomp.startdb.compress.elf.decompressor;
 
 import gr.aueb.delorean.chimp.InputBitStream;
+import org.urbcomp.startdb.compress.elf.restorer.IRestorer;
 import org.urbcomp.startdb.compress.elf.xordecompressor.ElfXORDecompressor;
 
 import java.io.IOException;
@@ -8,7 +9,8 @@ import java.io.IOException;
 public class ElfDecompressor extends AbstractElfDecompressor {
     private final ElfXORDecompressor xorDecompressor;
 
-    public ElfDecompressor(byte[] bytes) {
+    public ElfDecompressor(IRestorer restorer, byte[] bytes) {
+        super(restorer);
         xorDecompressor = new ElfXORDecompressor(bytes);
     }
 

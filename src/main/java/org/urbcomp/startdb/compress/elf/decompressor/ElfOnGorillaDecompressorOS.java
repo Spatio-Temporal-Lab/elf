@@ -3,13 +3,15 @@ package org.urbcomp.startdb.compress.elf.decompressor;
 import fi.iki.yak.ts.compression.gorilla.DecompressorOS;
 import fi.iki.yak.ts.compression.gorilla.Value;
 import gr.aueb.delorean.chimp.InputBitStream;
+import org.urbcomp.startdb.compress.elf.restorer.IRestorer;
 
 import java.io.IOException;
 
 public class ElfOnGorillaDecompressorOS extends AbstractElfDecompressor {
     private final DecompressorOS gorillaDecompressor;
 
-    public ElfOnGorillaDecompressorOS(byte[] bytes) {
+    public ElfOnGorillaDecompressorOS(IRestorer restorer, byte[] bytes) {
+        super(restorer);
         gorillaDecompressor = new DecompressorOS(bytes);
     }
 

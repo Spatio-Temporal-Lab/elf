@@ -10,6 +10,8 @@ import org.apache.hadoop.io.compress.CompressionOutputStream;
 import org.junit.jupiter.api.Test;
 import org.urbcomp.startdb.compress.elf.compressor.*;
 import org.urbcomp.startdb.compress.elf.decompressor.*;
+import org.urbcomp.startdb.compress.elf.eraser.ElfEraser;
+import org.urbcomp.startdb.compress.elf.restorer.ElfRestorer;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -62,9 +64,9 @@ public class TestBeta {
         while ((values = fileReader.nextBlockWithBeta(beta)) != null) {
             totalBlocks += 1;
             ICompressor[] compressors = new ICompressor[]{
-                    new ElfOnGorillaCompressorOS(),
+                    new ElfOnGorillaCompressorOS(new ElfEraser()),
                     new ChimpNCompressor(128),
-                    new ElfCompressor(),
+                    new ElfCompressor(new ElfEraser()),
             };
             for (int i = 0; i < compressors.length; i++) {
                 double encodingDuration;
@@ -80,9 +82,9 @@ public class TestBeta {
 
                 byte[] result = compressor.getBytes();
                 IDecompressor[] decompressors = new IDecompressor[]{
-                        new ElfOnGorillaDecompressorOS(result),
+                        new ElfOnGorillaDecompressorOS(new ElfRestorer(), result),
                         new ChimpNDecompressor(result, 128),
-                        new ElfDecompressor(result)
+                        new ElfDecompressor(new ElfRestorer(), result)
                 };
                 IDecompressor decompressor = decompressors[i];
 

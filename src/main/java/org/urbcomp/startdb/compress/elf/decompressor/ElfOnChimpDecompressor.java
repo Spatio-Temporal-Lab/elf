@@ -2,13 +2,15 @@ package org.urbcomp.startdb.compress.elf.decompressor;
 
 import gr.aueb.delorean.chimp.ChimpDecompressor;
 import gr.aueb.delorean.chimp.InputBitStream;
+import org.urbcomp.startdb.compress.elf.restorer.IRestorer;
 
 import java.io.IOException;
 
 public class ElfOnChimpDecompressor extends AbstractElfDecompressor {
     private final ChimpDecompressor chimpDecompressor;
 
-    public ElfOnChimpDecompressor(byte[] bytes) {
+    public ElfOnChimpDecompressor(IRestorer restorer, byte[] bytes) {
+        super(restorer);
         chimpDecompressor = new ChimpDecompressor(bytes);
     }
 

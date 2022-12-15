@@ -2,6 +2,8 @@ package org.urbcomp.startdb.compress.elf;
 
 import org.urbcomp.startdb.compress.elf.compressor.*;
 import org.urbcomp.startdb.compress.elf.decompressor.*;
+import org.urbcomp.startdb.compress.elf.eraser.ElfEraser;
+import org.urbcomp.startdb.compress.elf.restorer.ElfRestorer;
 
 import java.util.List;
 
@@ -17,7 +19,7 @@ public class Main {
                         9.34,
                         238.77,
                         -103.54};
-        ICompressor compressor = new ElfOnChimpCompressor();
+        ICompressor compressor = new ElfOnChimpCompressor(new ElfEraser());
         for (double v : vs) {
             compressor.addValue(v);
         }
@@ -26,7 +28,7 @@ public class Main {
         System.out.println(compressor.getSize());
 
         byte[] result = compressor.getBytes();
-        IDecompressor decompressor = new ElfOnChimpDecompressor(result);
+        IDecompressor decompressor = new ElfOnChimpDecompressor(new ElfRestorer(), result);
         List<Double> values = decompressor.decompress();
         assert(values.size() == vs.length);
         for (int i = 0; i < values.size(); i++) {
