@@ -19,33 +19,15 @@ public abstract class AbstractElfPlusDecompressor implements IDecompressor {
     }
 
     private Double nextValue() {
-        int flag = readInt(1);
-
-        int betaStar = Integer.MAX_VALUE;
-
         Double v;
-        if (flag == 0) {
-            v = xorDecompress(betaStar);
-        } else {
-            flag = readInt(1);
-            if(flag == 0) {
-                betaStar = lastBetaStar;
-            } else {
-                betaStar = readInt(4);
-                lastBetaStar = betaStar;
-            }
 
-            Double vPrime = xorDecompress(betaStar);
-            int sp = (int) Math.floor(Math.log10(Math.abs(vPrime)));
-            if (betaStar == 0) {
-                v = ElfUtils.get10iN(-sp - 1);
-                if (vPrime < 0) {
-                    v = -v;
-                }
-            } else {
-                int alpha = betaStar - sp - 1;
-                v = ElfUtils.roundUp(vPrime, alpha);
-            }
+        if(readInt(1) == 0) {
+            v = recoverVByBetaStar(lastBetaStar);   // case 0
+        } else if (readInt(1) == 0) {
+            v = xorDecompress(Integer.MAX_VALUE);    // case 10
+        } else {
+            lastBetaStar = readInt(4);           // case 11
+            v = recoverVByBetaStar(lastBetaStar);
         }
         return v;
     }
@@ -54,4 +36,20 @@ public abstract class AbstractElfPlusDecompressor implements IDecompressor {
 
     protected abstract int readInt(int len);
 
+
+    private Double recoverVByBetaStar(int betaStar) {
+        double v;
+        Double vPrime = xorDecompress(betaStar);
+        int sp = (int) Math.floor(Math.log10(Math.abs(vPrime)));
+        if (betaStar == 0) {
+            v = ElfUtils.get10iN(-sp - 1);
+            if (vPrime < 0) {
+                v = -v;
+            }
+        } else {
+            int alpha = betaStar - sp - 1;
+            v = ElfUtils.roundUp(vPrime, alpha);
+        }
+        return v;
+    }
 }

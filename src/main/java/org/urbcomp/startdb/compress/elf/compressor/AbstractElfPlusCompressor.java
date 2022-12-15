@@ -9,33 +9,30 @@ public abstract class AbstractElfPlusCompressor implements ICompressor {
     private int lastBetaStar = Integer.MAX_VALUE;
 
     public void addValue(double v) {
-        long vLong = Double.doubleToRawLongBits(v);
+        long vLong = Double.doubleToLongBits(v);   //doubleToLongBits can normalize NaN
         long vPrimeLong;
 
-        if (v == 0.0 || Double.isInfinite(v)) {
-            size += writeBit(false);
+        if (v == 0.0 || Double.isInfinite(v) || Double.isNaN(v)) {
+            size += writeInt(2, 2); // case 10
             vPrimeLong = vLong;
-        } else if (Double.isNaN(v)) {
-            size += writeBit(false);
-            vPrimeLong = 0xfff8000000000000L & vLong;
         } else {
+            // C1: v is a normal or subnormal
             int[] alphaAndBetaStar = ElfUtils.getAlphaAndBetaStar(v);
             int e = ((int) (vLong >> 52)) & 0x7ff;
             int gAlpha = ElfUtils.getFAlpha(alphaAndBetaStar[0]) + e - 1023;
             int eraseBits = 52 - gAlpha;
             long mask = 0xffffffffffffffffL << eraseBits;
             long delta = (~mask) & vLong;
-            if (alphaAndBetaStar[1] < 16 && delta != 0 && eraseBits > 4) {
+            if (alphaAndBetaStar[1] < 16 && delta != 0 && eraseBits > 4) {  // C2
                 if(alphaAndBetaStar[1] == lastBetaStar) {
-                    size += writeInt(2, 2);
+                    size += writeBit(false);     // case 0
                 } else {
-                    size += writeInt(alphaAndBetaStar[1] | 0x30, 6);
+                    size += writeInt(alphaAndBetaStar[1] | 0x30, 6);    // case 11
                     lastBetaStar = alphaAndBetaStar[1];
                 }
-
                 vPrimeLong = mask & vLong;
             } else {
-                size += writeBit(false);
+                size += writeInt(2, 2); // case 10
                 vPrimeLong = vLong;
             }
         }

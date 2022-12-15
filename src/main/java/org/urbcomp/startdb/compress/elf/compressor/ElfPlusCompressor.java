@@ -31,8 +31,8 @@ public class ElfPlusCompressor extends AbstractElfPlusCompressor{
     }
 
     @Override public void close() {
-        // we write one more bit here, for marking an end of the stream.
-        writeBit(false);
+        // we write one more here, for marking an end of the stream.
+        writeInt(2, 2);
         xorCompressor.close();
     }
 }
