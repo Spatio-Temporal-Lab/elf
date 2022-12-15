@@ -24,7 +24,7 @@ public abstract class AbstractElfPlusDecompressor implements IDecompressor {
         if(readInt(1) == 0) {
             v = recoverVByBetaStar(lastBetaStar);   // case 0
         } else if (readInt(1) == 0) {
-            v = xorDecompress(Integer.MAX_VALUE);    // case 10
+            v = xorDecompress();                    // case 10
         } else {
             lastBetaStar = readInt(4);           // case 11
             v = recoverVByBetaStar(lastBetaStar);
@@ -32,14 +32,14 @@ public abstract class AbstractElfPlusDecompressor implements IDecompressor {
         return v;
     }
 
-    protected abstract Double xorDecompress(int betaStar);
+    protected abstract Double xorDecompress();
 
     protected abstract int readInt(int len);
 
 
     private Double recoverVByBetaStar(int betaStar) {
         double v;
-        Double vPrime = xorDecompress(betaStar);
+        Double vPrime = xorDecompress();
         int sp = (int) Math.floor(Math.log10(Math.abs(vPrime)));
         if (betaStar == 0) {
             v = ElfUtils.get10iN(-sp - 1);

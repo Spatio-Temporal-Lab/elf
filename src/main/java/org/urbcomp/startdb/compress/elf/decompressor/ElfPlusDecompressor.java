@@ -12,7 +12,7 @@ public class ElfPlusDecompressor extends AbstractElfPlusDecompressor{
         xorDecompressor = new ElfXORDecompressor(bytes);
     }
 
-    @Override protected Double xorDecompress(int betaStar) {
+    @Override protected Double xorDecompress() {
         return xorDecompressor.readValue();
     }
 
