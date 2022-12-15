@@ -7,15 +7,12 @@ public abstract class AbstractElfCompressor implements ICompressor {
     private int size = 0;
 
     public void addValue(double v) {
-        long vLong = Double.doubleToRawLongBits(v);
+        long vLong = Double.doubleToLongBits(v);    //doubleToLongBits can normalize NaN
         long vPrimeLong;
 
-        if (v == 0.0 || Double.isInfinite(v)) {
+        if (v == 0.0 || Double.isInfinite(v) || Double.isNaN(v)) {
             size += writeBit(false);
             vPrimeLong = vLong;
-        } else if (Double.isNaN(v)) {
-            size += writeBit(false);
-            vPrimeLong = 0xfff8000000000000L & vLong;
         } else {
             int[] alphaAndBetaStar = ElfUtils.getAlphaAndBetaStar(v);
             int e = ((int) (vLong >> 52)) & 0x7ff;
