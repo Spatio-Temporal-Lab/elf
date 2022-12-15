@@ -1,7 +1,6 @@
 package org.urbcomp.startdb.compress.elf.compressor;
 
 import org.urbcomp.startdb.compress.elf.eraser.ElfPlusEraser;
-import org.urbcomp.startdb.compress.elf.eraser.EraserResult;
 import org.urbcomp.startdb.compress.elf.eraser.IEraser;
 
 public abstract class AbstractElfPlusCompressor implements ICompressor {
@@ -11,9 +10,7 @@ public abstract class AbstractElfPlusCompressor implements ICompressor {
     private final IEraser eraser = new ElfPlusEraser();
 
     public void addValue(double v) {
-        EraserResult er = eraser.erase(v, this::writeInt, this::writeBit);
-        size += er.getSize();
-        size += xorCompress(er.getVPrimeLong());
+        size += eraser.erase(v, this::writeInt, this::writeBit, this::xorCompress);
     }
 
     public int getSize() {

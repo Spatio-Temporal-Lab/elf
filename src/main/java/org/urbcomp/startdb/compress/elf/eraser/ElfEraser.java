@@ -6,8 +6,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class ElfEraser implements IEraser {
-    @Override public EraserResult erase(double v, BiFunction<Integer, Integer, Integer> writeInt,
-                    Function<Boolean, Integer> writeBit) {
+    @Override public int erase(double v, BiFunction<Integer, Integer, Integer> writeInt,
+                    Function<Boolean, Integer> writeBit, Function<Long, Integer> xorCompress) {
         long vLong = Double.doubleToLongBits(v);    //doubleToLongBits can normalize NaN
         long vPrimeLong;
         int size = 0;
@@ -30,6 +30,7 @@ public class ElfEraser implements IEraser {
                 vPrimeLong = vLong;
             }
         }
-        return new EraserResult(size, vPrimeLong);
+        size += xorCompress.apply(vPrimeLong);
+        return size;
     }
 }
