@@ -15,6 +15,10 @@ import org.apache.hadoop.io.compress.CompressionOutputStream;
 import org.junit.jupiter.api.Test;
 import org.urbcomp.startdb.compress.elf.compressor.*;
 import org.urbcomp.startdb.compress.elf.decompressor.*;
+import org.urbcomp.startdb.compress.elf.eraser.ElfEraser;
+import org.urbcomp.startdb.compress.elf.eraser.ElfPlusEraser;
+import org.urbcomp.startdb.compress.elf.restorer.ElfPlusRestorer;
+import org.urbcomp.startdb.compress.elf.restorer.ElfRestorer;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -90,12 +94,13 @@ public class TestCompressor {
             totalBlocks += 1;
             ICompressor[] compressors = new ICompressor[]{
                     new GorillaCompressorOS(),
-                    new ElfOnGorillaCompressorOS(),
+                    new ElfOnGorillaCompressorOS(new ElfEraser()),
                     new ChimpCompressor(),
-                    new ElfOnChimpCompressor(),
+                    new ElfOnChimpCompressor(new ElfEraser()),
                     new ChimpNCompressor(128),
-                    new ElfOnChimpNCompressor(128),
-                    new ElfCompressor(),
+                    new ElfOnChimpNCompressor(new ElfEraser(), 128),
+                    new ElfCompressor(new ElfEraser()),
+                    new ElfCompressor(new ElfPlusEraser())
             };
             for (int i = 0; i < compressors.length; i++) {
                 double encodingDuration;
@@ -112,12 +117,13 @@ public class TestCompressor {
                 byte[] result = compressor.getBytes();
                 IDecompressor[] decompressors = new IDecompressor[]{
                         new GorillaDecompressorOS(result),
-                        new ElfOnGorillaDecompressorOS(result),
+                        new ElfOnGorillaDecompressorOS(new ElfRestorer(), result),
                         new ChimpDecompressor(result),
-                        new ElfOnChimpDecompressor(result),
+                        new ElfOnChimpDecompressor(new ElfRestorer(), result),
                         new ChimpNDecompressor(result, 128),
-                        new ElfOnChimpNDecompressor(result, 128),
-                        new ElfDecompressor(result)
+                        new ElfOnChimpNDecompressor(new ElfRestorer(), result, 128),
+                        new ElfDecompressor(new ElfRestorer(), result),
+                        new ElfDecompressor(new ElfPlusRestorer(), result)
                 };
 
                 IDecompressor decompressor = decompressors[i];
