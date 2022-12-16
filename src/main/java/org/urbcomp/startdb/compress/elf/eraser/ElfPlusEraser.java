@@ -40,4 +40,8 @@ public class ElfPlusEraser implements IEraser {
         size += xorCompress.apply(vPrimeLong);
         return size;
     }
+
+    @Override public void markEnd(BiFunction<Integer, Integer, Integer> writeInt) {
+        writeInt.apply(2, 2); // case 10
+    }
 }

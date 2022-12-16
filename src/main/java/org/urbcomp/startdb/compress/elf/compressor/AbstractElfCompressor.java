@@ -25,4 +25,12 @@ public abstract class AbstractElfCompressor implements ICompressor {
     protected abstract int writeBit(boolean bit);
 
     protected abstract int xorCompress(long vPrimeLong);
+
+    @Override public String getKey() {
+        return getClass().getSimpleName() + "_" + this.eraser.getClass().getSimpleName();
+    }
+
+    @Override public void close() {
+        this.eraser.markEnd(this::writeInt);
+    }
 }
