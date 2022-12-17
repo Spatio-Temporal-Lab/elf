@@ -24,7 +24,7 @@ public class ElfOnChimpCompressor extends AbstractElfCompressor {
         return 1;
     }
 
-    @Override protected int xorCompress(long vPrimeLong) {
+    @Override protected int xorCompress(long vPrimeLong, int betaStar) {
         return chimp.addValue(vPrimeLong);
     }
 

@@ -26,7 +26,7 @@ public abstract class AbstractElfDecompressor implements IDecompressor {
         return restorer.restore(this::readInt, this::xorDecompress);
     }
 
-    protected abstract Double xorDecompress();
+    protected abstract Double xorDecompress(int betaStar);
 
     protected abstract int readInt(int len);
 }

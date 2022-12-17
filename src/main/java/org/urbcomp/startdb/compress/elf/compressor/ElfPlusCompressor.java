@@ -1,39 +1,39 @@
 package org.urbcomp.startdb.compress.elf.compressor;
 
-import fi.iki.yak.ts.compression.gorilla.CompressorOS;
 import gr.aueb.delorean.chimp.OutputBitStream;
 import org.urbcomp.startdb.compress.elf.eraser.IEraser;
+import org.urbcomp.startdb.compress.elf.xorcompressor.ElfPlusXORCompressor;
 
-public class ElfOnGorillaCompressorOS extends AbstractElfCompressor{
-    private final CompressorOS gorilla;
+public class ElfPlusCompressor extends AbstractElfCompressor {
+    private final ElfPlusXORCompressor xorCompressor;
 
-    public ElfOnGorillaCompressorOS(IEraser eraser){
+    public ElfPlusCompressor(IEraser eraser) {
         super(eraser);
-        gorilla = new CompressorOS();
+        xorCompressor = new ElfPlusXORCompressor();
     }
 
     @Override protected int writeInt(int n, int len) {
-        OutputBitStream os = gorilla.getOutputStream();
+        OutputBitStream os = xorCompressor.getOutputStream();
         os.writeInt(n, len);
         return len;
     }
 
     @Override protected int writeBit(boolean bit) {
-        OutputBitStream os = gorilla.getOutputStream();
+        OutputBitStream os = xorCompressor.getOutputStream();
         os.writeBit(bit);
         return 1;
     }
 
     @Override protected int xorCompress(long vPrimeLong, int betaStar) {
-        return gorilla.addValue(vPrimeLong);
+        return xorCompressor.addValue(vPrimeLong, betaStar);
     }
 
     @Override public byte[] getBytes() {
-        return gorilla.getOutputStream().getBuffer();
+        return xorCompressor.getOut();
     }
 
     @Override public void close() {
         super.close();
-        gorilla.close();
+        xorCompressor.close();
     }
 }

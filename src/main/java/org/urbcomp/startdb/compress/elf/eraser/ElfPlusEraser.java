@@ -8,10 +8,12 @@ import java.util.function.Function;
 public class ElfPlusEraser implements IEraser {
     private int lastBetaStar = Integer.MAX_VALUE;
     @Override public int erase(double v, BiFunction<Integer, Integer, Integer> writeInt,
-                    Function<Boolean, Integer> writeBit, Function<Long, Integer> xorCompress) {
+                    Function<Boolean, Integer> writeBit, BiFunction<Long, Integer, Integer> xorCompress) {
         long vLong = Double.doubleToLongBits(v);   //doubleToLongBits can normalize NaN
         long vPrimeLong;
         int size = 0;
+
+        int betaStar = Integer.MAX_VALUE;
 
         if (v == 0.0 || Double.isInfinite(v) || Double.isNaN(v)) {
             size += writeInt.apply(2, 2); // case 10
@@ -36,8 +38,10 @@ public class ElfPlusEraser implements IEraser {
                 size += writeInt.apply(2, 2); // case 10
                 vPrimeLong = vLong;
             }
+
+            betaStar = alphaAndBetaStar[1];
         }
-        size += xorCompress.apply(vPrimeLong);
+        size += xorCompress.apply(vPrimeLong, betaStar);
         return size;
     }
 
