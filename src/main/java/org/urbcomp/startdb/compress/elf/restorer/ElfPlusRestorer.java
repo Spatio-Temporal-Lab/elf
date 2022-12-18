@@ -19,7 +19,6 @@ public class ElfPlusRestorer implements IRestorer {
             lastBetaStar = readInt.apply(4);           // case 11
             v = recoverVByBetaStar(lastBetaStar, xorDecompress);
         }
-        System.out.println(v);
         return v;
     }
 

@@ -47,11 +47,11 @@ public class ElfPlusXORDecompressor {
     private void next(int betaStar) throws IOException {
         if (first) {
             first = false;
-            boolean isSpLower = in.readBit() == 1;
+            boolean isSpLower = in.readInt(1) == 1;
             int se = in.readInt(12);
             int e = se & 0x7ff;
             storedApproximateTrailingZeros = getApproximateTrailingZeros(e, betaStar, isSpLower);
-            storedVal = (in.readLong(52 - storedApproximateTrailingZeros) << storedApproximateTrailingZeros) | ((long)se << 52);
+            storedVal = (in.readLong(52 - storedApproximateTrailingZeros) << storedApproximateTrailingZeros) | (((long)se) << 52);
             if (storedVal == END_SIGN) {
                 endOfStream = true;
             }
@@ -73,24 +73,25 @@ public class ElfPlusXORDecompressor {
                 thisSe = storedSe ^ nonLeadingBits;
             }
 
+            boolean isSpLower = in.readInt(1) == 1;
+            int thisE = thisSe & 0x7ff;
+            int thisApproximateTrailingZeros = getApproximateTrailingZeros(thisE, betaStar, isSpLower);
+            int approximateTrailingZeros = Math.min(thisApproximateTrailingZeros, storedApproximateTrailingZeros);
+
             // read M
             long storedM = storedVal & 0xfffffffffffffL;
             long thisM;
             if (in.readInt(1) == 0) {
                 thisM = storedM;
             } else {
-                boolean isSpLower = in.readBit() == 1;
                 int leadingZerosCountM = leadingRepresentationM[in.readInt(3)];
-                int thisE = thisSe & 0x7ff;
-                int thisApproximateTrailingZeros = getApproximateTrailingZeros(thisE, betaStar, isSpLower);
-                int approximateTrailingZeros = Math.min(thisApproximateTrailingZeros, storedApproximateTrailingZeros);
                 long centerBits = in.readLong(52 - leadingZerosCountM - approximateTrailingZeros);
                 thisM = storedM ^ (centerBits << approximateTrailingZeros);
-
-                storedApproximateTrailingZeros = thisApproximateTrailingZeros;
             }
 
-            storedVal = ((long) thisSe) << 52 | thisM;
+            storedVal = (((long) thisSe) << 52) | thisM;
+            storedApproximateTrailingZeros = thisApproximateTrailingZeros;
+
             if (storedVal == END_SIGN) {
                 endOfStream = true;
             }
@@ -100,6 +101,9 @@ public class ElfPlusXORDecompressor {
     private int getApproximateTrailingZeros(int e, int betaStar, boolean isSpLower) {
         if (betaStar == 0) {
             return 52;
+        }
+        if (betaStar == Integer.MAX_VALUE) {
+            return 0;
         }
         int sp;
         if (isSpLower) {

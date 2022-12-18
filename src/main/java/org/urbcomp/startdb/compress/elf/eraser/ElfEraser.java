@@ -23,16 +23,14 @@ public class ElfEraser implements IEraser {
             int gAlpha = ElfUtils.getFAlpha(alphaAndBetaStar[0]) + e - 1023;
             int eraseBits = 52 - gAlpha;
             long mask = 0xffffffffffffffffL << eraseBits;
-            long delta = (~mask) & vLong;
-            if (alphaAndBetaStar[1] < 16 && delta != 0 && eraseBits > 4) {
+            if (alphaAndBetaStar[1] < 16 && eraseBits > 4) {
                 size += writeInt.apply(alphaAndBetaStar[1] | 0x10, 5);
                 vPrimeLong = mask & vLong;
+                betaStar = alphaAndBetaStar[1];
             } else {
                 size += writeBit.apply(false);
                 vPrimeLong = vLong;
             }
-
-            betaStar = alphaAndBetaStar[1];
         }
         size += xorCompress.apply(vPrimeLong, betaStar);
         return size;

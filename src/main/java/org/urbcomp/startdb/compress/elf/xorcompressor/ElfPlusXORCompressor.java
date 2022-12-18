@@ -54,7 +54,8 @@ public class ElfPlusXORCompressor {
         first = false;
         storedVal = value;
         storedApproximateTrailingZeros = getApproximateTrailingZeros(value, betaStar);
-        out.writeBit(isSpLower(value, betaStar));
+        boolean isSpLower = isSpLower(value, betaStar);
+        out.writeBit(isSpLower);
         out.writeLong(storedVal >>> storedApproximateTrailingZeros,
                         64 - storedApproximateTrailingZeros);
 
@@ -77,15 +78,11 @@ public class ElfPlusXORCompressor {
 
         if (xor == 0) {
             // case 0
-            out.writeInt(0, 0);
+            out.writeInt(0, 1);
 
             size += 1;
             thisSize += 1;
         } else {
-            int thisApproximateTrailingZeros = getApproximateTrailingZeros(value, betaStar);
-            int approximateTrailingZeros =
-                            Math.min(thisApproximateTrailingZeros, storedApproximateTrailingZeros);
-
             long se = xor >>> 52;
             long mantissa = xor & 0xfffffffffffffL;
 
@@ -111,6 +108,14 @@ public class ElfPlusXORCompressor {
                 thisSize += 15 - leadingZerosSE;
             }
 
+            int thisApproximateTrailingZeros = getApproximateTrailingZeros(value, betaStar);
+            int approximateTrailingZeros =
+                            Math.min(thisApproximateTrailingZeros, storedApproximateTrailingZeros);
+            boolean isSpLower = isSpLower(value, betaStar);
+            out.writeBit(isSpLower);
+            size += 1;
+            thisSize += 1;
+
             // store mantissa
             if (mantissa == 0) {
                 // case 10
@@ -122,13 +127,12 @@ public class ElfPlusXORCompressor {
                 // case 11
                 out.writeInt(1, 1);
                 int leadingZerosM = leadingRoundM[Long.numberOfLeadingZeros(mantissa) - 12];
-                out.writeBit(isSpLower(value, betaStar));
                 out.writeInt(leadingRepresentationM[leadingZerosM], 3);
                 out.writeLong(mantissa >>> approximateTrailingZeros,
                                 52 - leadingZerosM - approximateTrailingZeros);
 
-                size += 1 + 1 + 3 + 52 - leadingZerosM - approximateTrailingZeros;
-                thisSize += 1 + 1 + 3 + 52 - leadingZerosM - approximateTrailingZeros;
+                size += 1 + 3 + 52 - leadingZerosM - approximateTrailingZeros;
+                thisSize += 1 + 3 + 52 - leadingZerosM - approximateTrailingZeros;
             }
 
             storedVal = value;
@@ -150,6 +154,9 @@ public class ElfPlusXORCompressor {
     private int getApproximateTrailingZeros(long vPrimeLong, int betaStar) {
         if (betaStar == 0) {
             return 52;  // 10-i, we erase all mantissa bits.
+        }
+        if(betaStar == Integer.MAX_VALUE) {
+            return 0;
         }
         double vPrime = Double.longBitsToDouble(vPrimeLong);
         int sp = (int) Math.floor(Math.log10(Math.abs(vPrime)));
