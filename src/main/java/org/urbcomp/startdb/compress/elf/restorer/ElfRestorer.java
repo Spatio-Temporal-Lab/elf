@@ -1,12 +1,12 @@
 package org.urbcomp.startdb.compress.elf.restorer;
 
 import org.urbcomp.startdb.compress.elf.utils.ElfUtils;
+import org.urbcomp.startdb.compress.elf.utils.function.Int2IntFunction;
 
-import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 public class ElfRestorer implements IRestorer {
-    @Override public Double restore(IntFunction<Integer> readInt, Supplier<Double> xorDecompress) {
+    @Override public Double restore(Int2IntFunction readInt, Supplier<Double> xorDecompress) {
         int flag = readInt.apply(1);
 
         Double v;

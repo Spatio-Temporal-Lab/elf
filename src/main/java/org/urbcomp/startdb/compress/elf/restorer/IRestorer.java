@@ -1,8 +1,9 @@
 package org.urbcomp.startdb.compress.elf.restorer;
 
-import java.util.function.IntFunction;
+import org.urbcomp.startdb.compress.elf.utils.function.Int2IntFunction;
+
 import java.util.function.Supplier;
 
 public interface IRestorer {
-    Double restore(IntFunction<Integer> readInt, Supplier<Double> xorDecompress);
+    Double restore(Int2IntFunction readInt, Supplier<Double> xorDecompress);
 }
