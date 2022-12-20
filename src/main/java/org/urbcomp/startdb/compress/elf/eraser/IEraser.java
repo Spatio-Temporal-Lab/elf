@@ -1,11 +1,12 @@
 package org.urbcomp.startdb.compress.elf.eraser;
 
-import org.urbcomp.startdb.compress.elf.utils.function.BiInt2IntFunction;
 import org.urbcomp.startdb.compress.elf.utils.function.Bool2IntFunction;
-import org.urbcomp.startdb.compress.elf.utils.function.Long2IntFunction;
+
+import java.util.function.IntBinaryOperator;
+import java.util.function.LongToIntFunction;
 
 public interface IEraser {
-    int erase(double v, BiInt2IntFunction writeInt,
-                    Bool2IntFunction writeBit, Long2IntFunction xorCompress);
-    void markEnd(BiInt2IntFunction writeInt);
+    int erase(double v, IntBinaryOperator writeInt,
+                    Bool2IntFunction writeBit, LongToIntFunction xorCompress);
+    void markEnd(IntBinaryOperator writeInt);
 }

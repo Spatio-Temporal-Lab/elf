@@ -1,19 +1,19 @@
 package org.urbcomp.startdb.compress.elf.restorer;
 
 import org.urbcomp.startdb.compress.elf.utils.ElfUtils;
-import org.urbcomp.startdb.compress.elf.utils.function.Int2IntFunction;
 
+import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
 
 public class ElfRestorer implements IRestorer {
-    @Override public Double restore(Int2IntFunction readInt, Supplier<Double> xorDecompress) {
-        int flag = readInt.apply(1);
+    @Override public Double restore(IntUnaryOperator readInt, Supplier<Double> xorDecompress) {
+        int flag = readInt.applyAsInt(1);
 
         Double v;
         if (flag == 0) {
             v = xorDecompress.get();
         } else {
-            int betaStar = readInt.apply(4);
+            int betaStar = readInt.applyAsInt(4);
             Double vPrime = xorDecompress.get();
             int sp = (int) Math.floor(Math.log10(Math.abs(vPrime)));
             if (betaStar == 0) {

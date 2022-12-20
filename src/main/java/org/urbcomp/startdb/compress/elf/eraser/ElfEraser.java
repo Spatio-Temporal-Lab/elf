@@ -1,13 +1,14 @@
 package org.urbcomp.startdb.compress.elf.eraser;
 
-import org.urbcomp.startdb.compress.elf.utils.function.BiInt2IntFunction;
 import org.urbcomp.startdb.compress.elf.utils.ElfUtils;
 import org.urbcomp.startdb.compress.elf.utils.function.Bool2IntFunction;
-import org.urbcomp.startdb.compress.elf.utils.function.Long2IntFunction;
+
+import java.util.function.IntBinaryOperator;
+import java.util.function.LongToIntFunction;
 
 public class ElfEraser implements IEraser {
-    @Override public int erase(double v, BiInt2IntFunction writeInt,
-                    Bool2IntFunction writeBit, Long2IntFunction xorCompress) {
+    @Override public int erase(double v, IntBinaryOperator writeInt,
+                    Bool2IntFunction writeBit, LongToIntFunction xorCompress) {
         long vLong = Double.doubleToLongBits(v);    //doubleToLongBits can normalize NaN
         long vPrimeLong;
         int size = 0;
@@ -23,18 +24,18 @@ public class ElfEraser implements IEraser {
             long mask = 0xffffffffffffffffL << eraseBits;
             long delta = (~mask) & vLong;
             if (alphaAndBetaStar[1] < 16 && delta != 0 && eraseBits > 4) {
-                size += writeInt.apply(alphaAndBetaStar[1] | 0x10, 5);
+                size += writeInt.applyAsInt(alphaAndBetaStar[1] | 0x10, 5);
                 vPrimeLong = mask & vLong;
             } else {
                 size += writeBit.apply(false);
                 vPrimeLong = vLong;
             }
         }
-        size += xorCompress.apply(vPrimeLong);
+        size += xorCompress.applyAsInt(vPrimeLong);
         return size;
     }
 
-    @Override public void markEnd(BiInt2IntFunction writeInt) {
-        writeInt.apply(0, 1);
+    @Override public void markEnd(IntBinaryOperator writeInt) {
+        writeInt.applyAsInt(0, 1);
     }
 }

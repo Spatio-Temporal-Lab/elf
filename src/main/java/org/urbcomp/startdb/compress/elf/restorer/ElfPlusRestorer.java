@@ -1,22 +1,22 @@
 package org.urbcomp.startdb.compress.elf.restorer;
 
 import org.urbcomp.startdb.compress.elf.utils.ElfUtils;
-import org.urbcomp.startdb.compress.elf.utils.function.Int2IntFunction;
 
+import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
 
 public class ElfPlusRestorer implements IRestorer {
     private int lastBetaStar = Integer.MAX_VALUE;
 
-    @Override public Double restore(Int2IntFunction readInt, Supplier<Double> xorDecompress) {
+    @Override public Double restore(IntUnaryOperator readInt, Supplier<Double> xorDecompress) {
         Double v;
 
-        if(readInt.apply(1) == 0) {
+        if(readInt.applyAsInt(1) == 0) {
             v = recoverVByBetaStar(lastBetaStar, xorDecompress);   // case 0
-        } else if (readInt.apply(1) == 0) {
+        } else if (readInt.applyAsInt(1) == 0) {
             v = xorDecompress.get();                    // case 10
         } else {
-            lastBetaStar = readInt.apply(4);           // case 11
+            lastBetaStar = readInt.applyAsInt(4);           // case 11
             v = recoverVByBetaStar(lastBetaStar, xorDecompress);
         }
         return v;

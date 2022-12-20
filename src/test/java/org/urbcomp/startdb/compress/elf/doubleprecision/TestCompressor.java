@@ -64,12 +64,12 @@ public class TestCompressor {
         for (String filename : FILENAMES) {
             Map<String, List<ResultStructure>> result = new HashMap<>();
             testELFCompressor(filename, result);
-            testFPC(filename, result);
-            testSnappy(filename, result);
-            testZstd(filename, result);
-            testLZ4(filename, result);
-            testBrotli(filename, result);
-            testXz(filename, result);
+//            testFPC(filename, result);
+//            testSnappy(filename, result);
+//            testZstd(filename, result);
+//            testLZ4(filename, result);
+//            testBrotli(filename, result);
+//            testXz(filename, result);
             for (Map.Entry<String, List<ResultStructure>> kv : result.entrySet()) {
                 Map<String, ResultStructure> r = new HashMap<>();
                 r.put(kv.getKey(), computeAvg(kv.getValue()));
@@ -93,12 +93,12 @@ public class TestCompressor {
         while ((values = fileReader.nextBlock()) != null) {
             totalBlocks += 1;
             ICompressor[] compressors = new ICompressor[]{
-                    new GorillaCompressorOS(),
-                    new ElfOnGorillaCompressorOS(new ElfEraser()),
-                    new ChimpCompressor(),
-                    new ElfOnChimpCompressor(new ElfEraser()),
+//                    new GorillaCompressorOS(),
+//                    new ElfOnGorillaCompressorOS(new ElfEraser()),
+//                    new ChimpCompressor(),
+//                    new ElfOnChimpCompressor(new ElfEraser()),
+//                    new ElfOnChimpNCompressor(new ElfEraser(), 128),
                     new ChimpNCompressor(128),
-                    new ElfOnChimpNCompressor(new ElfEraser(), 128),
                     new ElfCompressor(new ElfEraser()),
                     new ElfCompressor(new ElfPlusEraser())
             };
@@ -116,12 +116,12 @@ public class TestCompressor {
 
                 byte[] result = compressor.getBytes();
                 IDecompressor[] decompressors = new IDecompressor[]{
-                        new GorillaDecompressorOS(result),
-                        new ElfOnGorillaDecompressorOS(new ElfRestorer(), result),
-                        new ChimpDecompressor(result),
-                        new ElfOnChimpDecompressor(new ElfRestorer(), result),
+//                        new GorillaDecompressorOS(result),
+//                        new ElfOnGorillaDecompressorOS(new ElfRestorer(), result),
+//                        new ChimpDecompressor(result),
+//                        new ElfOnChimpDecompressor(new ElfRestorer(), result),
+//                        new ElfOnChimpNDecompressor(new ElfRestorer(), result, 128),
                         new ChimpNDecompressor(result, 128),
-                        new ElfOnChimpNDecompressor(new ElfRestorer(), result, 128),
                         new ElfDecompressor(new ElfRestorer(), result),
                         new ElfDecompressor(new ElfPlusRestorer(), result)
                 };
