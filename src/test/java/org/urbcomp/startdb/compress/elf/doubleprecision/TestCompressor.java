@@ -13,8 +13,12 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.compress.CompressionInputStream;
 import org.apache.hadoop.io.compress.CompressionOutputStream;
 import org.junit.jupiter.api.Test;
-import org.urbcomp.startdb.compress.elf.compressor.*;
-import org.urbcomp.startdb.compress.elf.decompressor.*;
+import org.urbcomp.startdb.compress.elf.compressor.ChimpNCompressor;
+import org.urbcomp.startdb.compress.elf.compressor.ElfCompressor;
+import org.urbcomp.startdb.compress.elf.compressor.ICompressor;
+import org.urbcomp.startdb.compress.elf.decompressor.ChimpNDecompressor;
+import org.urbcomp.startdb.compress.elf.decompressor.ElfDecompressor;
+import org.urbcomp.startdb.compress.elf.decompressor.IDecompressor;
 import org.urbcomp.startdb.compress.elf.eraser.ElfEraser;
 import org.urbcomp.startdb.compress.elf.eraser.ElfPlusEraser;
 import org.urbcomp.startdb.compress.elf.restorer.ElfPlusRestorer;
@@ -22,7 +26,10 @@ import org.urbcomp.startdb.compress.elf.restorer.ElfRestorer;
 
 import java.io.*;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -515,6 +522,10 @@ public class TestCompressor {
     }
 
     public void storeResult(String filePath) throws IOException {
+        File file = new File(filePath).getParentFile();
+        if (!file.exists() && !file.mkdirs()) {
+            throw new IOException("Create directory failed: " + file);
+        }
         try (FileWriter fileWriter = new FileWriter(filePath)) {
             fileWriter.write(ResultStructure.getHead());
             for (Map<String, ResultStructure> result : allResult) {
