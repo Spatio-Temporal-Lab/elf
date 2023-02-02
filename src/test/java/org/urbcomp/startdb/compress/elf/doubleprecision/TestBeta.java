@@ -46,7 +46,7 @@ public class TestBeta {
                 }
             }
         }
-        storeResult(STORE_PATH + "/resultBeta11.5.csv");
+        storeResult(STORE_PATH + "/resultBeta.csv");
     }
 
     public void testELFCompressor(String fileName, Map<String, List<ResultStructure>> resultCompressor, int beta) throws FileNotFoundException {
