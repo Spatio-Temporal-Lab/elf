@@ -461,6 +461,10 @@ public class TestCompressor {
 
 
     public void storeResult(String filePath) throws IOException {
+        File file = new File(filePath).getParentFile();
+        if (!file.exists() && !file.mkdirs()) {
+            throw new IOException("Create directory failed: " + file);
+        }
         try (FileWriter fileWriter = new FileWriter(filePath)) {
             fileWriter.write(ResultStructure.getHead());
             for (Map<String, ResultStructure> result : allResult) {
