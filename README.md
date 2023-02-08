@@ -8,16 +8,41 @@ Developers can follow the steps below for compression testing.
 ## Elf feature
 
 ***
-- Elf can greatly increase the number of trailing zeros in XORed results,
-which enhances the compression ratio with a theoretical guarantee
-- Elf algorithm takes only
-  O (1) in both time complexity and space complexity.
+
+- Elf can greatly increase the number of trailing zeros in XORed results, which enhances the compression ratio with a
+  theoretical guarantee
+- Elf algorithm takes only O (1) in both time complexity and space complexity.
 - ELf adopt unique coding method for the XORed results with many trailing zeros.
+- The erase operation in this project is used as a preprocessing step for all XOR-based compression algorithms.
+
+## Project Structure
+
+***
+This project mainly includes the following various compression algorithms:
+
+- The main code for the ***Elf*** algorithm is in the *org/urbcomp/startdb/compress/elf* package.
+
+- The main code for the ***Chimp*** algorithm is in the *gr/aueb/delorean/chimp* package.
+
+- The main code for the ***Gorilla*** algorithm is in the *fi/iki/yak/ts/compression/gorilla* package.
+
+- The main code for the ***FPC*** algorithm is in the *com/github/kutschkem/fpc* package.
+
+- The main code for other general compression algorithms is in the *org/apache/hadoop/hbase/io/compress* package.
+
+### ELF Structure
+
+ELF includes *compressor* and *decompressor* packages as well as *xorcompressor* and *xordecompressor* based on erasure
+design.
+
+####compressor packages
+
+
 
 ## TEST ELF
 
-
 ***
+
 We recommend IntelliJ IDEA for developing projects.
 
 ### Prerequisites for testing
@@ -49,15 +74,26 @@ Click *JDK* to select the address where you want to download jdk-8
 Select the *org/urbcomp/startdb/compress/elf* package in the *test* folder, which includes tests for 64bits Double data
 and 32bits Float data
 
-####Double data test:
-In *doubleprecision* package
-- The **TestCompressor** class includes compression tests for 22 data sets. The test results are saved in *result/result.csv* in
-  resource.
-- The **TestBeta** class is a compression test for different beta of data. Two data sets with long mantissa are selected and
-  different bits are reserved for compression test. The test results are saved in *result/resultBeta.csv* in resource.
+#### Double data test:
 
-####Float data test:
-In *singleprecision* package
-- The **TestCompressor** class includes compression tests for 22 data sets. The test results are saved in *result32/result.csv* in
+In *doubleprecision* package
+
+- The **TestCompressor** class includes compression tests for 22 data sets. The test results are saved in *
+  result/result.csv* in resource.
+- The **TestBeta** class is a compression test for different beta of data. Two data sets with long mantissa are selected
+  and different bits are reserved for compression test. The test results are saved in *result/resultBeta.csv* in
   resource.
+
+#### Float data test:
+
+In *singleprecision* package
+
+- The **TestCompressor** class includes compression tests for 22 data sets. The test results are saved in *
+  result32/result.csv* in resource.
+
 ***
+
+## References
+
+[1] Tuomas Pelkonen, Scott Franklin, Justin Teller, Paul Cavallaro, Qi Huang, Justin Meza, and Kaushik Veeraraghavan.2015. Gorilla: A fast, scalable, in-memory time series database. Proceedings of the VLDB Endowment 8, 12 (2015),1816–1827.
+[2]
