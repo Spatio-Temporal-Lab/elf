@@ -7,8 +7,6 @@ Developers can follow the steps below for compression testing.
 
 ## Elf feature
 
-***
-
 - Elf can greatly increase the number of trailing zeros in XORed results, which enhances the compression ratio with a
   theoretical guarantee
 - Elf algorithm takes only O (1) in both time complexity and space complexity.
@@ -17,7 +15,6 @@ Developers can follow the steps below for compression testing.
 
 ## Project Structure
 
-***
 This project mainly includes the following various compression algorithms:
 
 - The main code for the ***Elf*** algorithm is in the *org/urbcomp/startdb/compress/elf* package.
@@ -35,13 +32,31 @@ This project mainly includes the following various compression algorithms:
 ELF includes *compressor* and *decompressor* packages as well as *xorcompressor* and *xordecompressor* based on erasure
 design.
 
-####compressor packages
+#### compressor package
 
+This package includes 7 different XOR-based compression algorithms and gives a standard **ICompressor** interface. The
+erase operation is abstracted as an **AbstractElfCompressor**.
+- ElfCompressor: This class is the complete elf compression algorithm.
+- ElfOnChimpCompressor: This class is pre-processed for erasure and then compressed using the Chimp algorithm.
+- ElfOnChimpNCompressor: This class is pre-processed for erasure and then compressed using the Chimp128 algorithm.
+- ElfOnGorillaCompressorOS: This class is pre-processed for erasure and then compressed using the Gorilla algorithm.
+- GorillaCompressorOS: This class is the Gorilla algorithm using Bitstream I/O optimization.
+- ChimpCompressor: This class is the original chimp algorithm.
+- ChimpNCompressor: This class is the original chimp128 algorithm.
 
+#### decompressor package
+
+This package includes the decompressors corresponding to the above 7 compressors and gives the standard **IDecompressor** interface
+
+#### xorcompressor package
+
+This package is a compressed encoding of post-erase data designed for XOR-based operations
+
+#### dexorcompressor package
+
+This package is a decompression of the erased data designed based on the XOR-based operation code.
 
 ## TEST ELF
-
-***
 
 We recommend IntelliJ IDEA for developing projects.
 
@@ -78,8 +93,7 @@ and 32bits Float data
 
 In *doubleprecision* package
 
-- The **TestCompressor** class includes compression tests for 22 data sets. The test results are saved in *
-  result/result.csv* in resource.
+- The **TestCompressor** class includes compression tests for 22 data sets. The test results are saved in *result/result.csv* in resource.
 - The **TestBeta** class is a compression test for different beta of data. Two data sets with long mantissa are selected
   and different bits are reserved for compression test. The test results are saved in *result/resultBeta.csv* in
   resource.
@@ -91,9 +105,3 @@ In *singleprecision* package
 - The **TestCompressor** class includes compression tests for 22 data sets. The test results are saved in *
   result32/result.csv* in resource.
 
-***
-
-## References
-
-[1] Tuomas Pelkonen, Scott Franklin, Justin Teller, Paul Cavallaro, Qi Huang, Justin Meza, and Kaushik Veeraraghavan.2015. Gorilla: A fast, scalable, in-memory time series database. Proceedings of the VLDB Endowment 8, 12 (2015),1816–1827.
-[2]
