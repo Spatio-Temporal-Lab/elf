@@ -19,7 +19,7 @@ public class Elf64Utils {
     private final static double LOG_2_10 = Math.log(10) / Math.log(2);
 
     public static int getFAlpha(int alpha) {
-        if (alpha <= 0) {
+        if (alpha < 0) {
             throw new IllegalArgumentException("The argument should be greater than 0");
         }
         if (alpha >= f.length) {
@@ -29,14 +29,14 @@ public class Elf64Utils {
         }
     }
 
-    public static int[] getAlphaAndBetaStar(double v) {
+    public static int[] getAlphaAndBetaStar(double v, int lastBetaStar) {
         if (v < 0) {
             v = -v;
         }
         int[] alphaAndBetaStar = new int[2];
         double log10v = Math.log10(v);
         int sp = (int) Math.floor(log10v);
-        int beta = getSignificantCount(v, sp);
+        int beta = getSignificantCount(v, sp, lastBetaStar);
         alphaAndBetaStar[0] = beta - sp - 1;
         alphaAndBetaStar[1] = (v < 1 && sp == log10v) ? 0 : beta;
         return alphaAndBetaStar;
@@ -51,29 +51,49 @@ public class Elf64Utils {
         }
     }
 
-    private static int getSignificantCount(double v, int sp) {
+    private static int getSignificantCount(double v, int sp, int lastBetaStar) {
+        // when v itself is a number without any decimal part
+        if((long) v == v){
+            return sp + 1;
+        }
         int i;
         if(sp >= 0) {
-            i = 1;
+            if(lastBetaStar != Integer.MAX_VALUE && lastBetaStar != 0) {
+                i = Math.max(lastBetaStar - sp - 1, 1);
+            } else {
+                i = 1;
+            }
         } else {
-            i = -sp;
+            if(lastBetaStar != Integer.MAX_VALUE && lastBetaStar != 0) {
+                i = lastBetaStar - sp - 1;
+            } else {
+                i = -sp;
+            }
         }
+
         double temp = v * get10iP(i);
-        while ((long) temp != temp) {
+        long tempLong = (long) temp;
+        while (tempLong != temp) {
             i++;
             temp = v * get10iP(i);
+            tempLong = (long) temp;
         }
+
         // There are some bugs for those with high significand, i.e., 0.23911204406033099
         // So we should further check
         if (temp / get10iP(i) != v) {
             return 17;
         } else {
+            while (tempLong % 10 == 0) {
+                i--;
+                tempLong = tempLong / 10;
+            }
             return sp + i + 1;
         }
     }
 
     private static double get10iP(int i) {
-        if (i <= 0) {
+        if (i < 0) {
             throw new IllegalArgumentException("The argument should be greater than 0");
         }
         if (i >= map10iP.length) {
@@ -84,7 +104,7 @@ public class Elf64Utils {
     }
 
     public static double get10iN(int i) {
-        if (i <= 0) {
+        if (i < 0) {
             throw new IllegalArgumentException("The argument should be greater than 0");
         }
         if (i >= map10iN.length) {
