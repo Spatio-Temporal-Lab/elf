@@ -14,6 +14,8 @@ public abstract class AbstractElfDecompressor implements IDecompressor {
                                     1.0E8, 1.0E9, 1.0E10, 1.0E11, 1.0E12, 1.0E13, 1.0E14,
                                     1.0E15, 1.0E16, 1.0E17, 1.0E18, 1.0E19, 1.0E20};
 
+    private int lastBetaStar = Integer.MAX_VALUE;
+
     public List<Double> decompress() {
         List<Double> values = new ArrayList<>(1024);
         Double value;
@@ -24,24 +26,31 @@ public abstract class AbstractElfDecompressor implements IDecompressor {
     }
 
     private Double nextValue() {
-        int flag = readInt(1);
-
         Double v;
-        if (flag == 0) {
-            v = xorDecompress();
+
+        if(readInt(1) == 0) {
+            v = recoverVByBetaStar();               // case 0
+        } else if (readInt(1) == 0) {
+            v = xorDecompress();                    // case 10
         } else {
-            int betaStar = readInt(4);
-            Double vPrime = xorDecompress();
-            int sp = (int) Math.floor(Math.log10(Math.abs(vPrime)));
-            if (betaStar == 0) {
-                v = get10iN(-sp - 1);
-                if (vPrime < 0) {
-                    v = -v;
-                }
-            } else {
-                int alpha = betaStar - sp - 1;
-                v = roundUp(vPrime, alpha);
+            lastBetaStar = readInt(4);          // case 11
+            v = recoverVByBetaStar();
+        }
+        return v;
+    }
+
+    private Double recoverVByBetaStar() {
+        double v;
+        Double vPrime = xorDecompress();
+        int sp = (int) Math.floor(Math.log10(Math.abs(vPrime)));
+        if (lastBetaStar == 0) {
+            v = get10iN(-sp - 1);
+            if (vPrime < 0) {
+                v = -v;
             }
+        } else {
+            int alpha = lastBetaStar - sp - 1;
+            v = roundUp(vPrime, alpha);
         }
         return v;
     }
