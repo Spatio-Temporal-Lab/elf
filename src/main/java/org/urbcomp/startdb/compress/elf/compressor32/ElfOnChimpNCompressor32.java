@@ -5,10 +5,9 @@ import gr.aueb.delorean.chimp.OutputBitStream;
 
 public class ElfOnChimpNCompressor32 extends AbstractElfCompressor32{
     private final ChimpN32 chimpN32;
-    private final int previousValues;
+
     public ElfOnChimpNCompressor32(int previousValues) {
         chimpN32 = new ChimpN32(previousValues);
-        this.previousValues = previousValues;
     }
     @Override protected int writeInt(int n, int len) {
         OutputBitStream os = chimpN32.getOutputStream();

@@ -5,11 +5,9 @@ import gr.aueb.delorean.chimp.ChimpN32;
 public class ChimpNCompressor32 implements ICompressor32 {
 
     private final ChimpN32 chimpN32;
-    private final int previousValues;
 
     public ChimpNCompressor32(int previousValues) {
         chimpN32 = new ChimpN32(previousValues);
-        this.previousValues = previousValues;
     }
 
     @Override
