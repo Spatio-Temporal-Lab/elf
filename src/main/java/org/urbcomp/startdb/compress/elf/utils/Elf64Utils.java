@@ -52,23 +52,13 @@ public class Elf64Utils {
     }
 
     private static int getSignificantCount(double v, int sp, int lastBetaStar) {
-        // when v itself is a number without any decimal part
-        if((long) v == v){
-            return sp + 1;
-        }
         int i;
-        if(sp >= 0) {
-            if(lastBetaStar != Integer.MAX_VALUE && lastBetaStar != 0) {
-                i = Math.max(lastBetaStar - sp - 1, 1);
-            } else {
-                i = 1;
-            }
+        if(lastBetaStar != Integer.MAX_VALUE && lastBetaStar != 0) {
+            i = Math.max(lastBetaStar - sp - 1, 1);
+        } else if (sp >= 0) {
+            i = 1;
         } else {
-            if(lastBetaStar != Integer.MAX_VALUE && lastBetaStar != 0) {
-                i = lastBetaStar - sp - 1;
-            } else {
-                i = -sp;
-            }
+            i = -sp;
         }
 
         double temp = v * get10iP(i);
@@ -84,7 +74,7 @@ public class Elf64Utils {
         if (temp / get10iP(i) != v) {
             return 17;
         } else {
-            while (tempLong % 10 == 0) {
+            while (i > 0 && tempLong % 10 == 0) {
                 i--;
                 tempLong = tempLong / 10;
             }
