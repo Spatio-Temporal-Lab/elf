@@ -135,19 +135,19 @@ public class ResultStructure {
         this.decompressionTime = decompressionTime;
     }
 
-    public static String getHead(){
+    public static String getHead() {
         return "FileName\t" +
-                        "CompressorName\t" +
-                        "CompressorRatio\t" +
-                        "CompressionTime\t" +
-                        "MaxCompressTime\t" +
-                        "MinCompressTime\t" +
-                        "MediaCompressTime\t" +
-                        "DecompressionTime\t" +
-                        "MaxDecompressTime\t" +
-                        "MinDecompressTime\t" +
-                        "MediaDecompressTime\t" +
-                        '\n';
+                "CompressorName\t" +
+                "CompressorRatio\t" +
+                "CompressionTime\t" +
+                "MaxCompressTime\t" +
+                "MinCompressTime\t" +
+                "MediaCompressTime\t" +
+                "DecompressionTime\t" +
+                "MaxDecompressTime\t" +
+                "MinDecompressTime\t" +
+                "MediaDecompressTime\t" +
+                '\n';
     }
     @Override
     public String toString() {
@@ -188,8 +188,8 @@ public class ResultStructure {
         int num = ld.size();
         double max = 0;
         for (Double aDouble : ld) {
-            if(aDouble>max){
-                max=aDouble;
+            if (aDouble > max) {
+                max = aDouble;
             }
         }
         return max;
@@ -198,8 +198,8 @@ public class ResultStructure {
     public double minValue(List<Double> ld) {
         double min = DoubleConsts.MAX_VALUE;
         for (Double aDouble : ld) {
-            if(aDouble<min){
-                min=aDouble;
+            if (aDouble < min) {
+                min = aDouble;
             }
         }
         return min;
