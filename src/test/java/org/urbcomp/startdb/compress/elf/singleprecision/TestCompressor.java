@@ -72,6 +72,10 @@ public class TestCompressor {
                 r.put(kv.getKey(), computeAvg(kv.getValue()));
                 allResult.add(r);
             }
+            if (result.isEmpty()) {
+                System.out.println("The result of the file " + filename +
+                        " is empty because the amount of data is less than one block, and the default is at least 1000.");
+            }
         }
         storeResult(STORE_PATH + "/result.csv");
     }
@@ -205,16 +209,18 @@ public class TestCompressor {
             totalCompressionTime.add(encodingDuration / TIME_PRECISION);
             totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
         }
-        String key = "Snappy32";
-        ResultStructure r = new ResultStructure(fileName, key,
-                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
-                totalCompressionTime,
-                totalDecompressionTime
-        );
-        if (!resultCompressor.containsKey(key)) {
-            resultCompressor.put(key, new ArrayList<>());
+        if (!totalCompressionTime.isEmpty()) {
+            String key = "Snappy32";
+            ResultStructure r = new ResultStructure(fileName, key,
+                    totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
+                    totalCompressionTime,
+                    totalDecompressionTime
+            );
+            if (!resultCompressor.containsKey(key)) {
+                resultCompressor.put(key, new ArrayList<>());
+            }
+            resultCompressor.get(key).add(r);
         }
-        resultCompressor.get(key).add(r);
     }
 
     public void testZstd32(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
@@ -268,16 +274,18 @@ public class TestCompressor {
             totalCompressionTime.add(encodingDuration / TIME_PRECISION);
             totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
         }
-        String key = "Zstd32";
-        ResultStructure r = new ResultStructure(fileName, key,
-                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
-                totalCompressionTime,
-                totalDecompressionTime
-        );
-        if (!resultCompressor.containsKey(key)) {
-            resultCompressor.put(key, new ArrayList<>());
+        if (!totalCompressionTime.isEmpty()) {
+            String key = "Zstd32";
+            ResultStructure r = new ResultStructure(fileName, key,
+                    totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
+                    totalCompressionTime,
+                    totalDecompressionTime
+            );
+            if (!resultCompressor.containsKey(key)) {
+                resultCompressor.put(key, new ArrayList<>());
+            }
+            resultCompressor.get(key).add(r);
         }
-        resultCompressor.get(key).add(r);
     }
 
     public void testLZ432(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
@@ -326,16 +334,18 @@ public class TestCompressor {
             totalCompressionTime.add(encodingDuration / TIME_PRECISION);
             totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
         }
-        String key = "LZ432";
-        ResultStructure r = new ResultStructure(fileName, key,
-                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
-                totalCompressionTime,
-                totalDecompressionTime
-        );
-        if (!resultCompressor.containsKey(key)) {
-            resultCompressor.put(key, new ArrayList<>());
+        if (!totalCompressionTime.isEmpty()) {
+            String key = "LZ432";
+            ResultStructure r = new ResultStructure(fileName, key,
+                    totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
+                    totalCompressionTime,
+                    totalDecompressionTime
+            );
+            if (!resultCompressor.containsKey(key)) {
+                resultCompressor.put(key, new ArrayList<>());
+            }
+            resultCompressor.get(key).add(r);
         }
-        resultCompressor.get(key).add(r);
     }
 
     public void testBrotli32(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
@@ -384,16 +394,18 @@ public class TestCompressor {
             totalCompressionTime.add(encodingDuration / TIME_PRECISION);
             totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
         }
-        String key = "Brotli32";
-        ResultStructure r = new ResultStructure(fileName, key,
-                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
-                totalCompressionTime,
-                totalDecompressionTime
-        );
-        if (!resultCompressor.containsKey(key)) {
-            resultCompressor.put(key, new ArrayList<>());
+        if (!totalCompressionTime.isEmpty()) {
+            String key = "Brotli32";
+            ResultStructure r = new ResultStructure(fileName, key,
+                    totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
+                    totalCompressionTime,
+                    totalDecompressionTime
+            );
+            if (!resultCompressor.containsKey(key)) {
+                resultCompressor.put(key, new ArrayList<>());
+            }
+            resultCompressor.get(key).add(r);
         }
-        resultCompressor.get(key).add(r);
     }
 
     public void testXz32(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
@@ -447,16 +459,18 @@ public class TestCompressor {
             totalCompressionTime.add(encodingDuration / TIME_PRECISION);
             totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
         }
-        String key = "Xz32";
-        ResultStructure r = new ResultStructure(fileName, key,
-                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
-                totalCompressionTime,
-                totalDecompressionTime
-        );
-        if (!resultCompressor.containsKey(key)) {
-            resultCompressor.put(key, new ArrayList<>());
+        if (!totalCompressionTime.isEmpty()) {
+            String key = "Xz32";
+            ResultStructure r = new ResultStructure(fileName, key,
+                    totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
+                    totalCompressionTime,
+                    totalDecompressionTime
+            );
+            if (!resultCompressor.containsKey(key)) {
+                resultCompressor.put(key, new ArrayList<>());
+            }
+            resultCompressor.get(key).add(r);
         }
-        resultCompressor.get(key).add(r);
     }
 
 

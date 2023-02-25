@@ -24,8 +24,8 @@ public class TestBeta {
     private static final String FILE_PATH = "src/test/resources/ElfTestData";
     private static final String[] FILENAMES = {
             "/init.csv",  //First run a dataset to ensure that the relevant hbase settings of the zstd and snappy compressors are ready
-            "/Air-sensor.csv",
 //            "/POI-lon.csv",
+            "/Air-sensor.csv",
     };
     private static final String STORE_PATH = "src/test/resources/result";
 
@@ -44,7 +44,13 @@ public class TestBeta {
                     r.put(kv.getKey(), computeAvg(kv.getValue()));
                     allResult.add(r);
                 }
+                if (result.isEmpty()) {
+                    System.out.println("The result of the file " + filename +
+                            " is empty because the amount of data is less than one block, and the default is at least 1000.");
+                    break;
+                }
             }
+
         }
         storeResult(STORE_PATH + "/resultBeta.csv");
     }
@@ -182,16 +188,18 @@ public class TestBeta {
             totalCompressionTime.add(encodingDuration / TIME_PRECISION);
             totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
         }
-        String key = "Snappy";
-        ResultStructure r = new ResultStructure(fileName + " " + beta, key,
-                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
-                totalCompressionTime,
-                totalDecompressionTime
-        );
-        if (!resultCompressor.containsKey(key)) {
-            resultCompressor.put(key, new ArrayList<>());
+        if (!totalCompressionTime.isEmpty()) {
+            String key = "Snappy";
+            ResultStructure r = new ResultStructure(fileName + " " + beta, key,
+                    totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                    totalCompressionTime,
+                    totalDecompressionTime
+            );
+            if (!resultCompressor.containsKey(key)) {
+                resultCompressor.put(key, new ArrayList<>());
+            }
+            resultCompressor.get(key).add(r);
         }
-        resultCompressor.get(key).add(r);
     }
 
     public ResultStructure computeAvg(List<ResultStructure> lr) {

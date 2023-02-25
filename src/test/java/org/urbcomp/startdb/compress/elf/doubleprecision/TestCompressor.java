@@ -71,6 +71,10 @@ public class TestCompressor {
                 r.put(kv.getKey(), computeAvg(kv.getValue()));
                 allResult.add(r);
             }
+            if (result.isEmpty()) {
+                System.out.println("The result of the file " + filename +
+                        " is empty because the amount of data is less than one block, and the default is at least 1000.");
+            }
         }
         storeResult(STORE_PATH + "/result.csv");
     }
@@ -85,7 +89,6 @@ public class TestCompressor {
         HashMap<String, List<Double>> totalCompressionTime = new HashMap<>();
         HashMap<String, List<Double>> totalDecompressionTime = new HashMap<>();
         HashMap<String, Long> key2TotalSize = new HashMap<>();
-        
         while ((values = fileReader.nextBlock()) != null) {
             totalBlocks += 1;
             ICompressor[] compressors = new ICompressor[]{
@@ -129,7 +132,6 @@ public class TestCompressor {
                 for (int j = 0; j < values.length; j++) {
                     assertEquals(values[j], uncompressedValues.get(j), "Value did not match" + compressor.getKey());
                 }
-                
                 String key = compressor.getKey();
                 if (!totalCompressionTime.containsKey(key)) {
                     totalCompressionTime.put(key, new ArrayList<>());
@@ -142,13 +144,13 @@ public class TestCompressor {
             }
         }
 
-        for (Map.Entry<String, Long> kv: key2TotalSize.entrySet()) {
+        for (Map.Entry<String, Long> kv : key2TotalSize.entrySet()) {
             String key = kv.getKey();
             Long totalSize = kv.getValue();
             ResultStructure r = new ResultStructure(fileName, key,
-                            totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
-                            totalCompressionTime.get(key),
-                            totalDecompressionTime.get(key)
+                    totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                    totalCompressionTime.get(key),
+                    totalDecompressionTime.get(key)
             );
             if (!resultCompressor.containsKey(key)) {
                 resultCompressor.put(key, new ArrayList<>());
@@ -191,16 +193,18 @@ public class TestCompressor {
             totalCompressionTime.add(encodingDuration / TIME_PRECISION);
             totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
         }
-        String key = "FPC";
-        ResultStructure r = new ResultStructure(fileName, key,
-                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
-                totalCompressionTime,
-                totalDecompressionTime
-        );
-        if (!resultCompressor.containsKey(key)) {
-            resultCompressor.put(key, new ArrayList<>());
+        if (!totalCompressionTime.isEmpty()) {
+            String key = "FPC";
+            ResultStructure r = new ResultStructure(fileName, key,
+                    totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                    totalCompressionTime,
+                    totalDecompressionTime
+            );
+            if (!resultCompressor.containsKey(key)) {
+                resultCompressor.put(key, new ArrayList<>());
+            }
+            resultCompressor.get(key).add(r);
         }
-        resultCompressor.get(key).add(r);
     }
 
     public void testSnappy(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
@@ -254,16 +258,18 @@ public class TestCompressor {
             totalCompressionTime.add(encodingDuration / TIME_PRECISION);
             totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
         }
-        String key = "Snappy";
-        ResultStructure r = new ResultStructure(fileName, key,
-                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
-                totalCompressionTime,
-                totalDecompressionTime
-        );
-        if (!resultCompressor.containsKey(key)) {
-            resultCompressor.put(key, new ArrayList<>());
+        if (!totalCompressionTime.isEmpty()) {
+            String key = "Snappy";
+            ResultStructure r = new ResultStructure(fileName, key,
+                    totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                    totalCompressionTime,
+                    totalDecompressionTime
+            );
+            if (!resultCompressor.containsKey(key)) {
+                resultCompressor.put(key, new ArrayList<>());
+            }
+            resultCompressor.get(key).add(r);
         }
-        resultCompressor.get(key).add(r);
     }
 
     public void testZstd(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
@@ -317,16 +323,18 @@ public class TestCompressor {
             totalCompressionTime.add(encodingDuration / TIME_PRECISION);
             totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
         }
-        String key = "Zstd";
-        ResultStructure r = new ResultStructure(fileName, key,
-                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
-                totalCompressionTime,
-                totalDecompressionTime
-        );
-        if (!resultCompressor.containsKey(key)) {
-            resultCompressor.put(key, new ArrayList<>());
+        if (!totalCompressionTime.isEmpty()) {
+            String key = "Zstd";
+            ResultStructure r = new ResultStructure(fileName, key,
+                    totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                    totalCompressionTime,
+                    totalDecompressionTime
+            );
+            if (!resultCompressor.containsKey(key)) {
+                resultCompressor.put(key, new ArrayList<>());
+            }
+            resultCompressor.get(key).add(r);
         }
-        resultCompressor.get(key).add(r);
     }
 
     public void testLZ4(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
@@ -375,16 +383,18 @@ public class TestCompressor {
             totalCompressionTime.add(encodingDuration / TIME_PRECISION);
             totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
         }
-        String key = "LZ4";
-        ResultStructure r = new ResultStructure(fileName, key,
-                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
-                totalCompressionTime,
-                totalDecompressionTime
-        );
-        if (!resultCompressor.containsKey(key)) {
-            resultCompressor.put(key, new ArrayList<>());
+        if (!totalCompressionTime.isEmpty()) {
+            String key = "LZ4";
+            ResultStructure r = new ResultStructure(fileName, key,
+                    totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                    totalCompressionTime,
+                    totalDecompressionTime
+            );
+            if (!resultCompressor.containsKey(key)) {
+                resultCompressor.put(key, new ArrayList<>());
+            }
+            resultCompressor.get(key).add(r);
         }
-        resultCompressor.get(key).add(r);
     }
 
     public void testBrotli(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
@@ -433,16 +443,18 @@ public class TestCompressor {
             totalCompressionTime.add(encodingDuration / TIME_PRECISION);
             totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
         }
-        String key = "Brotli";
-        ResultStructure r = new ResultStructure(fileName, key,
-                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
-                totalCompressionTime,
-                totalDecompressionTime
-        );
-        if (!resultCompressor.containsKey(key)) {
-            resultCompressor.put(key, new ArrayList<>());
+        if (!totalCompressionTime.isEmpty()) {
+            String key = "Brotli";
+            ResultStructure r = new ResultStructure(fileName, key,
+                    totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                    totalCompressionTime,
+                    totalDecompressionTime
+            );
+            if (!resultCompressor.containsKey(key)) {
+                resultCompressor.put(key, new ArrayList<>());
+            }
+            resultCompressor.get(key).add(r);
         }
-        resultCompressor.get(key).add(r);
     }
 
     public void testXz(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
@@ -496,16 +508,18 @@ public class TestCompressor {
             totalCompressionTime.add(encodingDuration / TIME_PRECISION);
             totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
         }
-        String key = "Xz";
-        ResultStructure r = new ResultStructure(fileName, key,
-                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
-                totalCompressionTime,
-                totalDecompressionTime
-        );
-        if (!resultCompressor.containsKey(key)) {
-            resultCompressor.put(key, new ArrayList<>());
+        if (!totalCompressionTime.isEmpty()) {
+            String key = "Xz";
+            ResultStructure r = new ResultStructure(fileName, key,
+                    totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                    totalCompressionTime,
+                    totalDecompressionTime
+            );
+            if (!resultCompressor.containsKey(key)) {
+                resultCompressor.put(key, new ArrayList<>());
+            }
+            resultCompressor.get(key).add(r);
         }
-        resultCompressor.get(key).add(r);
     }
 
     public void storeResult(String filePath) throws IOException {
