@@ -36,6 +36,7 @@ design.
 
 This package includes 7 different XOR-based compression algorithms and gives a standard **ICompressor** interface. The
 erase operation is abstracted as an **AbstractElfCompressor**.
+
 - ElfCompressor: This class is the complete elf compression algorithm.
 - ElfOnChimpCompressor: This class is pre-processed for erasure and then compressed using the Chimp algorithm.
 - ElfOnChimpNCompressor: This class is pre-processed for erasure and then compressed using the Chimp128 algorithm.
@@ -58,7 +59,9 @@ This package is a decompression of the erased data designed based on the XOR-bas
 
 ## TEST ELF
 
-We recommend IntelliJ IDEA for developing projects.
+We recommend IntelliJ IDEA for developing projects.In our experiment, the default data block size is 1000, that is, 1000
+pieces of data are read in each time for compression testing. If the size of the data set is less than 1000, there is no
+way to read it. The final experimental result is an average calculation of the compression of all data blocks.
 
 ### Prerequisites for testing
 
@@ -67,8 +70,10 @@ The following resources need to be downloaded and installed:
 - Java 8 download: https://www.oracle.com/java/technologies/downloads/#java8
 - IntelliJ IDEA download: https://www.jetbrains.com/idea/
 - git download:https://git-scm.com/download
+- maven download: https://archive.apache.org/dist/maven/maven-3/
 
-Download and install jdk-8, IntelliJ IDEA and git.
+Download and install jdk-8, IntelliJ IDEA and git. IntelliJ IDEA's maven project comes with maven, you can also use your
+own maven environment, just change it in the settings.
 
 ### Clone code
 
@@ -87,7 +92,7 @@ Click *JDK* to select the address where you want to download jdk-8
 ### Test ELF
 
 Select the *org/urbcomp/startdb/compress/elf* package in the *test* folder, which includes tests for 64bits Double data
-and 32bits Float data
+and 32bits Float data.
 
 #### Double data test:
 
@@ -102,6 +107,18 @@ In *doubleprecision* package
 
 In *singleprecision* package
 
-- The **TestCompressor** class includes compression tests for 22 data sets. The test results are saved in *
-  result32/result.csv* in resource.
+- The **TestCompressor** class includes compression tests for 22 data sets. The test results are saved in *result32/result.csv* in resource.
+
+### Use your own artifacts
+
+In order to use Elf more conveniently, you must want to use your own data for testing, you can follow the steps below to
+use your own data set for testing.
+
+When you have a dataset of type double, for example in a csv file. If the form of the data is the same as the data set
+given in the system, you can put your own dataset in the ***resources*** package, and then add the name of your own
+dataset in ***FIleName*** in the ***TestCompressor*** class.
+
+In our experiment, the default data block size is 1000, that is, 1000 pieces of data are read in each time for
+compression testing, and the part of the data set smaller than 1000 cannot be read.If the data set is too small, the
+result may be empty.
 
