@@ -56,11 +56,11 @@ public class TestCompressor {
         for (String filename : FILENAMES) {
             Map<String, List<ResultStructure>> result = new HashMap<>();
             testELFCompressor32(filename, result);
-//            testSnappy32(filename, result);
-//            testZstd32(filename, result);
-//            testLZ432(filename, result);
-//            testBrotli32(filename, result);
-//            testXz32(filename, result);
+            testSnappy32(filename, result);
+            testZstd32(filename, result);
+            testLZ432(filename, result);
+            testBrotli32(filename, result);
+            testXz32(filename, result);
             for (Map.Entry<String, List<ResultStructure>> kv : result.entrySet()) {
                 Map<String, ResultStructure> r = new HashMap<>();
                 r.put(kv.getKey(), computeAvg(kv.getValue()));
@@ -87,11 +87,11 @@ public class TestCompressor {
             totalBlocks += 1;
             ICompressor32[] compressors = new ICompressor32[]{
                 new GorillaCompressor32OS(),
-//                new ElfOnGorillaCompressor32OS(),
-//                new ChimpCompressor32(),
-//                new ElfOnChimpCompressor32(),
+                new ElfOnGorillaCompressor32OS(),
+                new ChimpCompressor32(),
+                new ElfOnChimpCompressor32(),
                 new ChimpNCompressor32(64),
-//                new ElfOnChimpNCompressor32(64),
+                new ElfOnChimpNCompressor32(64),
                 new ElfCompressor32(),
             };
             for (int i = 0; i < compressors.length; i++) {
@@ -109,11 +109,11 @@ public class TestCompressor {
                 byte[] result = compressor.getBytes();
                 IDecompressor32[] decompressors = new IDecompressor32[]{
                     new GorillaDecompressor32OS(result),
-//                    new ElfOnGorillaDecompressor32OS(result),
-//                    new ChimpDecompressor32(result),
-//                    new ElfOnChimpDecompressor32(result),
+                    new ElfOnGorillaDecompressor32OS(result),
+                    new ChimpDecompressor32(result),
+                    new ElfOnChimpDecompressor32(result),
                     new ChimpNDecompressor32(result, 64),
-//                    new ElfOnChimpNDecompressor32(result, 64),
+                    new ElfOnChimpNDecompressor32(result, 64),
                     new ElfDecompressor32(result)
                 };
 
