@@ -7,7 +7,7 @@ Developers can follow the steps below for compression testing.
 
 More details can be found in http://start-db.urbcomp.org/elf/
 
-(Please switch to the branch of ***vldb-2023*** to test the performance of VLDB paper. For the ***dev*** branch, we will optimize the algorithm constantly; thus, some logics may be not the same with those described in the VLDB paper. But the ***dev*** branch will perform much better in terms of compression ratio and compression time.)
+(Please switch to the branch of ***vldb2023-release*** to test the performance of VLDB paper. For the ***dev*** branch, we will optimize the algorithm constantly; thus, some logics may be not the same with those described in the VLDB paper. But the ***dev*** branch will perform much better in terms of compression ratio and compression time.)
 
 ## Elf feature
 
