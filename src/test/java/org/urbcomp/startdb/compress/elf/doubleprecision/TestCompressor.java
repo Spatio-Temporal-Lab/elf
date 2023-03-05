@@ -133,7 +133,7 @@ public class TestCompressor {
                 for (int j = 0; j < values.length; j++) {
                     assertEquals(values[j], uncompressedValues.get(j), "Value did not match" + compressor.getKey());
                 }
-                
+
                 String key = compressor.getKey();
                 if (!totalCompressionTime.containsKey(key)) {
                     totalCompressionTime.put(key, new ArrayList<>());
