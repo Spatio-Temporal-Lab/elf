@@ -1,17 +1,21 @@
 # Elf: Erasing-based Lossless Floating-Point Compression
 
 ***
-elf is an erasure-based floating-point data compression algorithm with a high compression ratio.
+Elf is an erasing-based floating-point data compression algorithm with a high compression ratio.
 
 Developers can follow the steps below for compression testing.
+
+More details can be found in http://start-db.urbcomp.org/elf/
+
+(Please switch to the branch of ***vldb-2023*** to test the performance of VLDB paper. For the ***dev*** branch, we will optimize the algorithm constantly; thus, some logics may be not the same with those described in the VLDB paper. But the ***dev*** branch will perform much better in terms of compression ratio and compression time.)
 
 ## Elf feature
 
 - Elf can greatly increase the number of trailing zeros in XORed results, which enhances the compression ratio with a
   theoretical guarantee
 - Elf algorithm takes only O (1) in both time complexity and space complexity.
-- ELf adopt unique coding method for the XORed results with many trailing zeros.
-- The erase operation in this project is used as a preprocessing step for all XOR-based compression algorithms.
+- Elf adopts an elaborated coding strategy for the XORed results with many trailing zeros.
+- The erasing operation in this project can be used as a preprocessing step for all XOR-based compression algorithms.
 
 ## Project Structure
 
@@ -29,13 +33,12 @@ This project mainly includes the following various compression algorithms:
 
 ### ELF Structure
 
-ELF includes *compressor* and *decompressor* packages as well as *xorcompressor* and *xordecompressor* based on erasure
-design.
+ELF includes *compressor* and *decompressor* packages as well as *xorcompressor* and *xordecompressor*.
 
 #### compressor package
 
-This package includes 7 different XOR-based compression algorithms and gives a standard **ICompressor** interface. The
-erase operation is abstracted as an **AbstractElfCompressor**.
+This package includes 7 different XOR-based compression algorithms and provides a standard **ICompressor** interface. The
+erasing operation is abstracted as **AbstractElfCompressor**.
 
 - ElfCompressor: This class is the complete elf compression algorithm.
 - ElfOnChimpCompressor: This class is pre-processed for erasure and then compressed using the Chimp algorithm.
@@ -59,9 +62,8 @@ This package is a decompression of the erased data designed based on the XOR-bas
 
 ## TEST ELF
 
-We recommend IntelliJ IDEA for developing projects.In our experiment, the default data block size is 1000, that is, 1000
-pieces of data are read in each time for compression testing. If the size of the data set is less than 1000, there is no
-way to read it. The final experimental result is an average calculation of the compression of all data blocks.
+We recommend IntelliJ IDEA for developing this project. In our experiment, the default data block size is 1000. That is, 1000
+pieces of data are read in each time for compression testing. If the size of the data set is less than 1000, we will not read it. The final experimental result is an average calculation of the compression of all data blocks.
 
 ### Prerequisites for testing
 
@@ -118,7 +120,7 @@ When you have a dataset of type double, for example in a csv file. If the form o
 given in the system, you can put your own dataset in the ***resources*** package, and then add the name of your own
 dataset in ***FIleName*** in the ***TestCompressor*** class.
 
-In our experiment, the default data block size is 1000, that is, 1000 pieces of data are read in each time for
-compression testing, and the part of the data set smaller than 1000 cannot be read.If the data set is too small, the
+In our experiment, the default data block size is 1000. That is, 1000 pieces of data are read in each time for
+compression testing, and the part of the data set smaller than 1000 cannot be read. If the data set is too small, the
 result may be empty.
 
