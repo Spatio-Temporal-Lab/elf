@@ -28,29 +28,29 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class TestCompressor {
     private static final String FILE_PATH = "src/test/resources/ElfTestData";
     private static final String[] FILENAMES = {
-            "/init.csv",    //First run a dataset to ensure that the relevant hbase settings of the zstd and snappy compressors are ready
-            "/Air-pressure.csv",
-            "/Air-sensor.csv",
-            "/Basel-temp.csv",
-            "/Basel-wind.csv",
-            "/Bird-migration.csv",
-            "/Bitcoin-price.csv",
-            "/Blockchain-tr.csv",
-            "/City-temp.csv",
-            "/City-lat.csv",
-            "/City-lon.csv",
-            "/Dew-point-temp.csv",
-            "/electric_vehicle_charging.csv",
-            "/Food-price.csv",
-            "/IR-bio-temp.csv",
-            "/PM10-dust.csv",
-            "/SSD-bench.csv",
-            "/POI-lat.csv",
-            "/POI-lon.csv",
-            "/Stocks-DE.csv",
-            "/Stocks-UK.csv",
-            "/Stocks-USA.csv",
-            "/Wind-Speed.csv",
+        "/init.csv",    //First run a dataset to ensure that the relevant hbase settings of the zstd and snappy compressors are ready
+        "/Air-pressure.csv",
+        "/Air-sensor.csv",
+        "/Basel-temp.csv",
+        "/Basel-wind.csv",
+        "/Bird-migration.csv",
+        "/Bitcoin-price.csv",
+        "/Blockchain-tr.csv",
+        "/City-temp.csv",
+        "/City-lat.csv",
+        "/City-lon.csv",
+        "/Dew-point-temp.csv",
+        "/electric_vehicle_charging.csv",
+        "/Food-price.csv",
+        "/IR-bio-temp.csv",
+        "/PM10-dust.csv",
+        "/SSD-bench.csv",
+        "/POI-lat.csv",
+        "/POI-lon.csv",
+        "/Stocks-DE.csv",
+        "/Stocks-UK.csv",
+        "/Stocks-USA.csv",
+        "/Wind-Speed.csv",
     };
     private static final String STORE_PATH = "src/test/resources/result32";
 
@@ -92,13 +92,13 @@ public class TestCompressor {
         while ((values = fileReader.nextBlock()) != null) {
             totalBlocks += 1;
             ICompressor32[] compressors = new ICompressor32[]{
-                    new GorillaCompressor32OS(),
-                    new ElfOnGorillaCompressor32OS(),
-                    new ChimpCompressor32(),
-                    new ElfOnChimpCompressor32(),
-                    new ChimpNCompressor32(64),
-                    new ElfOnChimpNCompressor32(64),
-                    new ElfCompressor32(),
+                new GorillaCompressor32OS(),
+                new ElfOnGorillaCompressor32OS(),
+                new ChimpCompressor32(),
+                new ElfOnChimpCompressor32(),
+                new ChimpNCompressor32(64),
+                new ElfOnChimpNCompressor32(64),
+                new ElfCompressor32(),
             };
             for (int i = 0; i < compressors.length; i++) {
                 double encodingDuration;
@@ -114,13 +114,13 @@ public class TestCompressor {
 
                 byte[] result = compressor.getBytes();
                 IDecompressor32[] decompressors = new IDecompressor32[]{
-                        new GorillaDecompressor32OS(result),
-                        new ElfOnGorillaDecompressor32OS(result),
-                        new ChimpDecompressor32(result),
-                        new ElfOnChimpDecompressor32(result),
-                        new ChimpNDecompressor32(result, 64),
-                        new ElfOnChimpNDecompressor32(result, 64),
-                        new ElfDecompressor32(result)
+                    new GorillaDecompressor32OS(result),
+                    new ElfOnGorillaDecompressor32OS(result),
+                    new ChimpDecompressor32(result),
+                    new ElfOnChimpDecompressor32(result),
+                    new ChimpNDecompressor32(result, 64),
+                    new ElfOnChimpNDecompressor32(result, 64),
+                    new ElfDecompressor32(result)
                 };
 
                 IDecompressor32 decompressor = decompressors[i];
@@ -147,9 +147,9 @@ public class TestCompressor {
             String key = kv.getKey();
             Long totalSize = kv.getValue();
             ResultStructure r = new ResultStructure(fileName, key,
-                            totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
-                            totalCompressionTime.get(key),
-                            totalDecompressionTime.get(key)
+                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
+                totalCompressionTime.get(key),
+                totalDecompressionTime.get(key)
             );
             if (!resultCompressor.containsKey(key)) {
                 resultCompressor.put(key, new ArrayList<>());
@@ -212,9 +212,9 @@ public class TestCompressor {
         if (!totalCompressionTime.isEmpty()) {
             String key = "Snappy32";
             ResultStructure r = new ResultStructure(fileName, key,
-                    totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
-                    totalCompressionTime,
-                    totalDecompressionTime
+                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
+                totalCompressionTime,
+                totalDecompressionTime
             );
             if (!resultCompressor.containsKey(key)) {
                 resultCompressor.put(key, new ArrayList<>());
@@ -277,9 +277,9 @@ public class TestCompressor {
         if (!totalCompressionTime.isEmpty()) {
             String key = "Zstd32";
             ResultStructure r = new ResultStructure(fileName, key,
-                    totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
-                    totalCompressionTime,
-                    totalDecompressionTime
+                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
+                totalCompressionTime,
+                totalDecompressionTime
             );
             if (!resultCompressor.containsKey(key)) {
                 resultCompressor.put(key, new ArrayList<>());
@@ -337,9 +337,9 @@ public class TestCompressor {
         if (!totalCompressionTime.isEmpty()) {
             String key = "LZ432";
             ResultStructure r = new ResultStructure(fileName, key,
-                    totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
-                    totalCompressionTime,
-                    totalDecompressionTime
+                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
+                totalCompressionTime,
+                totalDecompressionTime
             );
             if (!resultCompressor.containsKey(key)) {
                 resultCompressor.put(key, new ArrayList<>());
@@ -397,9 +397,9 @@ public class TestCompressor {
         if (!totalCompressionTime.isEmpty()) {
             String key = "Brotli32";
             ResultStructure r = new ResultStructure(fileName, key,
-                    totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
-                    totalCompressionTime,
-                    totalDecompressionTime
+                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
+                totalCompressionTime,
+                totalDecompressionTime
             );
             if (!resultCompressor.containsKey(key)) {
                 resultCompressor.put(key, new ArrayList<>());
@@ -462,9 +462,9 @@ public class TestCompressor {
         if (!totalCompressionTime.isEmpty()) {
             String key = "Xz32";
             ResultStructure r = new ResultStructure(fileName, key,
-                    totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
-                    totalCompressionTime,
-                    totalDecompressionTime
+                totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
+                totalCompressionTime,
+                totalDecompressionTime
             );
             if (!resultCompressor.containsKey(key)) {
                 resultCompressor.put(key, new ArrayList<>());
@@ -510,16 +510,16 @@ public class TestCompressor {
             mediaDecompressTime += resultStructure.getMediaDecompressTime();
         }
         return new ResultStructure(lr.get(0).getFilename(),
-                lr.get(0).getCompressorName(),
-                lr.get(0).getCompressorRatio(),
-                compressionTime / num,
-                maxCompressTime / num,
-                minCompressTime / num,
-                mediaCompressTime / num,
-                decompressionTime / num,
-                maxDecompressTime / num,
-                minDecompressTime / num,
-                mediaDecompressTime / num
+            lr.get(0).getCompressorName(),
+            lr.get(0).getCompressorRatio(),
+            compressionTime / num,
+            maxCompressTime / num,
+            minCompressTime / num,
+            mediaCompressTime / num,
+            decompressionTime / num,
+            maxDecompressTime / num,
+            minDecompressTime / num,
+            mediaDecompressTime / num
         );
     }
 
