@@ -25,7 +25,7 @@ public abstract class AbstractElfCompressor implements ICompressor {
             int eraseBits = 52 - gAlpha;
             long mask = 0xffffffffffffffffL << eraseBits;
             long delta = (~mask) & vLong;
-            if (alphaAndBetaStar[1] < 16 && delta != 0 && eraseBits > 4) {  // C2
+            if (delta != 0 && eraseBits > 4) {  // C2
                 if(alphaAndBetaStar[1] == lastBetaStar) {
                     size += writeBit(false);    // case 0
                 } else {
