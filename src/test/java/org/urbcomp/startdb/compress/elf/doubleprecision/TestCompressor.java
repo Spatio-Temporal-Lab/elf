@@ -97,7 +97,7 @@ public class TestCompressor {
 //                new ElfOnGorillaCompressorOS(),
 //                new ChimpCompressor(),
 //                new ElfOnChimpCompressor(),
-//                new ChimpNCompressor(128),
+                new ChimpNCompressor(128),
 //                new ElfOnChimpNCompressor(128),
                 new ElfCompressor(),
             };
@@ -119,7 +119,7 @@ public class TestCompressor {
 //                    new ElfOnGorillaDecompressorOS(result),
 //                    new ChimpDecompressor(result),
 //                    new ElfOnChimpDecompressor(result),
-//                    new ChimpNDecompressor(result, 128),
+                    new ChimpNDecompressor(result, 128),
 //                    new ElfOnChimpNDecompressor(result, 128),
                     new ElfDecompressor(result)
                 };
@@ -143,9 +143,6 @@ public class TestCompressor {
                 totalCompressionTime.get(key).add(encodingDuration / TIME_PRECISION);
                 totalDecompressionTime.get(key).add(decodingDuration / TIME_PRECISION);
                 key2TotalSize.put(key, compressor.getSize() + key2TotalSize.get(key));
-
-                ElfCompressor elf = (ElfCompressor)compressor;
-                System.out.println(fileName + " " + (elf.betaTime / elf.erasingCount) + " " + (elf.otherTime / elf.erasingCount));
             }
         }
 
