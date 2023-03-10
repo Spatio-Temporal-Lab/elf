@@ -29,17 +29,15 @@ public class Elf64Utils {
         }
     }
 
-    public static int[] getAlphaAndBetaStar(double v, int lastBetaStar) {
+    public static void calAlphaAndBetaStar(double v, int lastBetaStar, int[] alphaAndBetaStar) {
         if (v < 0) {
             v = -v;
         }
-        int[] alphaAndBetaStar = new int[2];
         double log10v = Math.log10(v);
         int sp = (int) Math.floor(log10v);
         int beta = getSignificantCount(v, sp, lastBetaStar);
         alphaAndBetaStar[0] = beta - sp - 1;
         alphaAndBetaStar[1] = (v < 1 && sp == log10v) ? 0 : beta;
-        return alphaAndBetaStar;
     }
 
     public static double roundUp(double v, int alpha) {
