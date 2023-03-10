@@ -29,7 +29,7 @@ public class ElfXORCompressor32 {
 
     public ElfXORCompressor32() {
         out = new OutputBitStream(
-                new byte[6000]);  // for elf, we need one more bit for each at the worst case
+                new byte[5000]);  // for elf, we need one more bit for each at the worst case
         size = 0;
     }
 
