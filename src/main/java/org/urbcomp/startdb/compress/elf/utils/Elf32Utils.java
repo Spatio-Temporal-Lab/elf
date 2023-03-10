@@ -22,6 +22,7 @@ public class Elf32Utils {
     private final static float[] mapSPLess1 =
                     new float[] {1, 0.1f, 0.01f, 0.001f, 0.0001f, 0.00001f, 0.000001f, 0.0000001f, 0.00000001f,
                                     0.000000001f, 0.0000000001f};
+
     private final static double LOG_2_10 = Math.log(10) / Math.log(2);
 
     public static int getFAlpha(int alpha) {
