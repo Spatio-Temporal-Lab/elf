@@ -20,7 +20,6 @@ public abstract class AbstractElfCompressor implements ICompressor {
         } else {
             // C1: v is a normal or subnormal
             int[] alphaAndBetaStar = Elf64Utils.getAlphaAndBetaStar(v, lastBetaStar);
-
             int e = ((int) (vLong >> 52)) & 0x7ff;
             int gAlpha = Elf64Utils.getFAlpha(alphaAndBetaStar[0]) + e - 1023;
             int eraseBits = 52 - gAlpha;
