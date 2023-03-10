@@ -69,10 +69,10 @@ public class Elf32Utils {
             tempInt = (int) temp;
         }
 
-        // There are some bugs for those with high significand, i.e., 0.23911204406033099
+        // There are some bugs for those with high significand, e.g., 0.23911204406033099
         // So we should further check
         if (temp / get10iP(i) != v) {
-            return 8;
+            return 7;
         } else {
             while (i > 0 && tempInt % 10 == 0) {
                 i--;
