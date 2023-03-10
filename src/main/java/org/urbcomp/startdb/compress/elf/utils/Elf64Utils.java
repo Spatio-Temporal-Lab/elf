@@ -37,10 +37,10 @@ public class Elf64Utils {
     }
 
     public static int[] getAlphaAndBetaStar(double v, int lastBetaStar) {
-        int[] alphaAndBetaStar = new int[2];
         if (v < 0) {
             v = -v;
         }
+        int[] alphaAndBetaStar = new int[2];
         int sp = getSP(v);
         int beta = getSignificantCount(v, sp, lastBetaStar);
         alphaAndBetaStar[0] = beta - sp - 1;
