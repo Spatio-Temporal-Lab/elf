@@ -16,6 +16,12 @@ public class Elf32Utils {
                                     1.0E-8f, 1.0E-9f, 1.0E-10f, 1.0E-11f, 1.0E-12f, 1.0E-13f, 1.0E-14f,
                                     1.0E-15f, 1.0E-16f, 1.0E-17f, 1.0E-18f, 1.0E-19f, 1.0E-20f};
 
+    private final static int[] mapSPGreater1 =
+                    new int[] {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000};
+
+    private final static float[] mapSPLess1 =
+                    new float[] {1, 0.1f, 0.01f, 0.001f, 0.0001f, 0.00001f, 0.000001f, 0.0000001f, 0.00000001f,
+                                    0.000000001f, 0.0000000001f};
     private final static double LOG_2_10 = Math.log(10) / Math.log(2);
 
     public static int getFAlpha(int alpha) {
@@ -34,11 +40,10 @@ public class Elf32Utils {
             v = -v;
         }
         int[] alphaAndBetaStar = new int[2];
-        float log10v = (float) Math.log10(v);
-        int sp = (int) Math.floor(log10v);
+        int sp = getSP(v);
         int beta = getSignificantCount(v, sp, lastBetaStar);
         alphaAndBetaStar[0] = beta - sp - 1;
-        alphaAndBetaStar[1] = (v < 1 && sp == log10v) ? 0 : beta;
+        alphaAndBetaStar[1] = is10iN(v) ? 0 : beta;
         return alphaAndBetaStar;
     }
 
@@ -101,6 +106,41 @@ public class Elf32Utils {
             return Float.parseFloat("1.0E-" + i);
         } else {
             return map10iN[i];
+        }
+    }
+
+    private static int getSP(double v) {
+        if (v >= 1) {
+            int i = 0;
+            while (i < mapSPGreater1.length - 1) {
+                if (v < mapSPGreater1[i + 1]) {
+                    return i;
+                }
+                i++;
+            }
+        } else {
+            int i = 1;
+            while (i < mapSPLess1.length) {
+                if (v >= mapSPLess1[i]) {
+                    return -i;
+                }
+                i++;
+            }
+        }
+        return (int) Math.floor(Math.log10(v));
+    }
+
+    private static boolean is10iN(double v) {
+        if(v >= 1) {
+            return false;
+        } else {
+            for (int i = 1; i < mapSPLess1.length; i++) {
+                if(mapSPLess1[i] == v) {
+                    return true;
+                }
+            }
+            double log10v = Math.log10(v);
+            return log10v == (long)log10v;
         }
     }
 }
