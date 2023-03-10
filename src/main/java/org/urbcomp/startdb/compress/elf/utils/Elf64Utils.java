@@ -36,7 +36,8 @@ public class Elf64Utils {
         }
     }
 
-    public static void calAlphaAndBetaStar(double v, int lastBetaStar, int[] alphaAndBetaStar) {
+    public static int[] getAlphaAndBetaStar(double v, int lastBetaStar) {
+        int[] alphaAndBetaStar = new int[2];
         if (v < 0) {
             v = -v;
         }
@@ -44,6 +45,7 @@ public class Elf64Utils {
         int beta = getSignificantCount(v, sp, lastBetaStar);
         alphaAndBetaStar[0] = beta - sp - 1;
         alphaAndBetaStar[1] = is10iN(v) ? 0 : beta;
+        return alphaAndBetaStar;
     }
 
     public static double roundUp(double v, int alpha) {
