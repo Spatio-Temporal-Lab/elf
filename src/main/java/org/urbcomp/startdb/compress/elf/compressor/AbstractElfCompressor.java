@@ -7,6 +7,12 @@ public abstract class AbstractElfCompressor implements ICompressor {
 
     private int lastBetaStar = Integer.MAX_VALUE;
 
+    private final int[] alphaAndBetaStar = new int[2];
+
+    public long betaTime = 0;
+    public long otherTime = 0;
+    public int erasingCount = 0;
+
     public void addValue(double v) {
         long vLong = Double.doubleToRawLongBits(v);
         long vPrimeLong;
@@ -18,13 +24,21 @@ public abstract class AbstractElfCompressor implements ICompressor {
             size += writeInt(2, 2); // case 10
             vPrimeLong = 0xfff8000000000000L & vLong;
         } else {
+            erasingCount++;
+            long startTime;
+            startTime = System.nanoTime();
             // C1: v is a normal or subnormal
-            int[] alphaAndBetaStar = Elf64Utils.getAlphaAndBetaStar(v, lastBetaStar);
+            Elf64Utils.calAlphaAndBetaStar(v, lastBetaStar, alphaAndBetaStar);
+            betaTime += System.nanoTime() - startTime;
+
+            startTime = System.nanoTime();
             int e = ((int) (vLong >> 52)) & 0x7ff;
             int gAlpha = Elf64Utils.getFAlpha(alphaAndBetaStar[0]) + e - 1023;
             int eraseBits = 52 - gAlpha;
             long mask = 0xffffffffffffffffL << eraseBits;
             long delta = (~mask) & vLong;
+            otherTime += System.nanoTime() - startTime;
+
             if (delta != 0 && eraseBits > 4) {  // C2
                 if(alphaAndBetaStar[1] == lastBetaStar) {
                     size += writeBit(false);    // case 0
