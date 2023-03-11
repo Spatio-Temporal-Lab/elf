@@ -34,7 +34,7 @@ public abstract class AbstractElfDecompressor32 implements IDecompressor32 {
     private float recoverVByBetaStar() {
         float v;
         Float vPrime = xorDecompress();
-        int sp = (int) Math.floor(Math.log10(Math.abs(vPrime)));
+        int sp = Elf32Utils.getSP(Math.abs(vPrime));
         if (lastBetaStar == 0) {
             v = Elf32Utils.get10iN(-sp - 1);
             if (vPrime < 0) {

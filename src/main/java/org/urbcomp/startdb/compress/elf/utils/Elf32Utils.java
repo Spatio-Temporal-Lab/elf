@@ -110,7 +110,7 @@ public class Elf32Utils {
         }
     }
 
-    private static int getSP(double v) {
+    public static int getSP(double v) {
         if (v >= 1) {
             int i = 0;
             while (i < mapSPGreater1.length - 1) {
