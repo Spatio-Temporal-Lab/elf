@@ -41,10 +41,10 @@ public class Elf32Utils {
             v = -v;
         }
         int[] alphaAndBetaStar = new int[2];
-        int sp = getSP(v);
-        int beta = getSignificantCount(v, sp, lastBetaStar);
-        alphaAndBetaStar[0] = beta - sp - 1;
-        alphaAndBetaStar[1] = is10iN(v) ? 0 : beta;
+        int[] spAnd10iNFlag = getSPAnd10iNFlag(v);
+        int beta = getSignificantCount(v, spAnd10iNFlag[0], lastBetaStar);
+        alphaAndBetaStar[0] = beta - spAnd10iNFlag[0] - 1;
+        alphaAndBetaStar[1] = spAnd10iNFlag[1] == 1 ? 0 : beta;
         return alphaAndBetaStar;
     }
 
@@ -131,17 +131,31 @@ public class Elf32Utils {
         return (int) Math.floor(Math.log10(v));
     }
 
-    private static boolean is10iN(double v) {
-        if(v >= 1) {
-            return false;
-        } else {
-            for (int i = 1; i < mapSPLess1.length; i++) {
-                if(mapSPLess1[i] == v) {
-                    return true;
+    private static int[] getSPAnd10iNFlag(double v) {
+        int[] spAnd10iNFlag = new int[2];
+        if (v >= 1) {
+            int i = 0;
+            while (i < mapSPGreater1.length - 1) {
+                if (v < mapSPGreater1[i + 1]) {
+                    spAnd10iNFlag[0] = i;
+                    return spAnd10iNFlag;
                 }
+                i++;
             }
-            double log10v = Math.log10(v);
-            return log10v == (long)log10v;
+        } else {
+            int i = 1;
+            while (i < mapSPLess1.length) {
+                if (v >= mapSPLess1[i]) {
+                    spAnd10iNFlag[0] = -i;
+                    spAnd10iNFlag[1] = v == mapSPLess1[i] ? 1 : 0;
+                    return spAnd10iNFlag;
+                }
+                i++;
+            }
         }
+        double log10v = Math.log10(v);
+        spAnd10iNFlag[0] = (int) Math.floor(log10v);
+        spAnd10iNFlag[1] = log10v == (long)log10v ? 1 : 0;
+        return spAnd10iNFlag;
     }
 }
