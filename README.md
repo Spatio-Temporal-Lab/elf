@@ -1,4 +1,5 @@
-# Elf: Erasing-based Lossless Floating-Point Compression
+# Elf: Erasing-based Lossless Floating-Point Compression (VLDB 2023, Accepted)
+# Erasing-Based Lossless Compression Method for Streaming Floating-Point Time Series (VLDBJ, Under Review, Termed Elf+)
 
 ***
 Elf is an erasing-based floating-point data compression algorithm with a high compression ratio.
@@ -7,7 +8,7 @@ Developers can follow the steps below for compression testing.
 
 More details can be found in http://start-db.urbcomp.org/elf/
 
-(Please switch to the branch of ***vldb2023-release*** to test the performance of VLDB paper. For the ***dev*** branch, we have optimized the algorithm, which is under review of VLDBJ; thus, some logics may be not the same with those described in the VLDB paper. You are also recommended to use the ***dev*** branch if you are interested in it, because it should perform much better in terms both of compression ratio and compression time.)
+(Please switch to the branch of ***vldb2023-release*** to test the performance of VLDB paper. For the ***dev*** branch, we have optimized the algorithm, which is under review of VLDBJ; thus, some logics of the ***dev*** branch may be not the same with those described in the VLDB paper. You are recommended to use the ***dev*** branch, because it should perform much better in terms both of compression ratio and compression time.)
 
 ## Elf feature
 
