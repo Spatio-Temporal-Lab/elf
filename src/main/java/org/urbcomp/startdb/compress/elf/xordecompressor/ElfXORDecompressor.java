@@ -58,7 +58,11 @@ public class ElfXORDecompressor {
         if (first) {
             first = false;
             int trailingZeros = in.readInt(7);
-            storedVal = in.readLong(64 - trailingZeros) << trailingZeros;
+            if (trailingZeros < 64) {
+                storedVal = ((in.readLong(63 - trailingZeros) << 1) + 1) << trailingZeros;
+            } else {
+                storedVal = 0;
+            }
             if (storedVal == END_SIGN) {
                 endOfStream = true;
             }
@@ -81,7 +85,7 @@ public class ElfXORDecompressor {
                     centerBits = 64;
                 }
                 storedTrailingZeros = 64 - storedLeadingZeros - centerBits;
-                value = in.readLong(centerBits) << storedTrailingZeros;
+                value = ((in.readLong(centerBits - 1) << 1) + 1) << storedTrailingZeros;
                 value = storedVal ^ value;
                 if (value == END_SIGN) {
                     endOfStream = true;
@@ -98,7 +102,7 @@ public class ElfXORDecompressor {
                     centerBits = 16;
                 }
                 storedTrailingZeros = 64 - storedLeadingZeros - centerBits;
-                value = in.readLong(centerBits) << storedTrailingZeros;
+                value = ((in.readLong(centerBits - 1) << 1) + 1) << storedTrailingZeros;
                 value = storedVal ^ value;
                 if (value == END_SIGN) {
                     endOfStream = true;
