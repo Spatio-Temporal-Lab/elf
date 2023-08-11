@@ -61,6 +61,8 @@ public class Elf64Utils {
         int i;
         if(lastBetaStar != Integer.MAX_VALUE && lastBetaStar != 0) {
             i = Math.max(lastBetaStar - sp - 1, 1);
+        } else if (lastBetaStar == Integer.MAX_VALUE) {
+            i = 17 - sp - 1;
         } else if (sp >= 0) {
             i = 1;
         } else {
