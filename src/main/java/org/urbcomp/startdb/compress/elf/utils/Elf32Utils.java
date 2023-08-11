@@ -59,8 +59,10 @@ public class Elf32Utils {
 
     private static int getSignificantCount(float v, int sp, int lastBetaStar) {
         int i;
-        if(lastBetaStar != Integer.MAX_VALUE && lastBetaStar != 0) {
+        if (lastBetaStar != Integer.MAX_VALUE && lastBetaStar != 0) {
             i = Math.max(lastBetaStar - sp - 1, 1);
+        } else if (lastBetaStar == Integer.MAX_VALUE) {
+            i = 8 - sp - 1;
         } else if (sp >= 0) {
             i = 1;
         } else {

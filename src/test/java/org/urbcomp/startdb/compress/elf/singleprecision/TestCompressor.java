@@ -46,7 +46,7 @@ public class TestCompressor {
         "/Stocks-USA.csv",
         "/Wind-Speed.csv",
     };
-    private static final String STORE_PATH = "src/test/resources/result32";
+    private static final String STORE_RESULT_FILE = "src/test/resources/result32/result.csv";
 
     private static final double TIME_PRECISION = 1000.0;
     List<Map<String, ResultStructure>> allResult = new ArrayList<>();
@@ -71,10 +71,10 @@ public class TestCompressor {
                         " is empty because the amount of data is less than one block, and the default is at least 1000.");
             }
         }
-        storeResult(STORE_PATH + "/result.csv");
+        storeResult();
     }
 
-    public void testELFCompressor32(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws FileNotFoundException {
+    private void testELFCompressor32(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws FileNotFoundException {
         org.urbcomp.startdb.compress.elf.singleprecision.FileReader fileReader = new org.urbcomp.startdb.compress.elf.singleprecision.FileReader(FILE_PATH + fileName);
 
         float totalBlocks = 0;
@@ -152,7 +152,7 @@ public class TestCompressor {
         }
     }
 
-    public void testSnappy32(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
+    private void testSnappy32(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
         FileReader fileReader = new FileReader(FILE_PATH + fileName);
         float totalBlocks = 0;
         long totalSize = 0;
@@ -163,11 +163,6 @@ public class TestCompressor {
         while ((values = fileReader.nextBlock()) != null) {
             double encodingDuration = 0;
             double decodingDuration = 0;
-            ByteBuffer bb = ByteBuffer.allocate(values.length * 8);
-            for (float d : values) {
-                bb.putFloat(d);
-            }
-            byte[] input = bb.array();
 
             Configuration conf = HBaseConfiguration.create();
             // ZStandard levels range from 1 to 22.
@@ -176,8 +171,13 @@ public class TestCompressor {
             SnappyCodec codec = new SnappyCodec();
             codec.setConf(conf);
 
+            ByteBuffer bb = ByteBuffer.allocate(values.length * 8);
             // Compress
             long start = System.nanoTime();
+            for (float d : values) {
+                bb.putFloat(d);
+            }
+            byte[] input = bb.array();
             org.apache.hadoop.io.compress.Compressor compressor = codec.createCompressor();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             CompressionOutputStream out = codec.createOutputStream(baos, compressor);
@@ -217,7 +217,7 @@ public class TestCompressor {
         }
     }
 
-    public void testZstd32(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
+    private void testZstd32(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
         FileReader fileReader = new FileReader(FILE_PATH + fileName);
         float totalBlocks = 0;
         long totalSize = 0;
@@ -228,11 +228,6 @@ public class TestCompressor {
         while ((values = fileReader.nextBlock()) != null) {
             double encodingDuration = 0;
             double decodingDuration = 0;
-            ByteBuffer bb = ByteBuffer.allocate(values.length * 8);
-            for (float d : values) {
-                bb.putFloat(d);
-            }
-            byte[] input = bb.array();
 
             Configuration conf = HBaseConfiguration.create();
             // ZStandard levels range from 1 to 22.
@@ -241,8 +236,13 @@ public class TestCompressor {
             ZstdCodec codec = new ZstdCodec();
             codec.setConf(conf);
 
+            ByteBuffer bb = ByteBuffer.allocate(values.length * 8);
             // Compress
             long start = System.nanoTime();
+            for (float d : values) {
+                bb.putFloat(d);
+            }
+            byte[] input = bb.array();
             org.apache.hadoop.io.compress.Compressor compressor = codec.createCompressor();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             CompressionOutputStream out = codec.createOutputStream(baos, compressor);
@@ -282,7 +282,7 @@ public class TestCompressor {
         }
     }
 
-    public void testLZ432(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
+    private void testLZ432(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
         FileReader fileReader = new FileReader(FILE_PATH + fileName);
         float totalBlocks = 0;
         long totalSize = 0;
@@ -293,16 +293,16 @@ public class TestCompressor {
         while ((values = fileReader.nextBlock()) != null) {
             double encodingDuration = 0;
             double decodingDuration = 0;
+
+            Lz4Codec codec = new Lz4Codec();
+
             ByteBuffer bb = ByteBuffer.allocate(values.length * 8);
+            // Compress
+            long start = System.nanoTime();
             for (float d : values) {
                 bb.putFloat(d);
             }
             byte[] input = bb.array();
-
-            Lz4Codec codec = new Lz4Codec();
-
-            // Compress
-            long start = System.nanoTime();
             org.apache.hadoop.io.compress.Compressor compressor = codec.createCompressor();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             CompressionOutputStream out = codec.createOutputStream(baos, compressor);
@@ -342,7 +342,7 @@ public class TestCompressor {
         }
     }
 
-    public void testBrotli32(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
+    private void testBrotli32(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
         FileReader fileReader = new FileReader(FILE_PATH + fileName);
         float totalBlocks = 0;
         long totalSize = 0;
@@ -353,16 +353,16 @@ public class TestCompressor {
         while ((values = fileReader.nextBlock()) != null) {
             double encodingDuration = 0;
             double decodingDuration = 0;
+
+            BrotliCodec codec = new BrotliCodec();
+
             ByteBuffer bb = ByteBuffer.allocate(values.length * 8);
+            // Compress
+            long start = System.nanoTime();
             for (float d : values) {
                 bb.putFloat(d);
             }
             byte[] input = bb.array();
-
-            BrotliCodec codec = new BrotliCodec();
-
-            // Compress
-            long start = System.nanoTime();
             org.apache.hadoop.io.compress.Compressor compressor = codec.createCompressor();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             CompressionOutputStream out = codec.createOutputStream(baos, compressor);
@@ -402,7 +402,7 @@ public class TestCompressor {
         }
     }
 
-    public void testXz32(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
+    private void testXz32(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
         FileReader fileReader = new FileReader(FILE_PATH + fileName);
         float totalBlocks = 0;
         long totalSize = 0;
@@ -413,11 +413,6 @@ public class TestCompressor {
         while ((values = fileReader.nextBlock()) != null) {
             double encodingDuration = 0;
             double decodingDuration = 0;
-            ByteBuffer bb = ByteBuffer.allocate(values.length * 8);
-            for (float d : values) {
-                bb.putFloat(d);
-            }
-            byte[] input = bb.array();
 
             Configuration conf = new Configuration();
             // LZMA levels range from 1 to 9.
@@ -426,8 +421,13 @@ public class TestCompressor {
             LzmaCodec codec = new LzmaCodec();
             codec.setConf(conf);
 
+            ByteBuffer bb = ByteBuffer.allocate(values.length * 8);
             // Compress
             long start = System.nanoTime();
+            for (float d : values) {
+                bb.putFloat(d);
+            }
+            byte[] input = bb.array();
             org.apache.hadoop.io.compress.Compressor compressor = codec.createCompressor();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             CompressionOutputStream out = codec.createOutputStream(baos, compressor);
@@ -468,7 +468,8 @@ public class TestCompressor {
     }
 
 
-    public void storeResult(String filePath) throws IOException {
+    private void storeResult() throws IOException {
+        String filePath = STORE_RESULT_FILE;
         File file = new File(filePath).getParentFile();
         if (!file.exists() && !file.mkdirs()) {
             throw new IOException("Create directory failed: " + file);
@@ -483,7 +484,7 @@ public class TestCompressor {
         }
     }
 
-    public ResultStructure computeAvg(List<ResultStructure> lr) {
+    private ResultStructure computeAvg(List<ResultStructure> lr) {
         int num = lr.size();
         double compressionTime = 0;
         double maxCompressTime = 0;
@@ -517,7 +518,7 @@ public class TestCompressor {
         );
     }
 
-    public static float[] toFloatArray(byte[] byteArray) {
+    private static float[] toFloatArray(byte[] byteArray) {
         int times = Float.SIZE / Byte.SIZE;
         float[] floats = new float[byteArray.length / times];
         for (int i = 0; i < floats.length; i++) {
