@@ -1,38 +1,37 @@
 package org.urbcomp.startdb.compress.elf.compressor;
 
+import gr.aueb.delorean.chimp.ChimpN;
 import gr.aueb.delorean.chimp.OutputBitStream;
-import org.urbcomp.startdb.compress.elf.xorcompressor.ElfXORCompressor;
 
-public class ElfCompressor extends AbstractElfCompressor {
-    private final ElfXORCompressor xorCompressor;
+public class ElfOnChimpNPlusCompressor extends AbstractElfPlusCompressor {
+    private final ChimpN chimpN;
 
-    public ElfCompressor() {
-        xorCompressor = new ElfXORCompressor();
+    public ElfOnChimpNPlusCompressor(int previousValues) {
+        chimpN = new ChimpN(previousValues);
     }
-
     @Override protected int writeInt(int n, int len) {
-        OutputBitStream os = xorCompressor.getOutputStream();
+        OutputBitStream os = chimpN.getOutputStream();
         os.writeInt(n, len);
         return len;
     }
 
     @Override protected int writeBit(boolean bit) {
-        OutputBitStream os = xorCompressor.getOutputStream();
+        OutputBitStream os = chimpN.getOutputStream();
         os.writeBit(bit);
         return 1;
     }
 
     @Override protected int xorCompress(long vPrimeLong) {
-        return xorCompressor.addValue(vPrimeLong);
+        return chimpN.addValue(vPrimeLong);
     }
 
     @Override public byte[] getBytes() {
-        return xorCompressor.getOut();
+        return chimpN.getOut();
     }
 
     @Override public void close() {
         // we write one more bit here, for marking an end of the stream.
-        writeBit(false);
-        xorCompressor.close();
+        writeInt(2, 2); // case 10
+        chimpN.close();
     }
 }

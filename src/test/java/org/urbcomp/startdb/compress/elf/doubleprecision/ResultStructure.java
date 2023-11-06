@@ -136,32 +136,32 @@ public class ResultStructure {
     }
 
     public static String getHead() {
-        return "FileName\t" +
-                "CompressorName\t" +
-                "CompressorRatio\t" +
-                "CompressionTime\t" +
-                "MaxCompressTime\t" +
-                "MinCompressTime\t" +
-                "MediaCompressTime\t" +
-                "DecompressionTime\t" +
-                "MaxDecompressTime\t" +
-                "MinDecompressTime\t" +
-                "MediaDecompressTime\t" +
+        return "FileName," +
+                "CompressorName," +
+                "CompressorRatio," +
+                "CompressionTime," +
+                "MaxCompressTime," +
+                "MinCompressTime," +
+                "MediaCompressTime," +
+                "DecompressionTime," +
+                "MaxDecompressTime," +
+                "MinDecompressTime," +
+                "MediaDecompressTime," +
                 '\n';
     }
     @Override
     public String toString() {
-        return filename + '\t' +
-                compressorName + '\t' +
-                compressorRatio + '\t' +
-                compressionTime + '\t' +
-                maxCompressTime + '\t' +
-                minCompressTime + '\t' +
-                mediaCompressTime + '\t' +
-                decompressionTime + '\t' +
-                maxDecompressTime + '\t' +
-                minDecompressTime + '\t' +
-                mediaDecompressTime + '\t' +
+        return filename + ',' +
+                compressorName + ',' +
+                compressorRatio + ',' +
+                compressionTime + ',' +
+                maxCompressTime + ',' +
+                minCompressTime + ',' +
+                mediaCompressTime + ',' +
+                decompressionTime + ',' +
+                maxDecompressTime + ',' +
+                minDecompressTime + ',' +
+                mediaDecompressTime + ',' +
                 '\n';
     }
 

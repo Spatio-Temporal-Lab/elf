@@ -68,9 +68,9 @@ public class TestBeta {
         while ((values = fileReader.nextBlockWithBeta(beta)) != null) {
             totalBlocks += 1;
             ICompressor[] compressors = new ICompressor[]{
-                    new ElfOnGorillaCompressorOS(),
+                    new ElfOnGorillaPlusCompressorOS(),
                     new ChimpNCompressor(128),
-                    new ElfCompressor(),
+                    new ElfPlusCompressor(),
             };
             for (int i = 0; i < compressors.length; i++) {
                 double encodingDuration;
@@ -86,9 +86,9 @@ public class TestBeta {
 
                 byte[] result = compressor.getBytes();
                 IDecompressor[] decompressors = new IDecompressor[]{
-                        new ElfOnGorillaDecompressorOS(result),
+                        new ElfOnGorillaPlusDecompressorOS(result),
                         new ChimpNDecompressor(result, 128),
-                        new ElfDecompressor(result)
+                        new ElfPlusDecompressor(result)
                 };
                 IDecompressor decompressor = decompressors[i];
 

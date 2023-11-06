@@ -3,10 +3,10 @@ package org.urbcomp.startdb.compress.elf.compressor;
 import gr.aueb.delorean.chimp.OutputBitStream;
 import org.urbcomp.startdb.compress.elf.xorcompressor.ElfXORCompressor;
 
-public class ElfCompressor extends AbstractElfCompressor {
+public class ElfPlusCompressor extends AbstractElfPlusCompressor {
     private final ElfXORCompressor xorCompressor;
 
-    public ElfCompressor() {
+    public ElfPlusCompressor() {
         xorCompressor = new ElfXORCompressor();
     }
 
@@ -32,7 +32,7 @@ public class ElfCompressor extends AbstractElfCompressor {
 
     @Override public void close() {
         // we write one more bit here, for marking an end of the stream.
-        writeBit(false);
+        writeInt(2,2);  // case 10
         xorCompressor.close();
     }
 }
