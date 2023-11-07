@@ -1,15 +1,16 @@
 package com.github.Tranway.buff;
 
-import java.util.Vector;
-
+import java.util.ArrayList;
 public class SparseResult {
     boolean flag;
     byte frequent_value;
     byte[] bitmap;
-    Vector<Byte> outliers;
+    boolean[] isFrequentValue;
+    ArrayList<Byte> outliers;
     SparseResult(int batch_size) {
         flag = false;
         bitmap = new byte[batch_size / 8];
-        outliers = new Vector<>();
+        outliers = new ArrayList<>();
+        isFrequentValue = new boolean[batch_size];
     }
 }
