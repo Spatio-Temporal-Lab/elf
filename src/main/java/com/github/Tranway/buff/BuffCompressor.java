@@ -2,11 +2,12 @@ package com.github.Tranway.buff;
 
 import gr.aueb.delorean.chimp.OutputBitStream;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class BuffCompressor {
-    private int size;
+    private long size;
     private final OutputBitStream out;
     private long lowerBound;
     private long upperBound;
@@ -54,12 +55,15 @@ public class BuffCompressor {
         return this.out;
     }
 
-    public int compress(double[] values) {
-
+    public void compress(double[] values) {
+        headSample(values);
+        byte[][] cols = encode(values);
+        //TODO 存一些东西
+        sparseEncode(cols);
     }
 
     // 获取小数位数
-    public static int getDecimalPlace(double db) {
+    private static int getDecimalPlace(double db) {
         if (db == 0.0) {
             return 0;
         }
@@ -72,7 +76,7 @@ public class BuffCompressor {
         }
     }
 
-    public static int getWidthNeeded(long number) {
+    private static int getWidthNeeded(long number) {
         if (number == 0) {
             return 0; // 约定0不需要位宽
         }
@@ -286,26 +290,37 @@ public class BuffCompressor {
         return cols;
     }
 
-    public int sparseEncode(byte[][] cols) {
+    public void sparseEncode(byte[][] cols) {
         SparseResult result;
         for (int j = 0; j < columnCount; ++j) {
             // 遍历每一列，查找频繁项
             result = findMajority(cols[j]);
 
             // col serilize
-            if (result.flag == true) {
-                out.writeBit(true);
-                SparseResult.serialize();
+            if (result.flag) {
+                size += out.writeBit(true);
+                serialize(result);
             } else {
-                // TODO write: flag = 0
-                // TODO write: col[j]
+                size += out.writeBit(false);
+                try {
+                    size += out.write(cols[j], batchSize);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
 
-    public int serialize(SparseResult sr) {
+    private void serialize(SparseResult sr) {
         size += out.writeInt(sr.frequent_value, 8);
-        for()
+        try {
+            size += out.write(sr.bitmap, batchSize);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        for (int i = 0; i < sr.outliers.size(); i++) {
+            size += out.writeInt(sr.outliers.get(i).intValue(), 8);
+        }
     }
 
     public static SparseResult findMajority(byte[] nums) {
