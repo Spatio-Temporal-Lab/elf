@@ -504,16 +504,18 @@ public class TestCompressor {
             mediaDecompressTime += resultStructure.getMediaDecompressTime();
         }
         return new ResultStructure(lr.get(0).getFilename(),
-            lr.get(0).getCompressorName(),
-            lr.get(0).getCompressorRatio(),
-            compressionTime / num,
-            maxCompressTime / num,
-            minCompressTime / num,
-            mediaCompressTime / num,
-            decompressionTime / num,
-            maxDecompressTime / num,
-            minDecompressTime / num,
-            mediaDecompressTime / num
+                lr.get(0).getCompressorName(),
+                lr.get(0).getCompressorRatio(),
+                lr.get(0).getMaxCompressRatio(),
+                lr.get(0).getMinCompressRatio(),
+                compressionTime / num,
+                maxCompressTime / num,
+                minCompressTime / num,
+                mediaCompressTime / num,
+                decompressionTime / num,
+                maxDecompressTime / num,
+                minDecompressTime / num,
+                mediaDecompressTime / num
         );
     }
 

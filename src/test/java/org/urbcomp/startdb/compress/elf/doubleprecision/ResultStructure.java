@@ -9,6 +9,8 @@ public class ResultStructure {
     private String filename;
     private String compressorName;
     private double compressorRatio;
+    private double maxCompressRatio;
+    private double minCompressRatio;
     private double compressionTime;
     private double maxCompressTime;
     private double minCompressTime;
@@ -18,11 +20,12 @@ public class ResultStructure {
     private double minDecompressTime;
     private double mediaDecompressTime;
 
-
-    public ResultStructure(String filename, String compressorName, double compressorRatio, double compressionTime, double maxCompressTime, double minCompressTime, double mediaCompressTime, double decompressionTime, double maxDecompressTime, double minDecompressTime, double mediaDecompressTime) {
+    public ResultStructure(String filename, String compressorName, double compressorRatio, double maxCompressRatio, double minCompressRatio, double compressionTime, double maxCompressTime, double minCompressTime, double mediaCompressTime, double decompressionTime, double maxDecompressTime, double minDecompressTime, double mediaDecompressTime) {
         this.filename = filename;
         this.compressorName = compressorName;
         this.compressorRatio = compressorRatio;
+        this.maxCompressRatio = maxCompressRatio;
+        this.minCompressRatio = minCompressRatio;
         this.compressionTime = compressionTime;
         this.maxCompressTime = maxCompressTime;
         this.minCompressTime = minCompressTime;
@@ -37,6 +40,22 @@ public class ResultStructure {
         this.filename = filename;
         this.compressorName = compressorName;
         this.compressorRatio = compressorRatio;
+        this.compressionTime = avgValue(compressionTime);
+        this.maxCompressTime = maxValue(compressionTime);
+        this.minCompressTime = minValue(compressionTime);
+        this.mediaCompressTime = medianValue(compressionTime);
+        this.decompressionTime = avgValue(decompressionTime);
+        this.maxDecompressTime = maxValue(decompressionTime);
+        this.minDecompressTime = minValue(decompressionTime);
+        this.mediaDecompressTime = medianValue(decompressionTime);
+    }
+
+    public ResultStructure(String filename, String compressorName, double compressorRatio, List<Integer> compressionSize, List<Double> compressionTime, List<Double> decompressionTime) {
+        this.filename = filename;
+        this.compressorName = compressorName;
+        this.compressorRatio = compressorRatio;
+        this.maxCompressRatio = maxInt(compressionSize) / (FileReader.DEFAULT_BLOCK_SIZE * 64.0);
+        this.minCompressRatio = minInt(compressionSize) / (FileReader.DEFAULT_BLOCK_SIZE * 64.0);
         this.compressionTime = avgValue(compressionTime);
         this.maxCompressTime = maxValue(compressionTime);
         this.minCompressTime = minValue(compressionTime);
@@ -135,10 +154,28 @@ public class ResultStructure {
         this.decompressionTime = decompressionTime;
     }
 
+    public double getMaxCompressRatio() {
+        return maxCompressRatio;
+    }
+
+    public void setMaxCompressRatio(double maxCompressRatio) {
+        this.maxCompressRatio = maxCompressRatio;
+    }
+
+    public double getMinCompressRatio() {
+        return minCompressRatio;
+    }
+
+    public void setMinCompressRatio(double minCompressRatio) {
+        this.minCompressRatio = minCompressRatio;
+    }
+
     public static String getHead() {
         return "FileName," +
                 "CompressorName," +
                 "CompressorRatio," +
+                "MaxCompressRatio," +
+                "MinCompressRatio," +
                 "CompressionTime," +
                 "MaxCompressTime," +
                 "MinCompressTime," +
@@ -149,11 +186,14 @@ public class ResultStructure {
                 "MediaDecompressTime," +
                 '\n';
     }
+
     @Override
     public String toString() {
         return filename + ',' +
                 compressorName + ',' +
                 compressorRatio + ',' +
+                maxCompressRatio + ',' +
+                minCompressRatio + ',' +
                 compressionTime + ',' +
                 maxCompressTime + ',' +
                 minCompressTime + ',' +
@@ -200,6 +240,27 @@ public class ResultStructure {
         for (Double aDouble : ld) {
             if (aDouble < min) {
                 min = aDouble;
+            }
+        }
+        return min;
+    }
+
+    public int maxInt(List<Integer> ld) {
+        int num = ld.size();
+        int max = 0;
+        for (Integer aInt : ld) {
+            if (aInt > max) {
+                max = aInt;
+            }
+        }
+        return max;
+    }
+
+    public int minInt(List<Integer> ld) {
+        int min = Integer.MAX_VALUE;
+        for (Integer aInt : ld) {
+            if (aInt < min) {
+                min = aInt;
             }
         }
         return min;

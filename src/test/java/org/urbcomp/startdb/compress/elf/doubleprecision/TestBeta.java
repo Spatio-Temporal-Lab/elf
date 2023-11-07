@@ -225,6 +225,8 @@ public class TestBeta {
         return new ResultStructure(lr.get(0).getFilename(),
                 lr.get(0).getCompressorName(),
                 lr.get(0).getCompressorRatio(),
+                lr.get(0).getMaxCompressRatio(),
+                lr.get(0).getMinCompressRatio(),
                 compressionTime / num,
                 maxCompressTime / num,
                 minCompressTime / num,
