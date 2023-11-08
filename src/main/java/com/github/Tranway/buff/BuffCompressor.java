@@ -69,6 +69,8 @@ public class BuffCompressor {
         size += out.writeInt(intWidth, 32);
         sparseEncode(cols);
 //        System.out.println("size:" + size);
+        System.out.println(size);
+        System.out.println(wholeWidth*1000);
         close();
     }
 
@@ -256,7 +258,7 @@ public class BuffCompressor {
 //                                + String.format("%" + decWidth + "s", Long.toBinaryString(decimal)).replace(' ', '0'));
 
             // get the int_len
-            int int_len = ((int) exp + 1) > 0 ? ((int) exp + 1) : 0;
+//            int int_len = ((int) exp + 1) > 0 ? ((int) exp + 1) : 0;
 //            System.out.println("int_len:" + int_len);
 
             // get the integer
@@ -305,7 +307,6 @@ public class BuffCompressor {
         return cols;
     }
 
-    private OutputBitStream testOut = new OutputBitStream(new byte[70]);
 
     public void sparseEncode(byte[][] cols) {
 //        System.out.println("cols2,8:" + cols[2][8]);
