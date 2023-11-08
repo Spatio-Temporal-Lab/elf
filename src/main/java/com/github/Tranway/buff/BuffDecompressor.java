@@ -75,6 +75,8 @@ public class BuffDecompressor {
         SparseResult result = new SparseResult(batch_size);
         result.setFrequent_value(in.readInt(8));
         in.read(result.bitmap, batch_size);
+//        System.out.println("deserialize");
+//        System.out.println(Arrays.toString(result.bitmap));
         int count = 0;
         for (byte b : result.bitmap) {
             for (int i = 0; i < 8; i++) {
@@ -91,41 +93,31 @@ public class BuffDecompressor {
     public void sparseDecode() throws IOException {
         for (int j = 0; j < columnCount; ++j) {
             if (in.readBit() == 0) {
-                System.out.println("FALSE");
+//                System.out.println("FALSE");
                 in.read(cols[j], batch_size * 8);
 //                System.out.println("batch_size:" + batch_size);
 //                System.out.println(Arrays.toString(cols[j]));
             } else {
-                System.out.println("TURE");
+//                System.out.println("TURE");
                 SparseResult result;
                 result = deserialize();
                 int index, offset, vec_cnt = 0;
                 for (int i = 0; i < batch_size; i++) {
                     index = i / 8;
                     offset = i % 8;
-                    if ((result.bitmap[index] & (1 << offset)) == 0) {
+                    if ((result.bitmap[index] & (1 << (7 - offset))) == 0) {
                         cols[j][i] = result.frequent_value;
                     } else {
+
+//                        System.out.println("i: " + i);
                         cols[j][i] = result.outliers.get(vec_cnt);
+                        vec_cnt++;
                     }
                 }
             }
         }
     }
 
-
-    // 获取小数位数
-    public static int get_decimal_place(String str_db) {
-        if (Double.parseDouble(str_db) == 0.0) {
-            return 0;
-        }
-        int indexOfDecimalPoint = str_db.indexOf('.');
-        if (indexOfDecimalPoint >= 0) {
-            return str_db.length() - indexOfDecimalPoint - 1;
-        } else {
-            return 0; // 没有小数点，小数位数为0
-        }
-    }
 
     public static int get_width_needed(long number) {
         if (number == 0) {

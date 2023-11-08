@@ -2,6 +2,7 @@ package com.github.Tranway.buff;
 
 import gr.aueb.delorean.chimp.InputBitStream;
 import gr.aueb.delorean.chimp.OutputBitStream;
+import org.urbcomp.startdb.compress.elf.utils.Elf64Utils;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -69,27 +70,13 @@ public class BuffCompressor {
         size += out.writeInt(intWidth, 32);
         sparseEncode(cols);
 //        System.out.println("size:" + size);
-        System.out.println(size);
-        System.out.println(wholeWidth*1000);
+//        System.out.println(size);
+//        System.out.println(wholeWidth*1000);
         close();
     }
 
     public void close() {
         out.writeInt(0, 8);
-    }
-
-    // 获取小数位数
-    private static int getDecimalPlace(double db) {
-        if (db == 0.0) {
-            return 0;
-        }
-        String str_db = String.valueOf(db);
-        int indexOfDecimalPoint = str_db.indexOf('.');
-        if (indexOfDecimalPoint >= 0) {
-            return str_db.length() - indexOfDecimalPoint - 1;
-        } else {
-            return 0; // 没有小数点，小数位数为0
-        }
     }
 
     private static int getWidthNeeded(long number) {
@@ -139,7 +126,7 @@ public class BuffCompressor {
 //                    + String.format("%53s", Long.toBinaryString(implicit_mantissa)).replace(' ', '0'));
 
             // get the precision
-            int prec = getDecimalPlace(db);
+            int prec = get_decimal_place(db);
 //            System.out.println("prec:" + prec);
 
             // update the max prec
@@ -196,6 +183,29 @@ public class BuffCompressor {
 //        System.out.println("--------HEAD SAMPLE RESULT--------end");
     }
 
+    public static int get_decimal_place(double db) {
+        if (db == 0.0) {
+            return 0;
+        }
+        String strDb = Double.toString(db);
+        int indexOfDecimalPoint = strDb.indexOf('.');
+        int cnt = 0;
+
+        if (indexOfDecimalPoint >= 0) {
+            for (int i = indexOfDecimalPoint; i < strDb.length(); ++i) {
+                if (strDb.charAt(i) != 'E') {
+                    cnt++;
+                } else {
+                    i += 2;
+                    cnt += Integer.parseInt(String.valueOf(strDb.charAt(i)));
+                }
+            }
+            return cnt;
+        } else {
+            return 0; // 没有小数点，小数位数为0
+        }
+    }
+
 
     public byte[][] encode(double[] dbs) {
         byte[][] cols = new byte[columnCount][dbs.length]; // 第一维代表列号，第二维代表行号
@@ -229,7 +239,7 @@ public class BuffCompressor {
 //                    + String.format("%53s", Long.toBinaryString(implicit_mantissa)).replace(' ', '0'));
 
             // get the precision
-            int prec = getDecimalPlace(db);
+            int prec = get_decimal_place(db);
 //            System.out.println("prec:" + prec);
 
             // 以下改用dec_width
@@ -334,6 +344,9 @@ public class BuffCompressor {
     private void serialize(SparseResult sr) {
         size += out.writeInt(sr.frequent_value, 8);
         try {
+//            System.out.println("serialize");
+//
+//            System.out.println(Arrays.toString(sr.bitmap));
             size += out.write(sr.bitmap, batchSize);
         } catch (IOException e) {
             e.printStackTrace();
@@ -368,6 +381,7 @@ public class BuffCompressor {
             if (nums[i] == candidate) {
                 count++;
             } else {
+//                System.out.println("is: "+ i);
                 result.bitmap[index] = (byte) (result.bitmap[index] | 0b1);
                 result.outliers.add(nums[i]);
             }
