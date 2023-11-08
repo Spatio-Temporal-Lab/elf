@@ -91,10 +91,12 @@ public class BuffDecompressor {
     public void sparseDecode() throws IOException {
         for (int j = 0; j < columnCount; ++j) {
             if (in.readBit() == 0) {
+                System.out.println("FALSE");
                 in.read(cols[j], batch_size * 8);
 //                System.out.println("batch_size:" + batch_size);
 //                System.out.println(Arrays.toString(cols[j]));
             } else {
+                System.out.println("TURE");
                 SparseResult result;
                 result = deserialize();
                 int index, offset, vec_cnt = 0;
@@ -194,7 +196,7 @@ public class BuffDecompressor {
 //                    + String.format("%53s", Long.toBinaryString(implicit_mantissa)).replace(' ', '0'));
 
             // get the mantissa
-            long mantissa = implicit_mantissa << 12 >>> 12;
+            long mantissa = implicit_mantissa & 0x000fffffffffffffL;
 //            System.out.println("mantissa:"
 //                    + String.format("%52s", Long.toBinaryString(mantissa)).replace(' ', '0'));
 

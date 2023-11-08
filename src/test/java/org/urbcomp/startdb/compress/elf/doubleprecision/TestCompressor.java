@@ -32,25 +32,26 @@ public class TestCompressor {
 //            "/Air-pressure.csv",
 //            "/Air-sensor.csv",
 //            "/Basel-temp.csv",
-            "/Basel-wind.csv",
-            "/Bird-migration.csv",
-            "/Bitcoin-price.csv",
+//            "/Basel-wind.csv",
+//            "/Bird-migration.csv",
+//            "/Bitcoin-price.csv",
 //            "/Blockchain-tr.csv",
 //            "/City-temp.csv",
-            "/City-lat.csv",      //0.2186 -0.2186
+//            "/City-lat.csv",      //0.2186 -0.2186
 //            "/City-lon.csv",        //0.1275 -0.1275
-            "/Dew-point-temp.csv",
-            "/electric_vehicle_charging.csv",
-            "/Food-price.csv",      //1606632.0  1000.0
+//            "/Dew-point-temp.csv",
+//            "/electric_vehicle_charging.csv",
+//            "/Food-price.csv",      //1606632.0  1000.0
 //            "/IR-bio-temp.csv",
-            "/PM10-dust.csv",
-            "/SSD-bench.csv",
+//            "/PM10-dust.csv",
+//            "/SSD-bench.csv",
 //            "/POI-lat.csv",
 //            "/POI-lon.csv",
-            "/Stocks-DE.csv",
+//            "/Stocks-DE.csv",
 //            "/Stocks-UK.csv",
-            "/Stocks-USA.csv",
-            "/Wind-Speed.csv",
+//            "/Stocks-USA.csv",
+//            "/Wind-Speed.csv",
+//            "/test.csv"
     };
     private static final String STORE_PATH = "src/test/resources/result";
 
@@ -212,7 +213,7 @@ public class TestCompressor {
             eachBlockCompressionSize.add((int) compressor.getSize());
         }
         if (!totalCompressionTime.isEmpty()) {
-            String key = "FPC";
+            String key = "Buff";
             ResultStructure r = new ResultStructure(fileName, key,
                     totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
                     eachBlockCompressionSize,
