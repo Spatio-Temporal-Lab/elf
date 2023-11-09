@@ -17,41 +17,16 @@ public class BuffDecompressor {
     private int intWidth;
     private int wholeWidth;
     private byte[][] cols;
-    private Map<Integer, Long> LAST_MASK = new HashMap<>();
-    private Map<Integer, Integer> PRECISION_MAP = new HashMap<>();
+
+    private static int[] PRECISION_MAP = new int[]{
+            0, 5, 8, 11, 15, 18, 21, 25, 28, 31, 35, 38, 50, 52, 52, 52, 52, 52, 52
+    };
+    private static long[] LAST_MASK = new long[]{
+            0b1L, 0b11L, 0b111L, 0b1111L, 0b11111L, 0b111111L, 0b1111111L, 0b11111111L
+    };
 
     public BuffDecompressor(byte[] bs) {
         in = new InputBitStream(bs);
-
-        PRECISION_MAP.put(0, 0);
-        PRECISION_MAP.put(1, 5);
-        PRECISION_MAP.put(2, 8);
-        PRECISION_MAP.put(3, 11);
-        PRECISION_MAP.put(4, 15);
-        PRECISION_MAP.put(5, 18);
-        PRECISION_MAP.put(6, 21);
-        PRECISION_MAP.put(7, 25);
-        PRECISION_MAP.put(8, 28);
-        PRECISION_MAP.put(9, 31);
-        PRECISION_MAP.put(10, 35);
-        PRECISION_MAP.put(11, 38);
-        PRECISION_MAP.put(12, 50);
-        PRECISION_MAP.put(13, 52);
-        PRECISION_MAP.put(14, 52);
-        PRECISION_MAP.put(15, 52);
-        PRECISION_MAP.put(16, 52);
-        PRECISION_MAP.put(17, 52);
-        PRECISION_MAP.put(18, 52);
-
-        // init LAST_MASK
-        LAST_MASK.put(1, 0b1L);
-        LAST_MASK.put(2, 0b11L);
-        LAST_MASK.put(3, 0b111L);
-        LAST_MASK.put(4, 0b1111L);
-        LAST_MASK.put(5, 0b11111L);
-        LAST_MASK.put(6, 0b111111L);
-        LAST_MASK.put(7, 0b1111111L);
-        LAST_MASK.put(8, 0b11111111L);
     }
 
     public double[] decompress() throws IOException {
@@ -59,7 +34,7 @@ public class BuffDecompressor {
         batch_size = in.readInt(32);
         maxPrec = in.readInt(32);
         intWidth = in.readInt(32);
-        decWidth = PRECISION_MAP.get(maxPrec);
+        decWidth = PRECISION_MAP[maxPrec];
         wholeWidth = decWidth + intWidth + 1;
         columnCount = wholeWidth / 8;
         if (wholeWidth % 8 != 0) {
@@ -75,8 +50,6 @@ public class BuffDecompressor {
         SparseResult result = new SparseResult(batch_size);
         result.setFrequent_value(in.readInt(8));
         in.read(result.bitmap, batch_size);
-//        System.out.println("deserialize");
-//        System.out.println(Arrays.toString(result.bitmap));
         int count = 0;
         for (byte b : result.bitmap) {
             for (int i = 0; i < 8; i++) {
@@ -93,12 +66,8 @@ public class BuffDecompressor {
     public void sparseDecode() throws IOException {
         for (int j = 0; j < columnCount; ++j) {
             if (in.readBit() == 0) {
-//                System.out.println("FALSE");
                 in.read(cols[j], batch_size * 8);
-//                System.out.println("batch_size:" + batch_size);
-//                System.out.println(Arrays.toString(cols[j]));
             } else {
-//                System.out.println("TURE");
                 SparseResult result;
                 result = deserialize();
                 int index, offset, vec_cnt = 0;
@@ -108,8 +77,6 @@ public class BuffDecompressor {
                     if ((result.bitmap[index] & (1 << (7 - offset))) == 0) {
                         cols[j][i] = result.frequent_value;
                     } else {
-
-//                        System.out.println("i: " + i);
                         cols[j][i] = result.outliers.get(vec_cnt);
                         vec_cnt++;
                     }
@@ -135,8 +102,6 @@ public class BuffDecompressor {
 
 
     public double[] merge_doubles() {
-//        System.out.println("----------decode----------");
-        // dbs = new double[cols[0].length];
         double[] dbs = new double[batch_size];
         for (int i = 0; i < batch_size; i++) {
             // 逐行提取数据
@@ -144,53 +109,36 @@ public class BuffDecompressor {
             int remain = wholeWidth % 8;
             if (remain == 0) {
                 for (int j = 0; j < columnCount; j++) {
-                    bitpack = (bitpack << 8) | (cols[j][i] & LAST_MASK.get(8));
+                    bitpack = (bitpack << 8) | (cols[j][i] & LAST_MASK[7]);
                 }
             } else {
                 for (int j = 0; j < columnCount - 1; j++) {
-                    bitpack = (bitpack << 8) | (cols[j][i] & LAST_MASK.get(8));
+                    bitpack = (bitpack << 8) | (cols[j][i] & LAST_MASK[7]);
                 }
-                bitpack = (bitpack << remain) | (cols[columnCount - 1][i] & LAST_MASK.get(remain));
+                bitpack = (bitpack << remain) | (cols[columnCount - 1][i] & LAST_MASK[remain-1]);
             }
-//            System.out.println("bitpack:"
-//                    + String.format("%" + wholeWidth + "s", Long.toBinaryString(bitpack)).replace(' ', '0'));
 
             // get the offset
             long offset = (intWidth != 0) ? (bitpack << 65 - wholeWidth >>> 64 - intWidth) : 0;
 
-//            if (intWidth != 0)
-//                System.out.println(
-//                        "offset:" + String.format("%" + intWidth + "s", Long.toBinaryString(offset)).replace(' ', '0'));
-//            else
-//                System.out.println("offset: null");
-
             // get the integer
             long integer = lowerBound + offset;
-//            System.out.println("integer:" + integer);
 
             // get the decimal
             long decimal = bitpack << (64 - decWidth) >>> (64 - decWidth);
-//            System.out.println("decimal:"
-//                    + String.format("%" + decWidth + "s", Long.toBinaryString(decimal)).replace(' ', '0'));
 
             // modified decimal [used for - exp]
             long modified_decimal = decimal << (decWidth - get_width_needed(decimal));
-//            System.out.println("modified_decimal:"
-//                    + String.format("%" + decWidth + "s", Long.toBinaryString(modified_decimal)).replace(' ', '0'));
 
             // get the mantissa with implicit bit
             long implicit_mantissa = (Math.abs(integer) << (53 - get_width_needed(Math.abs(integer))))
-                    | (integer == 0 ? (modified_decimal << (53 - decWidth - get_width_needed(Math.abs(integer))))
+                    | (integer == 0 ? (modified_decimal << (53 - decWidth))
                     : (53 - decWidth - get_width_needed(Math.abs(integer))) >= 0
                     ? (decimal << (53 - decWidth - get_width_needed(Math.abs(integer))))
                     : (decimal >>> Math.abs(53 - decWidth - get_width_needed(Math.abs(integer)))));
-//            System.out.println("implicit_mantissa:"
-//                    + String.format("%53s", Long.toBinaryString(implicit_mantissa)).replace(' ', '0'));
 
             // get the mantissa
             long mantissa = implicit_mantissa & 0x000fffffffffffffL;
-//            System.out.println("mantissa:"
-//                    + String.format("%52s", Long.toBinaryString(mantissa)).replace(' ', '0'));
 
             // get the sign
             long sign = bitpack >>> (wholeWidth - 1);
@@ -198,17 +146,13 @@ public class BuffDecompressor {
             // get the exp
             long exp = integer != 0 ? (get_width_needed(Math.abs(integer)) + 1022)
                     : 1023 - (decWidth - get_width_needed(decimal) + 1);
-//            System.out.println("exp:" + String.format("%11s", Long.toBinaryString(exp)).replace(' ', '0'));
-//            System.out.println("exp_value:" + exp);
 
             // get the origin bits in IEEE754
             long bits = (sign << 63) | (exp << 52) | mantissa;
-//            System.out.println("bits:" + String.format("%64s", Long.toBinaryString(bits)).replace(' ', '0'));
 
             // get the origin value
             double db = Double.longBitsToDouble(bits);
             db = Double.parseDouble(String.format("%." + maxPrec + "f", db));
-//            System.out.println("The Origin Value Is : " + String.format("%." + maxPrec + "f", db) + "\n----------");
             dbs[i] = db;
         }
         return dbs;

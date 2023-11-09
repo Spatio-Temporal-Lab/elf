@@ -19,40 +19,16 @@ public class BuffCompressor32 {
     private int intWidth;
     private int wholeWidth;
     private int columnCount;
-    Map<Integer, Integer> PRECISION_MAP = new HashMap<>();
-    private Map<Integer, Integer> LAST_MASK = new HashMap<>();
     private static final int batchSize = 1000;
 
-    public BuffCompressor32() {
-        PRECISION_MAP.put(0, 0);
-        PRECISION_MAP.put(1, 5);
-        PRECISION_MAP.put(2, 8);
-        PRECISION_MAP.put(3, 11);
-        PRECISION_MAP.put(4, 15);
-        PRECISION_MAP.put(5, 18);
-        PRECISION_MAP.put(6, 21);
-        PRECISION_MAP.put(7, 25);
-        PRECISION_MAP.put(8, 28);
-        PRECISION_MAP.put(9, 31);
-        PRECISION_MAP.put(10, 35);
-        PRECISION_MAP.put(11, 38);
-        PRECISION_MAP.put(12, 50);
-        PRECISION_MAP.put(13, 52);
-        PRECISION_MAP.put(14, 52);
-        PRECISION_MAP.put(15, 52);
-        PRECISION_MAP.put(16, 52);
-        PRECISION_MAP.put(17, 52);
-        PRECISION_MAP.put(18, 52);
-        // init LAST_MASK
-        LAST_MASK.put(1, 0b1);
-        LAST_MASK.put(2, 0b11);
-        LAST_MASK.put(3, 0b111);
-        LAST_MASK.put(4, 0b1111);
-        LAST_MASK.put(5, 0b11111);
-        LAST_MASK.put(6, 0b111111);
-        LAST_MASK.put(7, 0b1111111);
-        LAST_MASK.put(8, 0b11111111);
+    private static int[] PRECISION_MAP = new int[]{
+            0, 5, 8, 11, 15, 18, 21, 25, 28, 31, 35, 38, 50, 52, 52, 52, 52, 52, 52
+    };
+    private static int[] LAST_MASK = new int[]{
+            0b1, 0b11, 0b111, 0b1111, 0b11111, 0b111111, 0b1111111, 0b11111111
+    };
 
+    public BuffCompressor32() {
         out = new OutputBitStream(new byte[100000]);
         size = 0;
     }
@@ -102,52 +78,32 @@ public class BuffCompressor32 {
             // float -> bits
             int bits = Float.floatToIntBits(db);
             // bits -> string
-            String binaryString = String.format("%32s", Long.toBinaryString(bits)).replace(' ', '0');
-//            System.out.println("二进制表示：" + binaryString + "\n长度：" + binaryString.length());
 
             // get the sign
             int sign = bits >>> 31;
-//            System.out.println("sign:" + sign);
 
             // get the exp
             int exp_binary = bits >>> 23 & 0xFF;
-//            System.out
-//                    .println("exp_binary:" + String.format("%8s", Long.toBinaryString(exp_binary)).replace(' ', '0'));
             int exp = exp_binary - 127;
-//            System.out.println("exp:" + exp);
 
             // get the mantissa
             int mantissa = bits & 0x7FFFFF; // 0.11  1   -0.12  -1
-//            System.out.println("mantissa:" + String.format("%23s", Long.toBinaryString(mantissa)).replace(' ', '0'));
 
             // get the mantissa with implicit bit
             int implicit_mantissa = mantissa | (1 << 23);
-//            System.out.println("implicit_mantissa:"
-//                    + String.format("%24s", Long.toBinaryString(implicit_mantissa)).replace(' ', '0'));
 
             // get the precision
             int prec = get_decimal_place(db);
-//            System.out.println("prec:" + prec);
 
             // update the max prec
             if (prec > maxPrec) {
                 maxPrec = prec;
             }
 
-            // get the int_len
-//            int int_len = ((int) exp + 1) > 0 ? ((int) exp + 1) : 0;
-//            System.out.println("int_len:" + int_len);
-
             // get the integer
             int integer = (23 - exp) > 23 ? 0 : (implicit_mantissa >>> (23 - exp));
             int integer_value = (sign == 0) ? integer : -integer;
 
-//            if (int_len != 0)
-//                System.out.println(
-//                        "integer:"
-//                                + String.format("%" + int_len + "s", Long.toBinaryString(integer)).replace(' ', '0'));
-//            else
-//                System.out.println("integer: null");
             // update the integer bound
             if (integer_value > upperBound) {
                 upperBound = integer_value;
@@ -157,30 +113,20 @@ public class BuffCompressor32 {
             }
         }
 
-//        System.out.println("--------HEAD SAMPLE RESULT--------begin");
-//        System.out.println("lower_bound:" + lowerBound);
-//        System.out.println("upper_bound:" + upperBound);
-//        System.out.println("max_prec:" + maxPrec);
-
         // get the int_width
         intWidth = getWidthNeeded(upperBound - lowerBound);
-//        System.out.println("int_width:" + intWidth);
 
         // get the dec_width
-        decWidth = PRECISION_MAP.get(maxPrec);
-//        System.out.println("dec_width:" + decWidth);
+        decWidth = PRECISION_MAP[maxPrec];
 
         // get the whole_width
         wholeWidth = intWidth + decWidth + 1;
-//        System.out.println("whole_width:" + wholeWidth);
 
         // get the col/bytes needed
         columnCount = wholeWidth / 8;
         if (wholeWidth % 8 != 0) {
             columnCount++;
         }
-//        System.out.println("columnCount:" + columnCount);
-//        System.out.println("--------HEAD SAMPLE RESULT--------end");
     }
 
     public static int get_decimal_place(float db) {
@@ -216,100 +162,43 @@ public class BuffCompressor32 {
             // float -> bits
             int bits = Float.floatToIntBits(db);
             // bits -> string
-            String binaryString = String.format("%32s", Long.toBinaryString(bits)).replace(' ', '0');
-//            System.out.println("二进制表示：" + binaryString + "\n长度：" + binaryString.length());
 
             // get the sign
             int sign = bits >>> 31;
-//            System.out.println("sign:" + sign);
 
             // get the exp
             int exp_binary = bits >>> 23 & 0xFF; // mask for the last 8 bits
-//            System.out
-//                    .println("exp_binary:" + String.format("%8s", Long.toBinaryString(exp_binary)).replace(' ', '0'));
             int exp = exp_binary - 127;
-//            System.out.println("exp:" + exp);
 
             // get the mantissa
             int mantissa = bits & 0x7FFFFF; // 0.11  1   -0.12  -1
-//            System.out.println("mantissa:" + String.format("%23s", Long.toBinaryString(mantissa)).replace(' ', '0'));
 
             // get the mantissa with implicit bit
             int implicit_mantissa = mantissa | (1 << 23);
-//            System.out.println("implicit_mantissa:"
-//                    + String.format("%24s", Long.toBinaryString(implicit_mantissa)).replace(' ', '0'));
-
-            // get the precision
-            int prec = get_decimal_place(db);
-//            System.out.println("prec:" + prec);
-
-            // 以下改用dec_width
-            // get the dec_len
-            // int dec_len = PRECISION_MAP.get(prec);
-            // System.out.println("dec_len:" + dec_len);
-
-            // get the decimal
-            // long decimal = mantissa << (12 + exp) >>> (12 + exp) >>> (64 - 12 - exp -
-            // dec_len);
-
-            // long decimal = mantissa << (12 + exp) >>> (64 - dec_len);
-            // if (dec_len != 0)
-            // System.out.println(
-            // "decimal:"
-            // + String.format("%" + dec_len + "s", Long.toBinaryString(decimal)).replace('
-            // ', '0'));
-
-            // long decimal = (12 + exp)>=0 ? (mantissa << (12 + exp) >>> (64 - dec_width) )
-            // : (mantissa >>> Math.abs(12 + exp)>>> (64 - dec_width - Math.abs(12 + exp)));
             int decimal = (exp >= 0) ? (mantissa << (9 + exp) >>> (32 - decWidth))
                     : (implicit_mantissa >>> 24 - decWidth >>> (Math.abs(exp) - 1));
-//            if (decWidth != 0)
-//                System.out.println(
-//                        "decimal:"
-//                                + String.format("%" + decWidth + "s", Long.toBinaryString(decimal)).replace(' ', '0'));
-
-            // get the int_len
-//            int int_len = ((int) exp + 1) > 0 ? ((int) exp + 1) : 0;
-//            System.out.println("int_len:" + int_len);
 
             // get the integer
             int integer = (23 - exp) > 31 ? 0 : (implicit_mantissa >>> (23 - exp));
             int integer_value = (sign == 0) ? integer : -integer;
 
-//            if (int_len != 0)
-//                System.out.println(
-//                        "integer:"
-//                                + String.format("%" + int_len + "s", Long.toBinaryString(integer)).replace(' ', '0'));
-//            else
-//                System.out.println("integer: null");
-
             // get the offset of integer
             int offset = integer_value - lowerBound;
-//            System.out.println(
-//                    "offset:" + String.format("%" + intWidth + "s", Long.toBinaryString(offset)).replace(' ', '0'));
 
             // get the bitpack result
             int bitpack = sign << (wholeWidth - 1) | (offset << decWidth) | decimal;
-
-//            System.out.println("bitpack:"
-//                    + String.format("%" + wholeWidth + "s", Long.toBinaryString(bitpack)).replace(' ', '0'));
 
             // encode into cols[][]
             int remain = wholeWidth % 8;
             int bytes_cnt = 0;
             if (remain != 0) {
                 bytes_cnt++;
-                cols[columnCount - bytes_cnt][db_cnt] = (byte) (bitpack & LAST_MASK.get(remain));
-//                System.out.println((columnCount) - bytes_cnt + "/"
-//                        + String.format("%" + remain + "s", Long.toBinaryString((bitpack & LAST_MASK.get(remain))))
-//                        .replace(' ', '0'));
+                cols[columnCount - bytes_cnt][db_cnt] = (byte) (bitpack & LAST_MASK[remain-1]);
                 bitpack = bitpack >>> remain;
             }
             while (bytes_cnt < columnCount) {
                 bytes_cnt++;
-                cols[columnCount - bytes_cnt][db_cnt] = (byte) (bitpack & LAST_MASK.get(8));
-//                System.out.println(String.format((columnCount - bytes_cnt) + "/" + "%" + 8 + "s",
-//                        Long.toBinaryString((bitpack & LAST_MASK.get(8)))).replace(' ', '0'));
+                cols[columnCount - bytes_cnt][db_cnt] = (byte) (bitpack & LAST_MASK[7]);
                 bitpack = bitpack >>> 8;
             }
 
@@ -320,7 +209,6 @@ public class BuffCompressor32 {
 
 
     public void sparseEncode(byte[][] cols) {
-//        System.out.println("cols2,8:" + cols[2][8]);
         SparseResult result;
         for (int j = 0; j < columnCount; ++j) {
             // 遍历每一列，查找频繁项
@@ -337,7 +225,6 @@ public class BuffCompressor32 {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-//                System.out.println(Arrays.toString(testOut.getBuffer()));
             }
         }
     }
@@ -345,9 +232,6 @@ public class BuffCompressor32 {
     private void serialize(SparseResult sr) {
         size += out.writeInt(sr.frequent_value, 8);
         try {
-//            System.out.println("serialize");
-//
-//            System.out.println(Arrays.toString(sr.bitmap));
             size += out.write(sr.bitmap, batchSize);
         } catch (IOException e) {
             e.printStackTrace();
@@ -382,7 +266,6 @@ public class BuffCompressor32 {
             if (nums[i] == candidate) {
                 count++;
             } else {
-//                System.out.println("is: "+ i);
                 result.bitmap[index] = (byte) (result.bitmap[index] | 0b1);
                 result.outliers.add(nums[i]);
             }
@@ -393,7 +276,6 @@ public class BuffCompressor32 {
             result.frequent_value = candidate;
         } else {
             result.flag = false;
-            // result.frequent_value = 0;
         }
         return result;
     }
