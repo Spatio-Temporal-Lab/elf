@@ -132,12 +132,12 @@ public class BuffCompressor {
         int cnt = 0;
 
         if (indexOfDecimalPoint >= 0) {
-            for (int i = indexOfDecimalPoint; i < strDb.length(); ++i) {
+            for (int i = indexOfDecimalPoint + 1; i < strDb.length(); ++i) {
                 if (strDb.charAt(i) != 'E') {
                     cnt++;
                 } else {
-                    i++;
-                    cnt += Integer.parseInt(strDb.substring(i));
+                    i ++;
+                    cnt -= Integer.parseInt(strDb.substring(i));
                     return cnt;
                 }
             }
