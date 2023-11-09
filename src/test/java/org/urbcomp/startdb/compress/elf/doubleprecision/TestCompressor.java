@@ -51,6 +51,7 @@ public class TestCompressor {
             "/Stocks-UK.csv",
             "/Stocks-USA.csv",
             "/Wind-Speed.csv",
+//    "/test.csv"
     };
     private static final String STORE_PATH = "src/test/resources/result";
 
@@ -276,6 +277,7 @@ public class TestCompressor {
             }
             resultCompressor.get(key).add(r);
         }
+
     }
 
     public void testSnappy(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
