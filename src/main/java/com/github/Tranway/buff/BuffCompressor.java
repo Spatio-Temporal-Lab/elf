@@ -196,8 +196,9 @@ public class BuffCompressor {
                 if (strDb.charAt(i) != 'E') {
                     cnt++;
                 } else {
-                    i += 2;
-                    cnt += Integer.parseInt(String.valueOf(strDb.charAt(i)));
+                    i ++;
+                    cnt += Integer.parseInt(strDb.substring(i));
+                    return cnt;
                 }
             }
             return cnt;
