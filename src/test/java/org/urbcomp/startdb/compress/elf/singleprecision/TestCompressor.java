@@ -1,5 +1,7 @@
 package org.urbcomp.startdb.compress.elf.singleprecision;
 
+import com.github.Tranway.buff.BuffCompressor32;
+import com.github.Tranway.buff.BuffDecompressor32;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -23,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestCompressor {
@@ -54,13 +57,15 @@ public class TestCompressor {
     @Test
     public void testCompressor() throws IOException {
         for (String filename : FILENAMES) {
+            System.out.println(filename);
             Map<String, List<ResultStructure>> result = new HashMap<>();
-            testELFCompressor32(filename, result);
-            testSnappy32(filename, result);
-            testZstd32(filename, result);
-            testLZ432(filename, result);
-            testBrotli32(filename, result);
-            testXz32(filename, result);
+//            testELFCompressor32(filename, result);
+            testBuff(filename,result);
+//            testSnappy32(filename, result);
+//            testZstd32(filename, result);
+//            testLZ432(filename, result);
+//            testBrotli32(filename, result);
+//            testXz32(filename, result);
             for (Map.Entry<String, List<ResultStructure>> kv : result.entrySet()) {
                 Map<String, ResultStructure> r = new HashMap<>();
                 r.put(kv.getKey(), computeAvg(kv.getValue()));
@@ -144,6 +149,51 @@ public class TestCompressor {
                 totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 32.0),
                 totalCompressionTime.get(key),
                 totalDecompressionTime.get(key)
+            );
+            if (!resultCompressor.containsKey(key)) {
+                resultCompressor.put(key, new ArrayList<>());
+            }
+            resultCompressor.get(key).add(r);
+        }
+    }
+
+    public void testBuff(String fileName, Map<String, List<ResultStructure>> resultCompressor) throws IOException {
+        FileReader fileReader = new FileReader(FILE_PATH + fileName);
+        float totalBlocks = 0;
+        long totalSize = 0;
+        float[] values;
+        List<Double> totalCompressionTime = new ArrayList<>();
+        List<Double> totalDecompressionTime = new ArrayList<>();
+
+        while ((values = fileReader.nextBlock()) != null) {
+            double encodingDuration = 0;
+            double decodingDuration = 0;
+            BuffCompressor32 compressor = new BuffCompressor32();
+            // Compress
+            long start = System.nanoTime();
+            compressor.compress(values);
+            encodingDuration += System.nanoTime() - start;
+
+            totalSize += compressor.getSize();
+            totalBlocks += 1;
+
+            byte[] result = compressor.getOut();
+            BuffDecompressor32 decompressor = new BuffDecompressor32(result);
+
+            float[] dest = new float[1000];
+            start = System.nanoTime();
+            dest = decompressor.decompress();
+            decodingDuration += System.nanoTime() - start;
+            assertArrayEquals(dest, values);
+            totalCompressionTime.add(encodingDuration / TIME_PRECISION);
+            totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
+        }
+        if (!totalCompressionTime.isEmpty()) {
+            String key = "Buff32";
+            ResultStructure r = new ResultStructure(fileName, key,
+                    totalSize / (totalBlocks * org.urbcomp.startdb.compress.elf.doubleprecision.FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                    totalCompressionTime,
+                    totalDecompressionTime
             );
             if (!resultCompressor.containsKey(key)) {
                 resultCompressor.put(key, new ArrayList<>());
