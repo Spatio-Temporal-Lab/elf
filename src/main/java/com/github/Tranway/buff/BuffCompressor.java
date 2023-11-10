@@ -72,7 +72,7 @@ public class BuffCompressor {
         int bitCount = 0;
         while (number > 0) {
             bitCount++;
-            number = number >> 1; // 右移一位
+            number = number >>> 1; // 右移一位
         }
         return bitCount;
     }
@@ -148,7 +148,7 @@ public class BuffCompressor {
                 } else {
                     i++;
                     cnt -= Integer.parseInt(strDb.substring(i));
-                    return cnt;
+                    return cnt > 0 ? cnt : 0;
                 }
             }
             return cnt;
@@ -185,9 +185,10 @@ public class BuffCompressor {
                 decimal = mantissa << (12 + exp) >>> (64 - decWidth);
             } else {
                 if (53 - decWidth >= 0) {
-                    decimal = implicit_mantissa >>> 53 - decWidth >>> (Math.abs(exp) - 1);
+                    decimal = implicit_mantissa >>> 53 - decWidth >>> (-exp - 1);
+//                    decimal = implicit_mantissa >>> 52 - decWidth - exp;
                 } else {
-                    decimal = implicit_mantissa << -(53 - decWidth) >>> (Math.abs(exp) - 1);
+                    decimal = implicit_mantissa << decWidth - 53 >>> (-exp - 1);
                 }
             }
 
@@ -254,8 +255,8 @@ public class BuffCompressor {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        for (int i = 0; i < sr.outliers.size(); i++) {
-            size += out.writeInt(sr.outliers.get(i).intValue(), 8);
+        for (int i = 0; i < sr.outliers_cnt; i++) {
+            size += out.writeInt(sr.outliers[i], 8);
         }
     }
 
@@ -286,7 +287,7 @@ public class BuffCompressor {
             } else {
 //                System.out.println("is: "+ i);
                 result.bitmap[index] = (byte) (result.bitmap[index] | 0b1);
-                result.outliers.add(nums[i]);
+                result.outliers[result.outliers_cnt++] = nums[i];
             }
         }
 
@@ -299,4 +300,6 @@ public class BuffCompressor {
         }
         return result;
     }
+
+
 }

@@ -68,7 +68,7 @@ public class BuffCompressor32 {
         int bitCount = 0;
         while (number > 0) {
             bitCount++;
-            number = number >> 1; // 右移一位
+            number = number >>> 1; // 右移一位
         }
         return bitCount;
     }
@@ -150,7 +150,7 @@ public class BuffCompressor32 {
                 } else {
                     i++;
                     cnt -= Integer.parseInt(strDb.substring(i));
-                    return cnt;
+                    return cnt>0 ? cnt : 0;
                 }
             }
             return cnt;
@@ -181,8 +181,19 @@ public class BuffCompressor32 {
 
             // get the mantissa with implicit bit
             int implicit_mantissa = mantissa | (1 << 23);
-            int decimal = (exp >= 0) ? (mantissa << (9 + exp) >>> (32 - decWidth))
-                    : (implicit_mantissa >>> 24 - decWidth >>> (Math.abs(exp) - 1));
+            //            int decimal = (exp >= 0) ? (mantissa << (9 + exp) >>> (32 - decWidth))
+//                    : (implicit_mantissa >>> 24 - decWidth >>> (Math.abs(exp) - 1));
+            long decimal;
+            if (exp >= 0) {
+                decimal = mantissa << (9 + exp) >>> (32 - decWidth);
+            } else {
+                if (24 - decWidth >= 0) {
+                    decimal = implicit_mantissa >>> 24 - decWidth >>> (-exp - 1);
+//                    decimal = implicit_mantissa >>> 23 - decWidth - exp;
+                } else {
+                    decimal = implicit_mantissa << decWidth - 24 >>> (-exp - 1);
+                }
+            }
 
             // get the integer
             int integer = exp < 0 ? 0 : (implicit_mantissa >>> (23 - exp));
@@ -242,8 +253,8 @@ public class BuffCompressor32 {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        for (int i = 0; i < sr.outliers.size(); i++) {
-            size += out.writeInt(sr.outliers.get(i).intValue(), 8);
+        for (int i = 0; i < sr.outliers_cnt; i++) {
+            size += out.writeInt(sr.outliers[i], 8);
         }
     }
 
@@ -273,7 +284,7 @@ public class BuffCompressor32 {
                 count++;
             } else {
                 result.bitmap[index] = (byte) (result.bitmap[index] | 0b1);
-                result.outliers.add(nums[i]);
+                result.outliers[result.outliers_cnt++]=nums[i];
             }
         }
 

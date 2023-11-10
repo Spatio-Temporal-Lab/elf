@@ -7,7 +7,9 @@ public class SparseResult {
     byte frequent_value;
     byte[] bitmap;
     boolean[] isFrequentValue;
-    ArrayList<Byte> outliers;
+    //    ArrayList<Byte> outliers;
+    Byte[] outliers;
+    int outliers_cnt = 0;
 
     public boolean isFlag() {
         return flag;
@@ -41,18 +43,21 @@ public class SparseResult {
         this.isFrequentValue = isFrequentValue;
     }
 
-    public ArrayList<Byte> getOutliers() {
+    //    public ArrayList<Byte> getOutliers() {
+//        return outliers;
+//    }
+    public Byte[] getOutliers() {
         return outliers;
     }
 
-    public void setOutliers(ArrayList<Byte> outliers) {
-        this.outliers = outliers;
-    }
+//    public void setOutliers(ArrayList<Byte> outliers) {
+//        this.outliers = outliers;
+//    }
 
     SparseResult(int batch_size) {
         flag = false;
         bitmap = new byte[batch_size / 8 + 1];
-        outliers = new ArrayList<>();
+        outliers = new Byte[batch_size];
         isFrequentValue = new boolean[batch_size];
     }
 }
