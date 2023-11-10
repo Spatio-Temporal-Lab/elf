@@ -36,11 +36,17 @@ public class BuffDecompressor32 {
         intWidth = in.readInt(32);
         decWidth = PRECISION_MAP[maxPrec];
         wholeWidth = decWidth + intWidth + 1;
+        if (wholeWidth >= 32) {
+            float[] result = new float[batch_size];
+            for (int i = 0; i < batch_size; i++) {
+                result[i] = Float.intBitsToFloat(in.readInt(32));
+            }
+            return result;
+        }
         columnCount = wholeWidth / 8;
         if (wholeWidth % 8 != 0) {
             columnCount++;
         }
-//        System.out.println("intWidth" + intWidth);
         cols = new byte[columnCount][batch_size];
         sparseDecode();
         return merge_doubles();
@@ -105,7 +111,7 @@ public class BuffDecompressor32 {
         float[] dbs = new float[batch_size];
         for (int i = 0; i < batch_size; i++) {
             // 逐行提取数据
-            int bitpack = 0;
+            long bitpack = 0;
             int remain = wholeWidth % 8;
             if (remain == 0) {
                 for (int j = 0; j < columnCount; j++) {
@@ -115,11 +121,11 @@ public class BuffDecompressor32 {
                 for (int j = 0; j < columnCount - 1; j++) {
                     bitpack = (bitpack << 8) | (cols[j][i] & LAST_MASK[7]);
                 }
-                bitpack = (bitpack << remain) | (cols[columnCount - 1][i] & LAST_MASK[remain-1]);
+                bitpack = (bitpack << remain) | (cols[columnCount - 1][i] & LAST_MASK[remain - 1]);
             }
 
             // get the offset
-            int offset = (intWidth != 0) ? (bitpack << 33 - wholeWidth >>> 32 - intWidth) : 0;
+            int offset = (intWidth != 0) ? (int)(bitpack << 65 - wholeWidth >>> 64 - intWidth) : 0;
 
 
             // get the integer
@@ -127,23 +133,24 @@ public class BuffDecompressor32 {
 //            System.out.println("integer:" + integer);
 
             // get the decimal
-            int decimal = bitpack << (32 - decWidth) >>> (32 - decWidth);
+            int decimal = (int)(bitpack << (64 - decWidth) >>> (64 - decWidth));
 
             // modified decimal [used for - exp]
             int modified_decimal = decimal << (decWidth - get_width_needed(decimal));
 
             // get the mantissa with implicit bit
+            int tmp = 24 - decWidth - get_width_needed(Math.abs(integer));
             int implicit_mantissa = (Math.abs(integer) << (24 - get_width_needed(Math.abs(integer))))
-                    | (integer == 0 ? (modified_decimal << (24 - decWidth))
-                    : (24 - decWidth - get_width_needed(Math.abs(integer))) >= 0
-                    ? (decimal << (24 - decWidth - get_width_needed(Math.abs(integer))))
-                    : (decimal >>> Math.abs(24 - decWidth - get_width_needed(Math.abs(integer)))));
+                    | (integer == 0 ? tmp >= 0 ? (modified_decimal << tmp) : (modified_decimal >>> Math.abs(tmp))
+                    : tmp >= 0
+                    ? (decimal << (tmp))
+                    : (decimal >>> Math.abs(tmp)));
 
             // get the mantissa
             int mantissa = implicit_mantissa & 0x7FFFFF;
 
             // get the sign
-            int sign = bitpack >>> (wholeWidth - 1);
+            int sign = (int)(bitpack >>> (wholeWidth - 1));
 
             // get the exp
             int exp = integer != 0 ? (get_width_needed(Math.abs(integer)) + 126)

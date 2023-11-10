@@ -19,7 +19,7 @@ public class BuffDecompressor {
     private byte[][] cols;
 
     private static int[] PRECISION_MAP = new int[]{
-            0, 5, 8, 11, 15, 18, 21, 25, 28, 31, 35, 38, 50, 52, 52, 52, 52, 52, 52
+            0, 5, 8, 11, 15, 18, 21, 25, 28, 31, 35, 38, 50, 52, 52, 52, 64, 64, 64, 64, 64, 64, 64
     };
     private static long[] LAST_MASK = new long[]{
             0b1L, 0b11L, 0b111L, 0b1111L, 0b11111L, 0b111111L, 0b1111111L, 0b11111111L
@@ -36,6 +36,13 @@ public class BuffDecompressor {
         intWidth = in.readInt(32);
         decWidth = PRECISION_MAP[maxPrec];
         wholeWidth = decWidth + intWidth + 1;
+        if (wholeWidth >= 64) {
+            double[] result = new double[batch_size];
+            for (int i = 0; i < batch_size; i++) {
+                result[i] = Double.longBitsToDouble(in.readLong(64));
+            }
+            return result;
+        }
         columnCount = wholeWidth / 8;
         if (wholeWidth % 8 != 0) {
             columnCount++;
@@ -115,7 +122,7 @@ public class BuffDecompressor {
                 for (int j = 0; j < columnCount - 1; j++) {
                     bitpack = (bitpack << 8) | (cols[j][i] & LAST_MASK[7]);
                 }
-                bitpack = (bitpack << remain) | (cols[columnCount - 1][i] & LAST_MASK[remain-1]);
+                bitpack = (bitpack << remain) | (cols[columnCount - 1][i] & LAST_MASK[remain - 1]);
             }
 
             // get the offset
@@ -130,12 +137,18 @@ public class BuffDecompressor {
             // modified decimal [used for - exp]
             long modified_decimal = decimal << (decWidth - get_width_needed(decimal));
 
+            // get the exp
+            long exp = integer != 0 ? (get_width_needed(Math.abs(integer)) + 1022)
+                    : 1023 - (decWidth - get_width_needed(decimal) + 1);
+            long expValue = exp - 1023;
+
             // get the mantissa with implicit bit
+            int tmp = 53 - decWidth - get_width_needed(Math.abs(integer));
             long implicit_mantissa = (Math.abs(integer) << (53 - get_width_needed(Math.abs(integer))))
-                    | (integer == 0 ? (modified_decimal << (53 - decWidth))
-                    : (53 - decWidth - get_width_needed(Math.abs(integer))) >= 0
-                    ? (decimal << (53 - decWidth - get_width_needed(Math.abs(integer))))
-                    : (decimal >>> Math.abs(53 - decWidth - get_width_needed(Math.abs(integer)))));
+                    | (expValue < 0 ? (tmp >= 0 ? (modified_decimal << tmp) : (modified_decimal >>> Math.abs(tmp)))
+                    : tmp >= 0
+                    ? (decimal << (tmp))
+                    : (decimal >>> Math.abs(tmp)));
 
             // get the mantissa
             long mantissa = implicit_mantissa & 0x000fffffffffffffL;
@@ -143,9 +156,6 @@ public class BuffDecompressor {
             // get the sign
             long sign = bitpack >>> (wholeWidth - 1);
 
-            // get the exp
-            long exp = integer != 0 ? (get_width_needed(Math.abs(integer)) + 1022)
-                    : 1023 - (decWidth - get_width_needed(decimal) + 1);
 
             // get the origin bits in IEEE754
             long bits = (sign << 63) | (exp << 52) | mantissa;

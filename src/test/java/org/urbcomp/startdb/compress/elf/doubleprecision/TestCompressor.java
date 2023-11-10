@@ -30,23 +30,23 @@ public class TestCompressor {
     private static final String[] FILENAMES = {
             "/init.csv",    //First run a dataset to ensure the relevant hbase settings of the zstd and snappy compressors
             "/Air-pressure.csv",
-//            "/Air-sensor.csv",//0.4845827030281378   0.48458270302813783
+            "/Air-sensor.csv",//0.4845827030281378   0.48458270302813783
             "/Basel-temp.csv",
             "/Basel-wind.csv",
             "/Bird-migration.csv",
             "/Bitcoin-price.csv",
             "/Blockchain-tr.csv",
             "/City-temp.csv",
-            "/City-lat.csv",      //0.2186 -0.2186
-            "/City-lon.csv",        //0.1275 -0.1275
-            "/Dew-point-temp.csv",
-            "/electric_vehicle_charging.csv",
+            "/City-lat.csv",      //0.2186 -0.2186!
+            "/City-lon.csv",        //0.1275 -0.1275!
+            "/Dew-point-temp.csv",      //!
+            "/electric_vehicle_charging.csv",   //!
             "/Food-price.csv",      //1606632.0  1000.0
             "/IR-bio-temp.csv",
             "/PM10-dust.csv",
             "/SSD-bench.csv",
-//            "/POI-lat.csv",   //太长崩了
-//            "/POI-lon.csv",
+            "/POI-lat.csv",   //太长崩了
+            "/POI-lon.csv",
             "/Stocks-DE.csv",
             "/Stocks-UK.csv",
             "/Stocks-USA.csv",
@@ -203,7 +203,7 @@ public class TestCompressor {
             byte[] result = compressor.getOut();
             BuffDecompressor decompressor = new BuffDecompressor(result);
 
-            double[] dest = new double[FileReader.DEFAULT_BLOCK_SIZE];
+            double[] dest;
             start = System.nanoTime();
             dest = decompressor.decompress();
             decodingDuration += System.nanoTime() - start;

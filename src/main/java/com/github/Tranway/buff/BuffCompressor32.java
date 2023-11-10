@@ -2,7 +2,6 @@ package com.github.Tranway.buff;
 
 import gr.aueb.delorean.chimp.InputBitStream;
 import gr.aueb.delorean.chimp.OutputBitStream;
-import org.urbcomp.startdb.compress.elf.utils.Elf64Utils;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -44,11 +43,18 @@ public class BuffCompressor32 {
         size += out.writeInt(batchSize, 32);
         size += out.writeInt(maxPrec, 32);
         size += out.writeInt(intWidth, 32);
-        sparseEncode(cols);
-//        System.out.println("size:" + size);
-//        System.out.println(size);
-//        System.out.println(wholeWidth*1000);
+        if (wholeWidth >= 32) {
+            wholeWidthLongCompress(values);
+        } else {
+            sparseEncode(cols);
+        }
         close();
+    }
+
+    public void wholeWidthLongCompress(float[] values) {
+        for (float value : values) {
+            size += out.writeInt(Float.floatToIntBits(value), 32);
+        }
     }
 
     public void close() {
@@ -101,7 +107,7 @@ public class BuffCompressor32 {
             }
 
             // get the integer
-            int integer = (23 - exp) > 23 ? 0 : (implicit_mantissa >>> (23 - exp));
+            int integer = exp < 0 ? 0 : (implicit_mantissa >>> (23 - exp));
             int integer_value = (sign == 0) ? integer : -integer;
 
             // update the integer bound
@@ -138,12 +144,12 @@ public class BuffCompressor32 {
         int cnt = 0;
 
         if (indexOfDecimalPoint >= 0) {
-            for (int i = indexOfDecimalPoint; i < strDb.length(); ++i) {
+            for (int i = indexOfDecimalPoint + 1; i < strDb.length(); ++i) {
                 if (strDb.charAt(i) != 'E') {
                     cnt++;
                 } else {
-                    i ++;
-                    cnt += Integer.parseInt(strDb.substring(i));
+                    i++;
+                    cnt -= Integer.parseInt(strDb.substring(i));
                     return cnt;
                 }
             }
@@ -179,21 +185,21 @@ public class BuffCompressor32 {
                     : (implicit_mantissa >>> 24 - decWidth >>> (Math.abs(exp) - 1));
 
             // get the integer
-            int integer = (23 - exp) > 31 ? 0 : (implicit_mantissa >>> (23 - exp));
+            int integer = exp < 0 ? 0 : (implicit_mantissa >>> (23 - exp));
             int integer_value = (sign == 0) ? integer : -integer;
 
             // get the offset of integer
             int offset = integer_value - lowerBound;
 
             // get the bitpack result
-            int bitpack = sign << (wholeWidth - 1) | (offset << decWidth) | decimal;
+            long bitpack = ((long)sign) << (wholeWidth - 1) | ((long)offset << decWidth) | decimal;
 
             // encode into cols[][]
             int remain = wholeWidth % 8;
             int bytes_cnt = 0;
             if (remain != 0) {
                 bytes_cnt++;
-                cols[columnCount - bytes_cnt][db_cnt] = (byte) (bitpack & LAST_MASK[remain-1]);
+                cols[columnCount - bytes_cnt][db_cnt] = (byte) (bitpack & LAST_MASK[remain - 1]);
                 bitpack = bitpack >>> remain;
             }
             while (bytes_cnt < columnCount) {
