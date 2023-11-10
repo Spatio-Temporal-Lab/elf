@@ -3,6 +3,8 @@ package com.github.Tranway.buff;
 import gr.aueb.delorean.chimp.InputBitStream;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -162,7 +164,10 @@ public class BuffDecompressor {
 
             // get the origin value
             double db = Double.longBitsToDouble(bits);
-            db = Double.parseDouble(String.format("%." + maxPrec + "f", db));
+            //            db = Double.parseDouble(String.format("%." + maxPrec + "f", db));
+            BigDecimal bd = new BigDecimal(db);
+            db = bd.setScale(maxPrec, RoundingMode.HALF_UP).doubleValue();
+            if(db==0 && sign==1)    db = -db;
             dbs[i] = db;
         }
         return dbs;
