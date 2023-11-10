@@ -164,7 +164,7 @@ public class BuffDecompressor32 {
             float db = Float.intBitsToFloat(bits);
             //            db = Double.parseDouble(String.format("%." + maxPrec + "f", db));
             BigDecimal bd = new BigDecimal(db);
-            db = (float) bd.setScale(maxPrec, BigDecimal.ROUND_HALF_UP).doubleValue();
+            db = bd.setScale(maxPrec, BigDecimal.ROUND_HALF_UP).floatValue();
             if(db==0 && sign==1)    db = -db;
             dbs[i] = db;
         }
