@@ -64,7 +64,7 @@ public class BuffDecompressor {
             }
         }
         for (int i = 0; i < count; i++) {
-            result.getOutliers().add((byte) in.readInt(8));
+            result.getOutliers()[i] = (byte) in.readInt(8);
         }
 
         return result;
@@ -84,8 +84,7 @@ public class BuffDecompressor {
                     if ((result.bitmap[index] & (1 << (7 - offset))) == 0) {
                         cols[j][i] = result.frequent_value;
                     } else {
-                        cols[j][i] = result.outliers.get(vec_cnt);
-                        vec_cnt++;
+                        cols[j][i] = result.outliers[vec_cnt++];
                     }
                 }
             }
@@ -101,7 +100,7 @@ public class BuffDecompressor {
         int bitCount = 0;
         while (number > 0) {
             bitCount++;
-            number = number >> 1; // 右移一位
+            number = number >>> 1; // 右移一位
         }
 
         return bitCount;
@@ -144,7 +143,8 @@ public class BuffDecompressor {
 
             // get the mantissa with implicit bit
             int tmp = 53 - decWidth - get_width_needed(Math.abs(integer));
-            long implicit_mantissa = (Math.abs(integer) << (53 - get_width_needed(Math.abs(integer))))
+            //            long implicit_mantissa = (Math.abs(integer) << (53 - get_width_needed(Math.abs(integer))))
+            long implicit_mantissa = (Math.abs(integer) << tmp + decWidth)
                     | (expValue < 0 ? (tmp >= 0 ? (modified_decimal << tmp) : (modified_decimal >>> Math.abs(tmp)))
                     : tmp >= 0
                     ? (decimal << (tmp))
@@ -167,4 +167,26 @@ public class BuffDecompressor {
         }
         return dbs;
     }
+
+
+    public static double round(double v, int alpha) {
+        double scale = get10iP(alpha);
+        return Math.round(v * scale) / scale;
+    }
+
+    private static double get10iP(int i) {
+        if (i < 0) {
+            throw new IllegalArgumentException("The argument should be greater than 0");
+        }
+        if (i >= map10iP.length) {
+            return Double.parseDouble("1.0E" + i);
+        } else {
+            return map10iP[i];
+        }
+    }
+
+    private final static double[] map10iP =
+            new double[]{1.0, 1.0E1, 1.0E2, 1.0E3, 1.0E4, 1.0E5, 1.0E6, 1.0E7,
+                    1.0E8, 1.0E9, 1.0E10, 1.0E11, 1.0E12, 1.0E13, 1.0E14,
+                    1.0E15, 1.0E16, 1.0E17, 1.0E18, 1.0E19, 1.0E20};
 }

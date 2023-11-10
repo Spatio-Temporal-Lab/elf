@@ -63,7 +63,7 @@ public class BuffDecompressor32 {
             }
         }
         for (int i = 0; i < count; i++) {
-            result.getOutliers().add((byte) in.readInt(8));
+            result.getOutliers()[i]=(byte) in.readInt(8);
         }
 
         return result;
@@ -83,8 +83,7 @@ public class BuffDecompressor32 {
                     if ((result.bitmap[index] & (1 << (7 - offset))) == 0) {
                         cols[j][i] = result.frequent_value;
                     } else {
-                        cols[j][i] = result.outliers.get(vec_cnt);
-                        vec_cnt++;
+                        cols[j][i] = result.outliers[vec_cnt++];
                     }
                 }
             }
@@ -100,7 +99,7 @@ public class BuffDecompressor32 {
         int bitCount = 0;
         while (number > 0) {
             bitCount++;
-            number = number >> 1; // 右移一位
+            number = number >>> 1; // 右移一位
         }
 
         return bitCount;
@@ -140,7 +139,8 @@ public class BuffDecompressor32 {
 
             // get the mantissa with implicit bit
             int tmp = 24 - decWidth - get_width_needed(Math.abs(integer));
-            int implicit_mantissa = (Math.abs(integer) << (24 - get_width_needed(Math.abs(integer))))
+            //            int implicit_mantissa = (Math.abs(integer) << (24 - get_width_needed(Math.abs(integer))))
+            int implicit_mantissa = (Math.abs(integer) << tmp + decWidth)
                     | (integer == 0 ? tmp >= 0 ? (modified_decimal << tmp) : (modified_decimal >>> Math.abs(tmp))
                     : tmp >= 0
                     ? (decimal << (tmp))
