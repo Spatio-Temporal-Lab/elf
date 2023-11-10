@@ -1,12 +1,8 @@
 package com.github.Tranway.buff;
 
-import gr.aueb.delorean.chimp.InputBitStream;
 import gr.aueb.delorean.chimp.OutputBitStream;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 public class BuffCompressor32 {
     private long size;
