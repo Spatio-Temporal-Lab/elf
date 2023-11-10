@@ -4,6 +4,7 @@ import gr.aueb.delorean.chimp.InputBitStream;
 import gr.aueb.delorean.chimp.OutputBitStream;
 import org.urbcomp.startdb.compress.elf.utils.Elf64Utils;
 
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,14 +25,13 @@ public class BuffCompressor {
     private static final int batchSize = 1000;
 
     private static int[] PRECISION_MAP = new int[]{
-            0, 5, 8, 11, 15, 18, 21, 25, 28, 31, 35, 38, 50, 52, 52, 52, 52, 52, 52
+            0, 5, 8, 11, 15, 18, 21, 25, 28, 31, 35, 38, 50, 52, 52, 52, 64, 64, 64, 64, 64, 64, 64
     };
     private static long[] LAST_MASK = new long[]{
             0b1L, 0b11L, 0b111L, 0b1111L, 0b11111L, 0b111111L, 0b1111111L, 0b11111111L
     };
 
     public BuffCompressor() {
-
         out = new OutputBitStream(new byte[100000]);
         size = 0;
     }
@@ -47,8 +47,18 @@ public class BuffCompressor {
         size += out.writeInt(batchSize, 32);
         size += out.writeInt(maxPrec, 32);
         size += out.writeInt(intWidth, 32);
-        sparseEncode(cols);
+        if (wholeWidth >= 64) {
+            wholeWidthLongCompress(values);
+        } else {
+            sparseEncode(cols);
+        }
         close();
+    }
+
+    public void wholeWidthLongCompress(double[] values) {
+        for (double value : values) {
+            size += out.writeLong(Double.doubleToLongBits(value), 64);
+        }
     }
 
     public void close() {
@@ -96,7 +106,7 @@ public class BuffCompressor {
             }
 
             // get the integer
-            long integer = (52 - exp) > 52 ? 0 : (implicit_mantissa >>> (52 - exp));
+            long integer = exp < 0 ? 0 : (implicit_mantissa >>> (52 - exp));
             long integer_value = (sign == 0) ? integer : -integer;
 
             if (integer_value > upperBound) {
@@ -136,7 +146,7 @@ public class BuffCompressor {
                 if (strDb.charAt(i) != 'E') {
                     cnt++;
                 } else {
-                    i ++;
+                    i++;
                     cnt -= Integer.parseInt(strDb.substring(i));
                     return cnt;
                 }
@@ -170,11 +180,19 @@ public class BuffCompressor {
             // get the mantissa with implicit bit
             long implicit_mantissa = mantissa | (1L << 52);
 
-            long decimal = (exp >= 0) ? (mantissa << (12 + exp) >>> (64 - decWidth))
-                    : (implicit_mantissa >>> 53 - decWidth >>> (Math.abs(exp) - 1));
+            long decimal;
+            if (exp >= 0) {
+                decimal = mantissa << (12 + exp) >>> (64 - decWidth);
+            } else {
+                if (53 - decWidth >= 0) {
+                    decimal = implicit_mantissa >>> 53 - decWidth >>> (Math.abs(exp) - 1);
+                } else {
+                    decimal = implicit_mantissa << -(53 - decWidth) >>> (Math.abs(exp) - 1);
+                }
+            }
 
             // get the integer
-            long integer = (52 - exp) > 52 ? 0 : (implicit_mantissa >>> (52 - exp));
+            long integer = exp < 0 ? 0 : (implicit_mantissa >>> (52 - exp));
             long integer_value = (sign == 0) ? integer : -integer;
 
             // get the offset of integer
@@ -189,7 +207,7 @@ public class BuffCompressor {
             int bytes_cnt = 0;
             if (remain != 0) {
                 bytes_cnt++;
-                cols[columnCount - bytes_cnt][db_cnt] = (byte) (bitpack & LAST_MASK[remain-1]);
+                cols[columnCount - bytes_cnt][db_cnt] = (byte) (bitpack & LAST_MASK[remain - 1]);
                 bitpack = bitpack >>> remain;
             }
             while (bytes_cnt < columnCount) {

@@ -48,6 +48,7 @@ public class TestCompressor {
         "/Stocks-UK.csv",
         "/Stocks-USA.csv",
         "/Wind-Speed.csv",
+//            "/test.csv"
     };
     private static final String STORE_PATH = "src/test/resources/result32";
 
@@ -191,7 +192,7 @@ public class TestCompressor {
         if (!totalCompressionTime.isEmpty()) {
             String key = "Buff32";
             ResultStructure r = new ResultStructure(fileName, key,
-                    totalSize / (totalBlocks * org.urbcomp.startdb.compress.elf.doubleprecision.FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                    totalSize / (totalBlocks * org.urbcomp.startdb.compress.elf.doubleprecision.FileReader.DEFAULT_BLOCK_SIZE * 32.0),
                     totalCompressionTime,
                     totalDecompressionTime
             );
