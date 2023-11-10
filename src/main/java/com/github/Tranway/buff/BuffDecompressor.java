@@ -5,9 +5,6 @@ import gr.aueb.delorean.chimp.InputBitStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 public class BuffDecompressor {
     private final InputBitStream in;

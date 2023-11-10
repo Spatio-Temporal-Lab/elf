@@ -1,14 +1,8 @@
 package com.github.Tranway.buff;
 
-import gr.aueb.delorean.chimp.InputBitStream;
 import gr.aueb.delorean.chimp.OutputBitStream;
-import org.urbcomp.startdb.compress.elf.utils.Elf64Utils;
 
-import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 public class BuffCompressor {
     private long size;
@@ -20,8 +14,6 @@ public class BuffCompressor {
     private int intWidth;
     private int wholeWidth;
     private int columnCount;
-    //    Map<Integer, Integer> PRECISION_MAP = new HashMap<>();
-//    private Map<Integer, Long> LAST_MASK = new HashMap<>();
     private static final int batchSize = 1000;
 
     private static int[] PRECISION_MAP = new int[]{
