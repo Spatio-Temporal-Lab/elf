@@ -36,19 +36,6 @@ public class ResultStructure {
         this.mediaDecompressTime = mediaDecompressTime;
     }
 
-    public ResultStructure(String filename, String compressorName, double compressorRatio, List<Double> compressionTime, List<Double> decompressionTime) {
-        this.filename = filename;
-        this.compressorName = compressorName;
-        this.compressorRatio = compressorRatio;
-        this.compressionTime = avgValue(compressionTime);
-        this.maxCompressTime = maxValue(compressionTime);
-        this.minCompressTime = minValue(compressionTime);
-        this.mediaCompressTime = medianValue(compressionTime);
-        this.decompressionTime = avgValue(decompressionTime);
-        this.maxDecompressTime = maxValue(decompressionTime);
-        this.minDecompressTime = minValue(decompressionTime);
-        this.mediaDecompressTime = medianValue(decompressionTime);
-    }
 
     public ResultStructure(String filename, String compressorName, double compressorRatio, List<Integer> compressionSize, List<Double> compressionTime, List<Double> decompressionTime) {
         this.filename = filename;

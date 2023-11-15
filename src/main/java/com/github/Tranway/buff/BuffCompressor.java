@@ -16,10 +16,10 @@ public class BuffCompressor {
     private int columnCount;
     private static final int batchSize = 1000;
 
-    private static int[] PRECISION_MAP = new int[]{
+    private static final int[] PRECISION_MAP = new int[]{
             0, 5, 8, 11, 15, 18, 21, 25, 28, 31, 35, 38, 50, 52, 52, 52, 64, 64, 64, 64, 64, 64, 64
     };
-    private static long[] LAST_MASK = new long[]{
+    private static final long[] LAST_MASK = new long[]{
             0b1L, 0b11L, 0b111L, 0b1111L, 0b11111L, 0b111111L, 0b1111111L, 0b11111111L
     };
 
@@ -59,7 +59,7 @@ public class BuffCompressor {
 
     private static int getWidthNeeded(long number) {
         if (number == 0) {
-            return 0; // 约定0不需要位宽
+            return 0;
         }
         int bitCount = 0;
         while (number > 0) {
@@ -81,16 +81,16 @@ public class BuffCompressor {
             long bits = Double.doubleToLongBits(db);
             long sign = bits >>> 63;
             // get the exp
-            long exp_binary = bits >>> 52 & 0x7FF;
-            long exp = exp_binary - 1023;
+            long expBinary = bits >>> 52 & 0x7FF;
+            long exp = expBinary - 1023;
             // get the mantissa
             long mantissa = bits & 0x000fffffffffffffL; // 0.11  1   -0.12  -1
 
             // get the mantissa with implicit bit
-            long implicit_mantissa = mantissa | (1L << 52);
+            long implicitMantissa = mantissa | (1L << 52);
 
             // get the precision
-            int prec = get_decimal_place(db);
+            int prec = getDecimalPlace(db);
 
             // update the max prec
             if (prec > maxPrec) {
@@ -98,14 +98,14 @@ public class BuffCompressor {
             }
 
             // get the integer
-            long integer = exp < 0 ? 0 : (implicit_mantissa >>> (52 - exp));
-            long integer_value = (sign == 0) ? integer : -integer;
+            long integer = exp < 0 ? 0 : (implicitMantissa >>> (52 - exp));
+            long integerValue = (sign == 0) ? integer : -integer;
 
-            if (integer_value > upperBound) {
-                upperBound = integer_value;
+            if (integerValue > upperBound) {
+                upperBound = integerValue;
             }
-            if (integer_value < lowerBound) {
-                lowerBound = integer_value;
+            if (integerValue < lowerBound) {
+                lowerBound = integerValue;
             }
         }
 
@@ -125,7 +125,7 @@ public class BuffCompressor {
         }
     }
 
-    public static int get_decimal_place(double db) {
+    public static int getDecimalPlace(double db) {
         if (db == 0.0) {
             return 0;
         }
@@ -153,7 +153,7 @@ public class BuffCompressor {
     public byte[][] encode(double[] dbs) {
         byte[][] cols = new byte[columnCount][dbs.length]; // 第一维代表列号，第二维代表行号
 
-        int db_cnt = 0;
+        int dbCnt = 0;
         for (double db : dbs) {
             // double -> bits
             long bits = Double.doubleToLongBits(db);
@@ -163,53 +163,51 @@ public class BuffCompressor {
             long sign = bits >>> 63;
 
             // get the exp
-            long exp_binary = bits >>> 52 & 0x7FF; // mask for the last 11 bits
-            long exp = exp_binary - 1023;
+            long expBinary = bits >>> 52 & 0x7FF; // mask for the last 11 bits
+            long exp = expBinary - 1023;
 
             // get the mantissa
-            long mantissa = bits & 0x000fffffffffffffL; // 0.11  1   -0.12  -1
+            long mantissa = bits & 0x000fffffffffffffL;
 
             // get the mantissa with implicit bit
-            long implicit_mantissa = mantissa | (1L << 52);
+            long implicitMantissa = mantissa | (1L << 52);
 
             long decimal;
             if (exp >= 0) {
                 decimal = mantissa << (12 + exp) >>> (64 - decWidth);
             } else {
                 if (53 - decWidth >= 0) {
-                    decimal = implicit_mantissa >>> 53 - decWidth >>> (-exp - 1);
-//                    decimal = implicit_mantissa >>> 52 - decWidth - exp;
+                    decimal = implicitMantissa >>> 53 - decWidth >>> (-exp - 1);
                 } else {
-                    decimal = implicit_mantissa << decWidth - 53 >>> (-exp - 1);
+                    decimal = implicitMantissa << decWidth - 53 >>> (-exp - 1);
                 }
             }
 
             // get the integer
-            long integer = exp < 0 ? 0 : (implicit_mantissa >>> (52 - exp));
-            long integer_value = (sign == 0) ? integer : -integer;
+            long integer = exp < 0 ? 0 : (implicitMantissa >>> (52 - exp));
+            long integerValue = (sign == 0) ? integer : -integer;
 
             // get the offset of integer
-            long offset = integer_value - lowerBound;
+            long offset = integerValue - lowerBound;
 
             // get the bitpack result
             long bitpack = sign << (wholeWidth - 1) | (offset << decWidth) | decimal;
 
-
             // encode into cols[][]
             int remain = wholeWidth % 8;
-            int bytes_cnt = 0;
+            int bytesCnt = 0;
             if (remain != 0) {
-                bytes_cnt++;
-                cols[columnCount - bytes_cnt][db_cnt] = (byte) (bitpack & LAST_MASK[remain - 1]);
+                bytesCnt++;
+                cols[columnCount - bytesCnt][dbCnt] = (byte) (bitpack & LAST_MASK[remain - 1]);
                 bitpack = bitpack >>> remain;
             }
-            while (bytes_cnt < columnCount) {
-                bytes_cnt++;
-                cols[columnCount - bytes_cnt][db_cnt] = (byte) (bitpack & LAST_MASK[7]);
+            while (bytesCnt < columnCount) {
+                bytesCnt++;
+                cols[columnCount - bytesCnt][dbCnt] = (byte) (bitpack & LAST_MASK[7]);
                 bitpack = bitpack >>> 8;
             }
 
-            db_cnt++;
+            dbCnt++;
         }
         return cols;
     }
@@ -232,22 +230,18 @@ public class BuffCompressor {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-//                System.out.println(Arrays.toString(testOut.getBuffer()));
             }
         }
     }
 
     private void serialize(SparseResult sr) {
-        size += out.writeInt(sr.frequent_value, 8);
+        size += out.writeInt(sr.frequentValue, 8);
         try {
-//            System.out.println("serialize");
-//
-//            System.out.println(Arrays.toString(sr.bitmap));
             size += out.write(sr.bitmap, batchSize);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        for (int i = 0; i < sr.outliers_cnt; i++) {
+        for (int i = 0; i < sr.outliersCnt; i++) {
             size += out.writeInt(sr.outliers[i], 8);
         }
     }
@@ -277,18 +271,16 @@ public class BuffCompressor {
             if (nums[i] == candidate) {
                 count++;
             } else {
-//                System.out.println("is: "+ i);
                 result.bitmap[index] = (byte) (result.bitmap[index] | 0b1);
-                result.outliers[result.outliers_cnt++] = nums[i];
+                result.outliers[result.outliersCnt++] = nums[i];
             }
         }
 
         if (count >= nums.length * 0.9) {
             result.flag = true;
-            result.frequent_value = candidate;
+            result.frequentValue = candidate;
         } else {
             result.flag = false;
-            // result.frequent_value = 0;
         }
         return result;
     }
