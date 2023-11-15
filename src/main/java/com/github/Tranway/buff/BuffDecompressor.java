@@ -10,7 +10,7 @@ public class BuffDecompressor {
     private final InputBitStream in;
     private int columnCount;
     private long lowerBound;
-    private int batch_size;
+    private int batchSize;
     private int maxPrec;
     private int decWidth;
     private int intWidth;
@@ -30,14 +30,14 @@ public class BuffDecompressor {
 
     public double[] decompress() throws IOException {
         lowerBound = in.readLong(64);
-        batch_size = in.readInt(32);
+        batchSize = in.readInt(32);
         maxPrec = in.readInt(32);
         intWidth = in.readInt(32);
         decWidth = PRECISION_MAP[maxPrec];
         wholeWidth = decWidth + intWidth + 1;
         if (wholeWidth >= 64) {
-            double[] result = new double[batch_size];
-            for (int i = 0; i < batch_size; i++) {
+            double[] result = new double[batchSize];
+            for (int i = 0; i < batchSize; i++) {
                 result[i] = Double.longBitsToDouble(in.readLong(64));
             }
             return result;
@@ -46,16 +46,15 @@ public class BuffDecompressor {
         if (wholeWidth % 8 != 0) {
             columnCount++;
         }
-//        System.out.println("intWidth" + intWidth);
-        cols = new byte[columnCount][batch_size];
+        cols = new byte[columnCount][batchSize];
         sparseDecode();
-        return merge_doubles();
+        return mergeDoubles();
     }
 
     public SparseResult deserialize() throws IOException {
-        SparseResult result = new SparseResult(batch_size);
-        result.setFrequent_value(in.readInt(8));
-        in.read(result.bitmap, batch_size);
+        SparseResult result = new SparseResult(batchSize);
+        result.setFrequentValue(in.readInt(8));
+        in.read(result.bitmap, batchSize);
         int count = 0;
         for (byte b : result.bitmap) {
             for (int i = 0; i < 8; i++) {
@@ -72,18 +71,18 @@ public class BuffDecompressor {
     public void sparseDecode() throws IOException {
         for (int j = 0; j < columnCount; ++j) {
             if (in.readBit() == 0) {
-                in.read(cols[j], batch_size * 8);
+                in.read(cols[j], batchSize * 8);
             } else {
                 SparseResult result;
                 result = deserialize();
-                int index, offset, vec_cnt = 0;
-                for (int i = 0; i < batch_size; i++) {
+                int index, offset, vecCnt = 0;
+                for (int i = 0; i < batchSize; i++) {
                     index = i / 8;
                     offset = i % 8;
                     if ((result.bitmap[index] & (1 << (7 - offset))) == 0) {
-                        cols[j][i] = result.frequent_value;
+                        cols[j][i] = result.frequentValue;
                     } else {
-                        cols[j][i] = result.outliers[vec_cnt++];
+                        cols[j][i] = result.outliers[vecCnt++];
                     }
                 }
             }
@@ -91,7 +90,7 @@ public class BuffDecompressor {
     }
 
 
-    public static int get_width_needed(long number) {
+    public static int getWidthNeeded(long number) {
         if (number == 0) {
             return 0; // 约定0不需要位宽
         }
@@ -106,9 +105,9 @@ public class BuffDecompressor {
     }
 
 
-    public double[] merge_doubles() {
-        double[] dbs = new double[batch_size];
-        for (int i = 0; i < batch_size; i++) {
+    public double[] mergeDoubles() {
+        double[] dbs = new double[batchSize];
+        for (int i = 0; i < batchSize; i++) {
             // 逐行提取数据
             long bitpack = 0;
             int remain = wholeWidth % 8;
@@ -133,62 +132,39 @@ public class BuffDecompressor {
             long decimal = bitpack << (64 - decWidth) >>> (64 - decWidth);
 
             // modified decimal [used for - exp]
-            long modified_decimal = decimal << (decWidth - get_width_needed(decimal));
+            long modifiedDecimal = decimal << (decWidth - getWidthNeeded(decimal));
 
             // get the exp
-            long exp = integer != 0 ? (get_width_needed(Math.abs(integer)) + 1022)
-                    : 1023 - (decWidth - get_width_needed(decimal) + 1);
+            long exp = integer != 0 ? (getWidthNeeded(Math.abs(integer)) + 1022)
+                    : 1023 - (decWidth - getWidthNeeded(decimal) + 1);
             long expValue = exp - 1023;
 
             // get the mantissa with implicit bit
-            int tmp = 53 - decWidth - get_width_needed(Math.abs(integer));
-            //            long implicit_mantissa = (Math.abs(integer) << (53 - get_width_needed(Math.abs(integer))))
-            long implicit_mantissa = (Math.abs(integer) << tmp + decWidth)
-                    | (expValue < 0 ? (tmp >= 0 ? (modified_decimal << tmp) : (modified_decimal >>> Math.abs(tmp)))
+            int tmp = 53 - decWidth - getWidthNeeded(Math.abs(integer));
+
+            long implicitMantissa = (Math.abs(integer) << tmp + decWidth)
+                    | (expValue < 0 ? (tmp >= 0 ? (modifiedDecimal << tmp) : (modifiedDecimal >>> Math.abs(tmp)))
                     : tmp >= 0
                     ? (decimal << (tmp))
                     : (decimal >>> Math.abs(tmp)));
 
             // get the mantissa
-            long mantissa = implicit_mantissa & 0x000fffffffffffffL;
+            long mantissa = implicitMantissa & 0x000fffffffffffffL;
 
             // get the sign
             long sign = bitpack >>> (wholeWidth - 1);
-
 
             // get the origin bits in IEEE754
             long bits = (sign << 63) | (exp << 52) | mantissa;
 
             // get the origin value
             double db = Double.longBitsToDouble(bits);
-            //            db = Double.parseDouble(String.format("%." + maxPrec + "f", db));
+
             BigDecimal bd = new BigDecimal(db);
             db = bd.setScale(maxPrec, RoundingMode.HALF_UP).doubleValue();
-            if(db==0 && sign==1)    db = -db;
+            if (db == 0 && sign == 1) db = -db;
             dbs[i] = db;
         }
         return dbs;
     }
-
-
-    public static double round(double v, int alpha) {
-        double scale = get10iP(alpha);
-        return Math.round(v * scale) / scale;
-    }
-
-    private static double get10iP(int i) {
-        if (i < 0) {
-            throw new IllegalArgumentException("The argument should be greater than 0");
-        }
-        if (i >= map10iP.length) {
-            return Double.parseDouble("1.0E" + i);
-        } else {
-            return map10iP[i];
-        }
-    }
-
-    private final static double[] map10iP =
-            new double[]{1.0, 1.0E1, 1.0E2, 1.0E3, 1.0E4, 1.0E5, 1.0E6, 1.0E7,
-                    1.0E8, 1.0E9, 1.0E10, 1.0E11, 1.0E12, 1.0E13, 1.0E14,
-                    1.0E15, 1.0E16, 1.0E17, 1.0E18, 1.0E19, 1.0E20};
 }

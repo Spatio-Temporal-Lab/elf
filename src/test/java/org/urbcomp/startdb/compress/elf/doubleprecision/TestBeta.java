@@ -63,6 +63,7 @@ public class TestBeta {
 
         HashMap<String, List<Double>> totalCompressionTime = new HashMap<>();
         HashMap<String, List<Double>> totalDecompressionTime = new HashMap<>();
+        HashMap<String, List<Integer>> eachBlockCompressionSize = new HashMap<>();
         HashMap<String, Long> key2TotalSize = new HashMap<>();
 
         while ((values = fileReader.nextBlockWithBeta(beta)) != null) {
@@ -103,21 +104,24 @@ public class TestBeta {
                 if (!totalCompressionTime.containsKey(key)) {
                     totalCompressionTime.put(key, new ArrayList<>());
                     totalDecompressionTime.put(key, new ArrayList<>());
+                    eachBlockCompressionSize.put(key, new ArrayList<>());
                     key2TotalSize.put(key, 0L);
                 }
                 totalCompressionTime.get(key).add(encodingDuration / TIME_PRECISION);
                 totalDecompressionTime.get(key).add(decodingDuration / TIME_PRECISION);
+                eachBlockCompressionSize.get(key).add(compressor.getSize());
                 key2TotalSize.put(key, compressor.getSize() + key2TotalSize.get(key));
             }
         }
 
-        for (Map.Entry<String, Long> kv: key2TotalSize.entrySet()) {
+        for (Map.Entry<String, Long> kv : key2TotalSize.entrySet()) {
             String key = kv.getKey();
             Long totalSize = kv.getValue();
-            ResultStructure r = new ResultStructure(fileName  + " " + beta, key,
-                            totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
-                            totalCompressionTime.get(key),
-                            totalDecompressionTime.get(key)
+            ResultStructure r = new ResultStructure(fileName + " " + beta, key,
+                    totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                    eachBlockCompressionSize.get(key),
+                    totalCompressionTime.get(key),
+                    totalDecompressionTime.get(key)
             );
             if (!resultCompressor.containsKey(key)) {
                 resultCompressor.put(key, new ArrayList<>());
@@ -145,6 +149,7 @@ public class TestBeta {
         double[] values;
         List<Double> totalCompressionTime = new ArrayList<>();
         List<Double> totalDecompressionTime = new ArrayList<>();
+        List<Integer> eachBlockCompressionSize = new ArrayList<>();
         while ((values = fileReader.nextBlockWithBeta(beta)) != null) {
             double encodingDuration = 0;
             double decodingDuration = 0;
@@ -187,11 +192,13 @@ public class TestBeta {
             }
             totalCompressionTime.add(encodingDuration / TIME_PRECISION);
             totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
+            eachBlockCompressionSize.add(compressed.length * 8);
         }
         if (!totalCompressionTime.isEmpty()) {
             String key = "Snappy";
             ResultStructure r = new ResultStructure(fileName + " " + beta, key,
                     totalSize / (totalBlocks * FileReader.DEFAULT_BLOCK_SIZE * 64.0),
+                    eachBlockCompressionSize,
                     totalCompressionTime,
                     totalDecompressionTime
             );
