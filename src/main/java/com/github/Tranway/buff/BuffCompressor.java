@@ -140,7 +140,7 @@ public class BuffCompressor {
                 } else {
                     i++;
                     cnt -= Integer.parseInt(strDb.substring(i));
-                    return cnt > 0 ? cnt : 0;
+                    return Math.max(cnt, 0);
                 }
             }
             return cnt;
@@ -284,6 +284,4 @@ public class BuffCompressor {
         }
         return result;
     }
-
-
 }

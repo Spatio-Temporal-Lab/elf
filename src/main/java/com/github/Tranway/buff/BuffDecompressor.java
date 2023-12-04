@@ -17,10 +17,10 @@ public class BuffDecompressor {
     private int wholeWidth;
     private byte[][] cols;
 
-    private static int[] PRECISION_MAP = new int[]{
+    private static final int[] PRECISION_MAP = new int[]{
             0, 5, 8, 11, 15, 18, 21, 25, 28, 31, 35, 38, 50, 52, 52, 52, 64, 64, 64, 64, 64, 64, 64
     };
-    private static long[] LAST_MASK = new long[]{
+    private static final long[] LAST_MASK = new long[]{
             0b1L, 0b11L, 0b111L, 0b1111L, 0b11111L, 0b111111L, 0b1111111L, 0b11111111L
     };
 

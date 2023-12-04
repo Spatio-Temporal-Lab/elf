@@ -7,18 +7,18 @@ import java.util.List;
 
 public class ResultStructure {
     private String filename;
-    private String compressorName;
-    private double compressorRatio;
-    private double maxCompressRatio;
-    private double minCompressRatio;
-    private double compressionTime;
-    private double maxCompressTime;
-    private double minCompressTime;
-    private double mediaCompressTime;
-    private double decompressionTime;
-    private double maxDecompressTime;
-    private double minDecompressTime;
-    private double mediaDecompressTime;
+    private final String compressorName;
+    private final double compressorRatio;
+    private final double maxCompressRatio;
+    private final double minCompressRatio;
+    private final double compressionTime;
+    private final double maxCompressTime;
+    private final double minCompressTime;
+    private final double mediaCompressTime;
+    private final double decompressionTime;
+    private final double maxDecompressTime;
+    private final double minDecompressTime;
+    private final double mediaDecompressTime;
 
     public ResultStructure(String filename, String compressorName, double compressorRatio, double maxCompressRatio, double minCompressRatio, double compressionTime, double maxCompressTime, double minCompressTime, double mediaCompressTime, double decompressionTime, double maxDecompressTime, double minDecompressTime, double mediaDecompressTime) {
         this.filename = filename;
@@ -57,48 +57,24 @@ public class ResultStructure {
         return maxCompressTime;
     }
 
-    public void setMaxCompressTime(double maxCompressTime) {
-        this.maxCompressTime = maxCompressTime;
-    }
-
     public double getMinCompressTime() {
         return minCompressTime;
-    }
-
-    public void setMinCompressTime(double minCompressTime) {
-        this.minCompressTime = minCompressTime;
     }
 
     public double getMediaCompressTime() {
         return mediaCompressTime;
     }
 
-    public void setMediaCompressTime(double mediaCompressTime) {
-        this.mediaCompressTime = mediaCompressTime;
-    }
-
     public double getMaxDecompressTime() {
         return maxDecompressTime;
-    }
-
-    public void setMaxDecompressTime(double maxDecompressTime) {
-        this.maxDecompressTime = maxDecompressTime;
     }
 
     public double getMinDecompressTime() {
         return minDecompressTime;
     }
 
-    public void setMinDecompressTime(double minDecompressTime) {
-        this.minDecompressTime = minDecompressTime;
-    }
-
     public double getMediaDecompressTime() {
         return mediaDecompressTime;
-    }
-
-    public void setMediaDecompressTime(double mediaDecompressTime) {
-        this.mediaDecompressTime = mediaDecompressTime;
     }
 
     public String getFilename() {
@@ -113,32 +89,16 @@ public class ResultStructure {
         return compressorName;
     }
 
-    public void setCompressorName(String compressorName) {
-        this.compressorName = compressorName;
-    }
-
     public double getCompressorRatio() {
         return compressorRatio;
-    }
-
-    public void setCompressorRatio(double compressorRatio) {
-        this.compressorRatio = compressorRatio;
     }
 
     public double getCompressionTime() {
         return compressionTime;
     }
 
-    public void setCompressionTime(double compressionTime) {
-        this.compressionTime = compressionTime;
-    }
-
     public double getDecompressionTime() {
         return decompressionTime;
-    }
-
-    public void setDecompressionTime(double decompressionTime) {
-        this.decompressionTime = decompressionTime;
     }
 
     public double getMaxCompressRatio() {
@@ -152,38 +112,36 @@ public class ResultStructure {
 
 
     public static String getHead() {
-        return "FileName," +
-                "CompressorName," +
-                "CompressorRatio," +
-                "MaxCompressRatio," +
-                "MinCompressRatio," +
-                "CompressionTime," +
-                "MaxCompressTime," +
-                "MinCompressTime," +
-                "MediaCompressTime," +
-                "DecompressionTime," +
-                "MaxDecompressTime," +
-                "MinDecompressTime," +
-                "MediaDecompressTime," +
-                '\n';
+        return "FileName\t" +
+                "CompressorName\t" +
+                "CompressorRatio\t" +
+                "MaxCompressRatio\t" +
+                "MinCompressRatio\t" +
+                "CompressionTime\t" +
+                "MaxCompressTime\t" +
+                "MinCompressTime\t" +
+                "MediaCompressTime\t" +
+                "DecompressionTime\t" +
+                "MaxDecompressTime\t" +
+                "MinDecompressTime\t" +
+                "MediaDecompressTime\n";
     }
 
     @Override
     public String toString() {
-        return filename + ',' +
-                compressorName + ',' +
-                compressorRatio + ',' +
-                maxCompressRatio + ',' +
-                minCompressRatio + ',' +
-                compressionTime + ',' +
-                maxCompressTime + ',' +
-                minCompressTime + ',' +
-                mediaCompressTime + ',' +
-                decompressionTime + ',' +
-                maxDecompressTime + ',' +
-                minDecompressTime + ',' +
-                mediaDecompressTime + ',' +
-                '\n';
+        return filename + '\t' +
+                compressorName + '\t' +
+                compressorRatio + '\t' +
+                maxCompressRatio + '\t' +
+                minCompressRatio + '\t' +
+                compressionTime + '\t' +
+                maxCompressTime + '\t' +
+                minCompressTime + '\t' +
+                mediaCompressTime + '\t' +
+                decompressionTime + '\t' +
+                maxDecompressTime + '\t' +
+                minDecompressTime + '\t' +
+                mediaDecompressTime + '\n';
     }
 
     public double medianValue(List<Double> ld) {
