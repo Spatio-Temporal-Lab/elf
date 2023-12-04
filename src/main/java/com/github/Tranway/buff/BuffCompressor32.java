@@ -15,10 +15,10 @@ public class BuffCompressor32 {
     private int columnCount;
     private static final int batchSize = 1000;
 
-    private static int[] PRECISION_MAP = new int[]{
+    private static final int[] PRECISION_MAP = new int[]{
             0, 5, 8, 11, 15, 18, 21, 25, 28, 31, 35, 38, 50, 52, 52, 52, 52, 52, 52
     };
-    private static int[] LAST_MASK = new int[]{
+    private static final int[] LAST_MASK = new int[]{
             0b1, 0b11, 0b111, 0b1111, 0b11111, 0b111111, 0b1111111, 0b11111111
     };
 
@@ -145,7 +145,7 @@ public class BuffCompressor32 {
                 } else {
                     i++;
                     cnt -= Integer.parseInt(strDb.substring(i));
-                    return cnt > 0 ? cnt : 0;
+                    return Math.max(cnt, 0);
                 }
             }
             return cnt;
@@ -177,7 +177,7 @@ public class BuffCompressor32 {
             // get the mantissa with implicit bit
             int implicitMantissa = mantissa | (1 << 23);
 
-            long decimal;
+            int decimal;
             if (exp >= 0) {
                 decimal = mantissa << (9 + exp) >>> (32 - decWidth);
             } else {

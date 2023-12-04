@@ -4,6 +4,7 @@ import gr.aueb.delorean.chimp.InputBitStream;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class BuffDecompressor32 {
     private final InputBitStream in;
@@ -16,10 +17,10 @@ public class BuffDecompressor32 {
     private int wholeWidth;
     private byte[][] cols;
 
-    private static int[] PRECISION_MAP = new int[]{
+    private static final int[] PRECISION_MAP = new int[]{
             0, 5, 8, 11, 15, 18, 21, 25, 28, 31, 35, 38, 50, 52, 52, 52, 52, 52, 52
     };
-    private static int[] LAST_MASK = new int[]{
+    private static final int[] LAST_MASK = new int[]{
             0b1, 0b11, 0b111, 0b1111, 0b11111, 0b111111, 0b1111111, 0b11111111
     };
 
@@ -160,7 +161,7 @@ public class BuffDecompressor32 {
             float db = Float.intBitsToFloat(bits);
 
             BigDecimal bd = new BigDecimal(db);
-            db = bd.setScale(maxPrec, BigDecimal.ROUND_HALF_UP).floatValue();
+            db = bd.setScale(maxPrec, RoundingMode.HALF_UP).floatValue();
             if (db == 0 && sign == 1) db = -db;
             dbs[i] = db;
         }
