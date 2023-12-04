@@ -145,17 +145,11 @@ public class ResultStructure {
         return maxCompressRatio;
     }
 
-    public void setMaxCompressRatio(double maxCompressRatio) {
-        this.maxCompressRatio = maxCompressRatio;
-    }
 
     public double getMinCompressRatio() {
         return minCompressRatio;
     }
 
-    public void setMinCompressRatio(double minCompressRatio) {
-        this.minCompressRatio = minCompressRatio;
-    }
 
     public static String getHead() {
         return "FileName," +
@@ -212,7 +206,6 @@ public class ResultStructure {
     }
 
     public double maxValue(List<Double> ld) {
-        int num = ld.size();
         double max = 0;
         for (Double aDouble : ld) {
             if (aDouble > max) {
@@ -233,7 +226,6 @@ public class ResultStructure {
     }
 
     public int maxInt(List<Integer> ld) {
-        int num = ld.size();
         int max = 0;
         for (Integer aInt : ld) {
             if (aInt > max) {
@@ -251,17 +243,5 @@ public class ResultStructure {
             }
         }
         return min;
-    }
-
-    public double quarterLowValue(List<Double> ld) {
-        int num = ld.size();
-        ld.sort(Comparator.naturalOrder());
-        return ld.get(num / 4);
-    }
-
-    public double quarterHighValue(List<Double> ld) {
-        int num = ld.size();
-        ld.sort(Comparator.naturalOrder());
-        return ld.get(num * 3 / 4);
     }
 }
