@@ -16,7 +16,7 @@ public abstract class AbstractElfCompressor32 implements ICompressor32 {
             vPrimeInt = vInt;
         } else if (Float.isNaN(v)) {
             size += writeInt(2, 2); // case 10
-            vPrimeInt = 0xffc00000 & vInt;
+            vPrimeInt = 0x7fc00000;
         } else {
             // C1: v is a normal or subnormal
             int[] alphaAndBetaStar = Elf32Utils.getAlphaAndBetaStar(v, lastBetaStar);
