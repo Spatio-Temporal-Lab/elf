@@ -16,7 +16,7 @@ public abstract class AbstractElfCompressor implements ICompressor {
             vPrimeLong = vLong;
         } else if (Double.isNaN(v)) {
             size += writeInt(2, 2); // case 10
-            vPrimeLong = 0xfff8000000000000L & vLong;
+            vPrimeLong = 0x7ff8000000000000L;
         } else {
             // C1: v is a normal or subnormal
             int[] alphaAndBetaStar = Elf64Utils.getAlphaAndBetaStar(v, lastBetaStar);
