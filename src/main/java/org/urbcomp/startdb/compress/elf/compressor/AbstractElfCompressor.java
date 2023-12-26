@@ -23,7 +23,7 @@ public abstract class AbstractElfCompressor implements ICompressor {
             vPrimeLong = vLong;
         } else if (Double.isNaN(v)) {
             size += writeBit(false);
-            vPrimeLong = 0xfff8000000000000L & vLong;
+            vPrimeLong = 0x7ff8000000000000L;
         } else {
             int[] alphaAndBetaStar = getAlphaAndBetaStar(v);
             int e = ((int) (vLong >> 52)) & 0x7ff;
