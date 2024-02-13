@@ -1,5 +1,5 @@
 # Elf: Erasing-based Lossless Floating-Point Compression (VLDB 2023, Accepted)
-# Erasing-Based Lossless Compression Method for Streaming Floating-Point Time Series (VLDBJ, Under Review, Termed Elf+)
+# Erasing-Based Lossless Compression for Streaming Floating-Point Time Series (Termed Elf+)
 
 ***
 Elf is an erasing-based floating-point data compression algorithm with a high compression ratio.
