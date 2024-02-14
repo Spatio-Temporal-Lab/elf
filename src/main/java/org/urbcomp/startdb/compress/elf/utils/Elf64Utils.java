@@ -57,6 +57,11 @@ public class Elf64Utils {
         }
     }
 
+    public static double round(double v, int alpha) {
+        double scale = get10iP(alpha);
+        return Math.round(v * scale) / scale;
+    }
+
     private static int getSignificantCount(double v, int sp, int lastBetaStar) {
         int i;
         if(lastBetaStar != Integer.MAX_VALUE && lastBetaStar != 0) {
