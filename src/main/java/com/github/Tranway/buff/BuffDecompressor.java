@@ -1,6 +1,7 @@
 package com.github.Tranway.buff;
 
 import gr.aueb.delorean.chimp.InputBitStream;
+import org.urbcomp.startdb.compress.elf.utils.Elf64Utils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -160,8 +161,15 @@ public class BuffDecompressor {
             // get the origin value
             double db = Double.longBitsToDouble(bits);
 
-            BigDecimal bd = new BigDecimal(db);
-            db = bd.setScale(maxPrec, RoundingMode.HALF_UP).doubleValue();
+            int sp = (int) Math.floor(Math.log10(Math.abs(db)));
+            int beta = maxPrec + sp + 1;
+            if (beta < 17) {
+                db = Elf64Utils.round(db, maxPrec);
+            } else {
+                BigDecimal bd = new BigDecimal(db);
+                db = bd.setScale(maxPrec, RoundingMode.HALF_UP).doubleValue();
+            }
+
             if (db == 0 && sign == 1) db = -db;
             dbs[i] = db;
         }
