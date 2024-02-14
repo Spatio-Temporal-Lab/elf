@@ -161,7 +161,10 @@ public class BuffDecompressor {
             // get the origin value
             double db = Double.longBitsToDouble(bits);
 
-            int sp = (int) Math.floor(Math.log10(Math.abs(db)));
+
+//            BigDecimal bd = new BigDecimal(db);
+//            db = bd.setScale(maxPrec, RoundingMode.HALF_UP).doubleValue();
+            int sp = Elf64Utils.getSP(db);
             int beta = maxPrec + sp + 1;
             if (beta < 17) {
                 db = Elf64Utils.round(db, maxPrec);
