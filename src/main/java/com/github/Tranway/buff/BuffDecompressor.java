@@ -161,7 +161,6 @@ public class BuffDecompressor {
             // get the origin value
             double db = Double.longBitsToDouble(bits);
 
-
             int sp = Elf64Utils.getSP(db);
             int beta = maxPrec + sp + 1;
             if (beta >= 17) {
