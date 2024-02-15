@@ -22,15 +22,14 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestCompressor {
     private static final String FILE_PATH = "src/test/resources/ElfTestData";
     private static final String[] FILENAMES = {
             "/init.csv",    //First run a dataset to ensure the relevant hbase settings of the zstd and snappy compressors
-            "/Air-pressure.csv",
             "/Air-sensor.csv",
+            "/Air-pressure.csv",
             "/Basel-temp.csv",
             "/Basel-wind.csv",
             "/Bird-migration.csv",
@@ -143,7 +142,7 @@ public class TestCompressor {
                 decodingDuration = System.nanoTime() - start;
 
                 for (int j = 0; j < values.length; j++) {
-                    assertEquals(values[j], uncompressedValues.get(j), "Value did not match" + compressor.getKey());
+                    assertTrue(uncompressedValues.get(j)==values[j]);
                 }
 
                 String key = compressor.getKey();
@@ -205,7 +204,9 @@ public class TestCompressor {
             start = System.nanoTime();
             dest = decompressor.decompress();
             decodingDuration += System.nanoTime() - start;
-            assertArrayEquals(dest, values);
+            for(int i=0;i<dest.length;i++){
+                assertTrue(dest[i]==values[i]);
+            }
             totalCompressionTime.add(encodingDuration / TIME_PRECISION);
             totalDecompressionTime.add(decodingDuration / TIME_PRECISION);
             eachBlockCompressionSize.add((int) compressor.getSize());

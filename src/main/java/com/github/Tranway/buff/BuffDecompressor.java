@@ -162,18 +162,15 @@ public class BuffDecompressor {
             double db = Double.longBitsToDouble(bits);
 
 
-//            BigDecimal bd = new BigDecimal(db);
-//            db = bd.setScale(maxPrec, RoundingMode.HALF_UP).doubleValue();
             int sp = Elf64Utils.getSP(db);
             int beta = maxPrec + sp + 1;
-            if (beta < 17) {
-                db = Elf64Utils.round(db, maxPrec);
-            } else {
+            if (beta >= 17) {
                 BigDecimal bd = new BigDecimal(db);
                 db = bd.setScale(maxPrec, RoundingMode.HALF_UP).doubleValue();
+            } else {
+                db = Elf64Utils.round(db, maxPrec);
             }
 
-            if (db == 0 && sign == 1) db = -db;
             dbs[i] = db;
         }
         return dbs;

@@ -57,6 +57,11 @@ public class Elf32Utils {
         }
     }
 
+    public static float round(float v, int alpha) {
+        double scale = get10iP(alpha);
+        return (float) (Math.round(v * scale) / scale);
+    }
+
     private static int getSignificantCount(float v, int sp, int lastBetaStar) {
         int i;
         if(lastBetaStar != Integer.MAX_VALUE && lastBetaStar != 0) {
