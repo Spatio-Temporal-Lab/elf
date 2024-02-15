@@ -2,7 +2,6 @@ package com.github.Tranway.buff;
 
 import gr.aueb.delorean.chimp.InputBitStream;
 import org.urbcomp.startdb.compress.elf.utils.Elf32Utils;
-import org.urbcomp.startdb.compress.elf.utils.Elf64Utils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
