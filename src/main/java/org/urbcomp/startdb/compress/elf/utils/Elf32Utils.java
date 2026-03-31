@@ -71,7 +71,7 @@ public class Elf32Utils {
 
         float temp = v * get10iP(i);
         int tempInt = (int) temp;
-        while (tempInt != temp) {
+        while (tempInt != temp && tempInt != Integer.MAX_VALUE) { // check overflow
             i++;
             temp = v * get10iP(i);
             tempInt = (int) temp;

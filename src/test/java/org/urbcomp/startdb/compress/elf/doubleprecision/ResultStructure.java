@@ -1,6 +1,6 @@
 package org.urbcomp.startdb.compress.elf.doubleprecision;
 
-import sun.misc.DoubleConsts;
+// import sun.misc.DoubleConsts;
 
 import java.util.Comparator;
 import java.util.List;
@@ -196,7 +196,7 @@ public class ResultStructure {
     }
 
     public double minValue(List<Double> ld) {
-        double min = DoubleConsts.MAX_VALUE;
+        double min = Double.MAX_VALUE;
         for (Double aDouble : ld) {
             if (aDouble < min) {
                 min = aDouble;

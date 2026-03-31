@@ -71,7 +71,7 @@ public class Elf64Utils {
 
         double temp = v * get10iP(i);
         long tempLong = (long) temp;
-        while (tempLong != temp) {
+        while (tempLong != temp && tempLong != Long.MAX_VALUE) { // check overflow
             i++;
             temp = v * get10iP(i);
             tempLong = (long) temp;
